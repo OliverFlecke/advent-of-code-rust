@@ -1,4 +1,7 @@
+pub struct Day01 {}
 
-pub fn solve() {
-    println!("Solving this");
+impl Day01 {
+    pub fn solve() {
+        println!("Solving day 01")
+    }
 }
