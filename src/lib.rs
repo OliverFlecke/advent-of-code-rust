@@ -16,3 +16,16 @@ impl Year {
         self as u16
     }
 }
+
+type Day = u8;
+
+pub enum Level {
+    A = 1,
+    B = 2,
+}
+
+impl Level {
+    pub fn as_int(self) -> u8 {
+        self as u8
+    }
+}

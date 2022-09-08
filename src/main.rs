@@ -1,4 +1,4 @@
-use advent_of_code::{client::*, Year};
+use advent_of_code::{client::*, Level, Year};
 use std::error::Error;
 
 mod solutions;
@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     assert_eq!(Day01::solve_a("1111"), "4");
     assert_eq!(Day01::solve_a("1234"), "0");
     assert_eq!(Day01::solve_a("91212129"), "9");
-    Day01::solve_a(&problem_input);
+    submit(Year::Y2017, 1, Level::A, &Day01::solve_a(&problem_input));
 
     Ok(())
 }

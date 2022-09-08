@@ -1,4 +1,7 @@
-use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
+use reqwest::{
+    blocking::Client,
+    header::{HeaderMap, HeaderValue, COOKIE},
+};
 use std::{
     env,
     error::Error,
@@ -6,11 +9,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use super::Year;
+use super::{Day, Level, Year};
 
 const TOKEN_NAME: &str = "AOC_TOKEN";
-
-type Day = u8;
 
 pub fn get_token() -> String {
     match env::var(TOKEN_NAME) {
@@ -34,6 +35,20 @@ fn get_headers() -> HeaderMap {
     headers
 }
 
+pub fn submit(year: Year, day: u8, level: Level, answer: &String) {
+    match build_client()
+        .post(format!("{base}/answer", base = get_base_url(year, day)))
+        .form(&[
+            ("level", level.as_int().to_string()),
+            ("answer", answer.to_string()),
+        ])
+        .send()
+    {
+        Ok(res) => print!("{}", res.text().unwrap()),
+        Err(err) => panic!("Error: {}", err),
+    };
+}
+
 pub fn get_input(year: Year, day: u8) -> Result<String, Box<dyn Error>> {
     match fs::read_to_string(get_input_cache_full_filename(year, day)) {
         Ok(content) => Ok(content),
@@ -45,12 +60,16 @@ pub fn get_input(year: Year, day: u8) -> Result<String, Box<dyn Error>> {
     }
 }
 
-fn download_input(year: Year, day: Day) -> String {
-    let url = format!("{base}/input", base = get_base_url(year, day));
-    let client = reqwest::blocking::Client::builder()
+fn build_client() -> Client {
+    reqwest::blocking::Client::builder()
         .default_headers(get_headers())
         .build()
-        .unwrap();
+        .unwrap()
+}
+
+fn download_input(year: Year, day: Day) -> String {
+    let url = format!("{base}/input", base = get_base_url(year, day));
+    let client = build_client();
 
     client.get(url).send().unwrap().text().unwrap()
 }
