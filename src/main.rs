@@ -1,4 +1,4 @@
-use advent_of_code::*;
+use advent_of_code::{client::*, Year};
 
 mod solutions;
 use solutions::y2017::day01;
