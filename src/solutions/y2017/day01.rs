@@ -41,6 +41,6 @@ impl Solution for Day01 {
     where
         S: AsRef<str>,
     {
-        panic!("Not implemented")
+        todo!()
     }
 }

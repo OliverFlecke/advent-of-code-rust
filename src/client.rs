@@ -1,5 +1,5 @@
 use reqwest::{
-    blocking::Client,
+    blocking::{Client, Response},
     header::{HeaderMap, HeaderValue, COOKIE},
 };
 use std::{
@@ -35,6 +35,30 @@ fn get_headers() -> HeaderMap {
     headers
 }
 
+pub enum SubmissionResult {
+    Correct,
+    AlreadyCompleted,
+    Incorrect,
+    TooRecent(u32),
+}
+
+fn parse_submission_response_text(response: Response) -> SubmissionResult {
+    let body = response.text().unwrap();
+
+    if body.contains("That's the right answer") {
+        SubmissionResult::Correct
+    } else if body.contains("already complete it") {
+        SubmissionResult::AlreadyCompleted
+    } else if body.contains("answer too recently") {
+        // TODO: Output how much time to wait for
+        SubmissionResult::TooRecent(0)
+    } else if body.contains("not the right answer") {
+        SubmissionResult::Incorrect
+    } else {
+        panic!("Unknown response:\n\n{}", body);
+    }
+}
+
 pub fn submit(year: Year, day: u8, level: Level, answer: &String) {
     match build_client()
         .post(format!("{base}/answer", base = get_base_url(year, day)))
@@ -44,7 +68,18 @@ pub fn submit(year: Year, day: u8, level: Level, answer: &String) {
         ])
         .send()
     {
-        Ok(res) => print!("{}", res.text().unwrap()),
+        Ok(res) => match parse_submission_response_text(res) {
+            SubmissionResult::Correct => println!("Answer is correct"),
+            SubmissionResult::AlreadyCompleted => {
+                println!("Problem already solved, but answer was correct")
+            }
+            SubmissionResult::Incorrect => {
+                println!("You answered incorrectly!");
+            }
+            SubmissionResult::TooRecent(_) => {
+                println!("You have submitted an answer too recently. Wait a bit and try again")
+            }
+        },
         Err(err) => panic!("Error: {}", err),
     };
 }
