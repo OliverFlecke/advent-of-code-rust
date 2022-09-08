@@ -19,6 +19,7 @@ impl Year {
 
 type Day = u8;
 
+#[derive(PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub enum Level {
     A = 1,
     B = 2,
@@ -27,5 +28,15 @@ pub enum Level {
 impl Level {
     pub fn as_int(self) -> u8 {
         self as u8
+    }
+}
+
+impl From<u8> for Level {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => Self::A,
+            2 => Self::B,
+            _ => panic!("Cannot convert value {} to Level", value),
+        }
     }
 }

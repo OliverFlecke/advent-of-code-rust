@@ -8,6 +8,9 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+pub mod score;
+
+use self::score::ScoreMap;
 
 use super::{Day, Level, Year};
 
@@ -59,19 +62,27 @@ fn parse_submission_response_text(response: Response) -> SubmissionResult {
     }
 }
 
-pub fn submit(year: Year, day: u8, level: Level, answer: &String) {
-    match build_client()
-        .post(format!("{base}/answer", base = get_base_url(year, day)))
-        .form(&[
-            ("level", level.as_int().to_string()),
-            ("answer", answer.to_string()),
-        ])
-        .send()
+pub fn submit(year: Year, day: Day, level: Level, answer: &String) {
+    let mut scores = ScoreMap::load(year);
+    let value = scores.get_score_for_day(day);
+
+    if value
+        .map(|x| x >= level)
+        .unwrap_or_default()
     {
+        println!("Skipping submission - problem is already solved");
+        return;
+    }
+
+    match post_answer(year, day, level, answer) {
         Ok(res) => match parse_submission_response_text(res) {
-            SubmissionResult::Correct => println!("Answer is correct"),
+            SubmissionResult::Correct => {
+                println!("Answer is correct");
+                scores.set_score_for_day(day, &level);
+            }
             SubmissionResult::AlreadyCompleted => {
-                println!("Problem already solved, but answer was correct")
+                println!("Problem already solved, but answer was correct");
+                scores.set_score_for_day(day, &level);
             }
             SubmissionResult::Incorrect => {
                 println!("You answered incorrectly!");
@@ -82,6 +93,21 @@ pub fn submit(year: Year, day: u8, level: Level, answer: &String) {
         },
         Err(err) => panic!("Error: {}", err),
     };
+}
+
+fn post_answer(
+    year: Year,
+    day: Day,
+    level: Level,
+    answer: &String,
+) -> Result<Response, reqwest::Error> {
+    build_client()
+        .post(format!("{base}/answer", base = get_base_url(year, day)))
+        .form(&[
+            ("level", level.as_int().to_string()),
+            ("answer", answer.to_string()),
+        ])
+        .send()
 }
 
 pub fn get_input(year: Year, day: u8) -> Result<String, Box<dyn Error>> {
