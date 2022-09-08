@@ -17,7 +17,7 @@ impl Year {
     }
 }
 
-type Day = u8;
+pub type Day = u8;
 
 #[derive(PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub enum Level {

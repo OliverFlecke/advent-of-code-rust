@@ -5,10 +5,7 @@ use crate::solutions::Solution;
 pub struct Day01 {}
 
 impl Solution for Day01 {
-    fn solve_a<S>(input: S) -> String
-    where
-        S: AsRef<str>,
-    {
+    fn solve_a(&self, input: &str) -> String {
         fn compare(a: u32, b: u32) -> u32 {
             if a == b {
                 a
@@ -19,7 +16,6 @@ impl Solution for Day01 {
 
         let (mut first, mut last) = (None::<u32>, None::<u32>);
         let sum = input
-            .as_ref()
             .chars()
             .into_iter()
             .filter_map(|c| c.to_digit(10))
@@ -37,12 +33,8 @@ impl Solution for Day01 {
         sum.to_string()
     }
 
-    fn solve_b<S>(input: S) -> String
-    where
-        S: AsRef<str>,
-    {
+    fn solve_b(&self, input: &str) -> String {
         let digits = input
-            .as_ref()
             .chars()
             .into_iter()
             .filter_map(|c| c.to_digit(10))
@@ -65,18 +57,18 @@ mod tests {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day01::solve_a("1122"), "3");
-        assert_eq!(Day01::solve_a("1111"), "4");
-        assert_eq!(Day01::solve_a("1234"), "0");
-        assert_eq!(Day01::solve_a("91212129"), "9");
+        assert_eq!(Day01 {}.solve_a("1122"), "3");
+        assert_eq!(Day01 {}.solve_a("1111"), "4");
+        assert_eq!(Day01 {}.solve_a("1234"), "0");
+        assert_eq!(Day01 {}.solve_a("91212129"), "9");
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day01::solve_b("1212"), "6");
-        assert_eq!(Day01::solve_b("1221"), "0");
-        assert_eq!(Day01::solve_b("123425"), "4");
-        assert_eq!(Day01::solve_b("123123"), "12");
-        assert_eq!(Day01::solve_b("12131415"), "4");
+        assert_eq!(Day01 {}.solve_b("1212"), "6");
+        assert_eq!(Day01 {}.solve_b("1221"), "0");
+        assert_eq!(Day01 {}.solve_b("123425"), "4");
+        assert_eq!(Day01 {}.solve_b("123123"), "12");
+        assert_eq!(Day01 {}.solve_b("12131415"), "4");
     }
 }

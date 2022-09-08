@@ -5,12 +5,8 @@ use crate::solutions::Solution;
 pub struct Day02 {}
 
 impl Solution for Day02 {
-    fn solve_a<S>(input: S) -> String
-    where
-        S: AsRef<str>,
-    {
+    fn solve_a(&self, input: &str) -> String {
         input
-            .as_ref()
             .split('\n')
             .filter(|line| !line.is_empty())
             .map(|line| {
@@ -28,12 +24,8 @@ impl Solution for Day02 {
             .to_string()
     }
 
-    fn solve_b<S>(input: S) -> String
-    where
-        S: AsRef<str>,
-    {
+    fn solve_b(&self, input: &str) -> String {
         input
-            .as_ref()
             .split('\n')
             .filter(|line| !line.is_empty())
             .map(|line| {
@@ -67,12 +59,12 @@ mod tests {
     fn test_a() {
         let input = "5\t1\t9\t5\n7\t5\t3\n2\t4\t6\t8";
 
-        assert_eq!(Day02::solve_a(input), "18");
+        assert_eq!(Day02 {}.solve_a(input), "18");
     }
 
     #[test]
     fn test_b() {
         let input = "5\t9\t2\t8\n9\t4\t7\t3\n3\t8\t6\t5";
-        assert_eq!(Day02::solve_b(input), "9");
+        assert_eq!(Day02 {}.solve_b(input), "9");
     }
 }
