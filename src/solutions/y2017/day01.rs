@@ -37,10 +37,46 @@ impl Solution for Day01 {
         sum.to_string()
     }
 
-    fn solve_b<S>(_input: S) -> String
+    fn solve_b<S>(input: S) -> String
     where
         S: AsRef<str>,
     {
-        todo!()
+        let digits = input
+            .as_ref()
+            .chars()
+            .into_iter()
+            .filter_map(|c| c.to_digit(10))
+            .collect_vec();
+
+        let mut sum = 0;
+        for i in 0..digits.len() {
+            if digits[i] == digits[(i + digits.len() / 2) % digits.len()] {
+                sum += digits[i];
+            }
+        }
+
+        sum.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_a() {
+        assert_eq!(Day01::solve_a("1122"), "3");
+        assert_eq!(Day01::solve_a("1111"), "4");
+        assert_eq!(Day01::solve_a("1234"), "0");
+        assert_eq!(Day01::solve_a("91212129"), "9");
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day01::solve_b("1212"), "6");
+        assert_eq!(Day01::solve_b("1221"), "0");
+        assert_eq!(Day01::solve_b("123425"), "4");
+        assert_eq!(Day01::solve_b("123123"), "12");
+        assert_eq!(Day01::solve_b("12131415"), "4");
     }
 }
