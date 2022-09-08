@@ -1,5 +1,5 @@
-use std::env;
 use reqwest::header::{HeaderMap, HeaderValue, COOKIE};
+use std::env;
 
 const TOKEN_NAME: &str = "AOC_TOKEN";
 
@@ -25,12 +25,16 @@ pub fn get_token() -> String {
 }
 
 pub fn get_base_url(year: Year, day: u8) -> String {
-    format!("https://adventofcode.com/{year}/day/{day}", year = year.as_int(), day = day)
+    format!(
+        "https://adventofcode.com/{year}/day/{day}",
+        year = year.as_int(),
+        day = day
+    )
 }
 
 fn get_headers() -> HeaderMap {
     let mut headers = HeaderMap::new();
-    let value = format!("session={}", get_token());
+    let value = format!("session={token}", token = get_token());
     headers.insert(COOKIE, HeaderValue::from_str(value.as_str()).unwrap());
     headers
 }
@@ -38,12 +42,11 @@ fn get_headers() -> HeaderMap {
 pub fn get_input(year: Year, day: u8) -> String {
     let url = format!("{base}/input", base = get_base_url(year, day));
     let client = reqwest::blocking::Client::builder()
-        .default_headers(get_headers()) 
-        .build().unwrap();
+        .default_headers(get_headers())
+        .build()
+        .unwrap();
 
-    client.get(url)
-        .send().unwrap()
-        .text().unwrap()
+    client.get(url).send().unwrap().text().unwrap()
 }
 
 #[cfg(test)]
@@ -60,8 +63,10 @@ mod tests {
 
     #[test]
     fn get_base_url_test() {
-        assert_eq!("https://adventofcode.com/2016/day/17", 
-                   get_base_url(Year::Y2016, 17));
+        assert_eq!(
+            "https://adventofcode.com/2016/day/17",
+            get_base_url(Year::Y2016, 17)
+        );
     }
 
     #[test]
