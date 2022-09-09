@@ -1,5 +1,5 @@
 use advent_of_code::{client::*, Day, Level, Year};
-use solutions::get_solver;
+use solutions::{get_solver};
 use std::{env, error::Error};
 
 mod solutions;
@@ -13,8 +13,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_) => panic!("Unable to get input"),
     };
 
-    submit(year, day, Level::A, &solver.solve_a(&problem_input));
-    submit(year, day, Level::B, &solver.solve_b(&problem_input));
+    submit(year, day, Level::A, &solver.solve_a(&problem_input).to_string());
+    submit(year, day, Level::B, &solver.solve_b(&problem_input).to_string());
 
     Ok(())
 }

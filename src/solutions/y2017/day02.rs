@@ -1,11 +1,11 @@
 use itertools::{Itertools, MinMaxResult};
 
-use crate::solutions::Solution;
+use crate::solutions::{Answer, Solution};
 
 pub struct Day02 {}
 
 impl Solution for Day02 {
-    fn solve_a(&self, input: &str) -> String {
+    fn solve_a(&self, input: &str) -> Answer {
         input
             .split('\n')
             .filter(|line| !line.is_empty())
@@ -21,10 +21,10 @@ impl Solution for Day02 {
                 }
             })
             .sum::<u64>()
-            .to_string()
+            .into()
     }
 
-    fn solve_b(&self, input: &str) -> String {
+    fn solve_b(&self, input: &str) -> Answer {
         input
             .split('\n')
             .filter(|line| !line.is_empty())
@@ -47,7 +47,7 @@ impl Solution for Day02 {
                 unreachable!()
             })
             .sum::<u64>()
-            .to_string()
+            .into()
     }
 }
 
@@ -59,12 +59,12 @@ mod tests {
     fn test_a() {
         let input = "5\t1\t9\t5\n7\t5\t3\n2\t4\t6\t8";
 
-        assert_eq!(Day02 {}.solve_a(input), "18");
+        assert_eq!(Day02 {}.solve_a(input), Answer::UInt(18));
     }
 
     #[test]
     fn test_b() {
         let input = "5\t9\t2\t8\n9\t4\t7\t3\n3\t8\t6\t5";
-        assert_eq!(Day02 {}.solve_b(input), "9");
+        assert_eq!(Day02 {}.solve_b(input), Answer::UInt(9));
     }
 }
