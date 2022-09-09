@@ -66,13 +66,18 @@ pub fn submit(year: Year, day: Day, level: Level, answer: &String) {
     let mut scores = ScoreMap::load(year);
     let value = scores.get_score_for_day(day);
 
-    if value
-        .map(|x| x >= level)
-        .unwrap_or_default()
-    {
+    if value.map(|x| x >= level).unwrap_or_default() {
         println!("Skipping submission - problem is already solved");
         return;
     }
+
+    println!(
+        "Submitting answer for {year:?}/{day}/{level:?} is: {answer}",
+        year = year,
+        day = day,
+        level = level,
+        answer = answer
+    );
 
     match post_answer(year, day, level, answer) {
         Ok(res) => match parse_submission_response_text(res) {

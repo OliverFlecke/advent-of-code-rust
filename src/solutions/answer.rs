@@ -17,6 +17,11 @@ impl From<u32> for Answer {
         Answer::UInt(value as u64)
     }
 }
+impl From<usize> for Answer {
+    fn from(value: usize) -> Self {
+        Answer::UInt(value as u64)
+    }
+}
 impl From<i64> for Answer {
     fn from(value: i64) -> Self {
         Answer::Int(value)
