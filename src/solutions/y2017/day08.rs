@@ -78,63 +78,49 @@ impl Statement {
     }
 }
 
+impl Day08 {
+    fn parse_line(line: &str) -> Statement {
+        let parts = line.split(' ').collect_vec();
+        Statement {
+            register: parts[0].to_string(),
+            command: match parts[1] {
+                "inc" => Command::Inc(parts[2].parse::<i64>().unwrap()),
+                "dec" => Command::Dec(parts[2].parse::<i64>().unwrap()),
+                _ => panic!("Command not understood: {}", parts[1]),
+            },
+            condition: Condition {
+                register: parts[4].to_string(),
+                operator: parts[5].into(),
+                value: match parts[6].parse() {
+                    Ok(x) => x,
+                    Err(_) => panic!("Value: {}", parts[6]),
+                },
+            },
+        }
+    }
+}
+
 impl Solution for Day08 {
-    fn solve_a(&self, _input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Answer {
         let mut registers: HashMap<String, i64> = HashMap::new();
 
-        _input
+        input
             .trim()
             .split('\n')
-            .map(|line| {
-                let parts = line.split(' ').collect_vec();
-                Statement {
-                    register: parts[0].to_string(),
-                    command: match parts[1] {
-                        "inc" => Command::Inc(parts[2].parse::<i64>().unwrap()),
-                        "dec" => Command::Dec(parts[2].parse::<i64>().unwrap()),
-                        _ => panic!("Command not understood: {}", parts[1]),
-                    },
-                    condition: Condition {
-                        register: parts[4].to_string(),
-                        operator: parts[5].into(),
-                        value: match parts[6].parse() {
-                            Ok(x) => x,
-                            Err(_) => panic!("Value: {}", parts[6]),
-                        },
-                    },
-                }
-            })
+            .map(Day08::parse_line)
             .for_each(|statement| statement.execute(&mut registers));
 
         (*registers.values().max().unwrap()).into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Answer {
         let mut registers: HashMap<String, i64> = HashMap::new();
         let mut max = 0;
 
-        _input
+        input
             .trim()
             .split('\n')
-            .map(|line| {
-                let parts = line.split(' ').collect_vec();
-                Statement {
-                    register: parts[0].to_string(),
-                    command: match parts[1] {
-                        "inc" => Command::Inc(parts[2].parse::<i64>().unwrap()),
-                        "dec" => Command::Dec(parts[2].parse::<i64>().unwrap()),
-                        _ => panic!("Command not understood: {}", parts[1]),
-                    },
-                    condition: Condition {
-                        register: parts[4].to_string(),
-                        operator: parts[5].into(),
-                        value: match parts[6].parse() {
-                            Ok(x) => x,
-                            Err(_) => panic!("Value: {}", parts[6]),
-                        },
-                    },
-                }
-            })
+            .map(Day08::parse_line)
             .for_each(|statement| {
                 statement.execute(&mut registers);
                 let current_value = *registers.get(&statement.register).unwrap_or(&0);
@@ -161,6 +147,6 @@ mod test {
 
     #[test]
     fn test_b() {
-        assert_eq!(Day08{}.solve_b(INPUT), Answer::Int(10));
+        assert_eq!(Day08 {}.solve_b(INPUT), Answer::Int(10));
     }
 }
