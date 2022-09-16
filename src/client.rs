@@ -154,7 +154,7 @@ fn get_input_cache_full_filename(year: Year, day: Day) -> PathBuf {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
 
     #[test]

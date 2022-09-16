@@ -55,7 +55,7 @@ impl Solution for Day05 {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
 
     #[test]

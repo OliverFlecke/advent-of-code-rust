@@ -89,7 +89,7 @@ impl Solution for Day03 {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use crate::solutions::{Answer, Solution};
 
     use super::Day03;

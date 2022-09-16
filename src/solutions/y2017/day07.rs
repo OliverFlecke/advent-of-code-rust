@@ -183,7 +183,7 @@ struct Node {
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
 
     const INPUT: &str = "pbga (66)
