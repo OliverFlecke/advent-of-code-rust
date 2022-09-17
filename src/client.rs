@@ -56,6 +56,7 @@ fn parse_submission_response_text(response: Response) -> SubmissionResult {
         // TODO: Output how much time to wait for
         SubmissionResult::TooRecent(0)
     } else if body.contains("not the right answer") {
+        println!("Body: {}", body);
         SubmissionResult::Incorrect
     } else {
         panic!("Unknown response:\n\n{}", body);
@@ -78,6 +79,8 @@ pub fn submit(year: Year, day: Day, level: Level, answer: &String) {
         level = level,
         answer = answer
     );
+
+    // panic!("Don't submit");
 
     match post_answer(year, day, level, answer) {
         Ok(res) => match parse_submission_response_text(res) {

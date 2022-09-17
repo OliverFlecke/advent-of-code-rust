@@ -35,8 +35,36 @@ impl Solution for Day09 {
         score.into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        let chars = input.chars().collect_vec();
+        let mut count: u64 = 0;
+        let mut i = 0;
+
+        while i < chars.len() {
+            match chars[i] {
+                '{' => {}
+                '}' => {}
+                '<' => {
+                    i += 1;
+                    let mut amount = 0;
+
+                    while i < chars.len() && chars[i] != '>' {
+                        if chars[i] == '!' {
+                            i += 1;
+                        } else {
+                            amount += 1;
+                        }
+                        i += 1;
+                    }
+
+                    count += amount;
+                }
+                _ => {}
+            }
+            i += 1;
+        }
+
+        count.into()
     }
 }
 
@@ -63,5 +91,16 @@ mod test {
             Day09 {}.solve_a("{{<a!>},{<a!>},{<a!>},{<ab>}}"),
             Answer::UInt(3),
         );
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day09 {}.solve_b("<>"), Answer::UInt(0));
+        assert_eq!(Day09 {}.solve_b("<random characters>"), Answer::UInt(17));
+        assert_eq!(Day09 {}.solve_b("<<<<>"), Answer::UInt(3));
+        assert_eq!(Day09 {}.solve_b("<{!>}>"), Answer::UInt(2));
+        assert_eq!(Day09 {}.solve_b("<!!>"), Answer::UInt(0));
+        assert_eq!(Day09 {}.solve_b("<!!!>>"), Answer::UInt(0));
+        assert_eq!(Day09 {}.solve_b("<{o\"i!a,<{i<a>"), Answer::UInt(10));
     }
 }
