@@ -6,7 +6,6 @@ pub struct Day09 {}
 
 impl Solution for Day09 {
     fn solve_a(&self, input: &str) -> Answer {
-        // println!("Analyzing: {}", input);
         let chars = input.chars().collect_vec();
         let mut score: u64 = 0;
         let mut depth: u64 = 0;
@@ -22,19 +21,11 @@ impl Solution for Day09 {
                     depth -= 1;
                 }
                 '<' => {
-                    // print!("Found garbage: ");
                     let mut next_negated = false;
                     while i < chars.len() && (chars[i] != '>' || next_negated) {
-                        // print!("{}", chars[i]);
-                        if next_negated {
-                            next_negated = false;
-                        } else {
-                            next_negated = chars[i] == '!';
-                        }
+                        next_negated = !next_negated && chars[i] == '!';
                         i += 1;
                     }
-                    // println!("{}", chars[i]);
-                    // println!("{} or {}", chars[i] != '>', next_negated);
                 }
                 _ => {}
             }
