@@ -21,16 +21,14 @@ impl Solution for Day09 {
                     score += depth;
                     depth -= 1;
                 }
+                '!' if garbage => {
+                    i += 1;
+                }
                 '<' => {
                     garbage = true;
                 }
                 '>' => {
                     garbage = false;
-                }
-                '!' => {
-                    if garbage {
-                        i += 1;
-                    }
                 }
                 _ => {}
             }
@@ -44,25 +42,21 @@ impl Solution for Day09 {
         let chars = input.chars().collect_vec();
         let mut count: u64 = 0;
         let mut i = 0;
+        let mut garbage = false;
 
         while i < chars.len() {
             match chars[i] {
-                '{' => {}
-                '}' => {}
-                '<' => {
+                '!' if garbage => {
                     i += 1;
-                    let mut amount = 0;
-
-                    while i < chars.len() && chars[i] != '>' {
-                        if chars[i] == '!' {
-                            i += 1;
-                        } else {
-                            amount += 1;
-                        }
-                        i += 1;
-                    }
-
-                    count += amount;
+                }
+                '<' if !garbage => {
+                    garbage = true;
+                }
+                '>' => {
+                    garbage = false;
+                }
+                _ if garbage => {
+                    count += 1;
                 }
                 _ => {}
             }
