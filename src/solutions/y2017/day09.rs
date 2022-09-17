@@ -10,20 +10,25 @@ impl Solution for Day09 {
         let mut score: u64 = 0;
         let mut depth: u64 = 0;
         let mut i = 0;
+        let mut garbage = false;
 
         while i < chars.len() {
             match chars[i] {
-                '{' => {
+                '{' if !garbage => {
                     depth += 1;
                 }
-                '}' => {
+                '}' if !garbage => {
                     score += depth;
                     depth -= 1;
                 }
                 '<' => {
-                    let mut next_negated = false;
-                    while i < chars.len() && (chars[i] != '>' || next_negated) {
-                        next_negated = !next_negated && chars[i] == '!';
+                    garbage = true;
+                }
+                '>' => {
+                    garbage = false;
+                }
+                '!' => {
+                    if garbage {
                         i += 1;
                     }
                 }
