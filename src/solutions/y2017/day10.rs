@@ -16,7 +16,6 @@ impl Solution for Day10 {
             &mut skip_size,
             &mut array,
             &input
-                .trim()
                 .split(',')
                 .map(|number| number.parse::<usize>().unwrap())
                 .collect(),
@@ -25,7 +24,7 @@ impl Solution for Day10 {
     }
 
     fn solve_b(&self, input: &str) -> Answer {
-        knot_hash(input.trim()).into()
+        knot_hash(input).into()
     }
 }
 

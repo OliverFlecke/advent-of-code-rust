@@ -141,7 +141,14 @@ fn download_input(year: Year, day: Day) -> String {
     let url = format!("{base}/input", base = get_base_url(year, day));
     let client = build_client();
 
-    client.get(url).send().unwrap().text().unwrap()
+    client
+        .get(url)
+        .send()
+        .unwrap()
+        .text()
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 fn store_input_in_cache(year: Year, day: Day, input: &String) -> std::io::Result<()> {
