@@ -4,6 +4,8 @@ use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day11 {}
 
+/// Representing the different directions one can move in a vertically
+/// aligned hex grid.
 enum HexDirection {
     North,
     NorthEast,
@@ -27,6 +29,7 @@ impl From<&str> for HexDirection {
     }
 }
 
+/// Cube based coordinates for reaching any position in a hex based grid.
 #[derive(Debug, Clone, Copy)]
 struct CubeCoordinate {
     q: i32,
@@ -58,6 +61,8 @@ impl CubeCoordinate {
     //     }
     // }
 
+    /// Calculates the coordinate in the hex grid by moving in the given
+    /// direction.
     fn move_in_dir(self, direction: HexDirection) -> Self {
         match direction {
             HexDirection::North => CubeCoordinate {
