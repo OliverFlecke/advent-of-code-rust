@@ -13,7 +13,7 @@ enum Direction {
     NorthWest,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 struct CubeCoordinate {
     q: i32,
     r: i32,
@@ -98,8 +98,25 @@ impl Solution for Day11 {
             .into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        input
+            .split(',')
+            .map(|x| match x {
+                "n" => Direction::North,
+                "ne" => Direction::NorthEast,
+                "se" => Direction::SouthEast,
+                "s" => Direction::South,
+                "sw" => Direction::SouthWest,
+                "nw" => Direction::NorthWest,
+                _ => panic!("Connect convert {x}"),
+            })
+            .fold((0, CubeCoordinate::zero()), |(max_dist, pos), dir| {
+                match CubeCoordinate::move_in_dir(pos, dir) {
+                    new => (new.distance_to_origin().max(max_dist), new),
+                }
+            })
+            .0
+            .into()
     }
 }
 
