@@ -4,13 +4,27 @@ use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day11 {}
 
-enum Direction {
+enum HexDirection {
     North,
     NorthEast,
     SouthEast,
     South,
     SouthWest,
     NorthWest,
+}
+
+impl From<&str> for HexDirection {
+    fn from(value: &str) -> Self {
+        match value {
+            "n" => HexDirection::North,
+            "ne" => HexDirection::NorthEast,
+            "se" => HexDirection::SouthEast,
+            "s" => HexDirection::South,
+            "sw" => HexDirection::SouthWest,
+            "nw" => HexDirection::NorthWest,
+            _ => panic!("Connect convert {value}"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -44,34 +58,34 @@ impl CubeCoordinate {
     //     }
     // }
 
-    fn move_in_dir(self, direction: Direction) -> Self {
+    fn move_in_dir(self, direction: HexDirection) -> Self {
         match direction {
-            Direction::North => CubeCoordinate {
+            HexDirection::North => CubeCoordinate {
                 q: self.q,
                 r: self.r - 1,
                 s: self.s + 1,
             },
-            Direction::South => CubeCoordinate {
+            HexDirection::South => CubeCoordinate {
                 q: self.q,
                 r: self.r + 1,
                 s: self.s - 1,
             },
-            Direction::NorthEast => CubeCoordinate {
+            HexDirection::NorthEast => CubeCoordinate {
                 q: self.q + 1,
                 r: self.r - 1,
                 s: self.s,
             },
-            Direction::SouthWest => CubeCoordinate {
+            HexDirection::SouthWest => CubeCoordinate {
                 q: self.q - 1,
                 r: self.r + 1,
                 s: self.s,
             },
-            Direction::SouthEast => CubeCoordinate {
+            HexDirection::SouthEast => CubeCoordinate {
                 q: self.q + 1,
                 r: self.r,
                 s: self.s - 1,
             },
-            Direction::NorthWest => CubeCoordinate {
+            HexDirection::NorthWest => CubeCoordinate {
                 q: self.q - 1,
                 r: self.r,
                 s: self.s + 1,
@@ -84,15 +98,7 @@ impl Solution for Day11 {
     fn solve_a(&self, input: &str) -> Answer {
         input
             .split(',')
-            .map(|x| match x {
-                "n" => Direction::North,
-                "ne" => Direction::NorthEast,
-                "se" => Direction::SouthEast,
-                "s" => Direction::South,
-                "sw" => Direction::SouthWest,
-                "nw" => Direction::NorthWest,
-                _ => panic!("Connect convert {x}"),
-            })
+            .map(|dir_str| dir_str.into())
             .fold(CubeCoordinate::zero(), CubeCoordinate::move_in_dir)
             .distance_to_origin()
             .into()
@@ -101,18 +107,10 @@ impl Solution for Day11 {
     fn solve_b(&self, input: &str) -> Answer {
         input
             .split(',')
-            .map(|x| match x {
-                "n" => Direction::North,
-                "ne" => Direction::NorthEast,
-                "se" => Direction::SouthEast,
-                "s" => Direction::South,
-                "sw" => Direction::SouthWest,
-                "nw" => Direction::NorthWest,
-                _ => panic!("Connect convert {x}"),
-            })
+            .map(|dir_str| dir_str.into())
             .fold((0, CubeCoordinate::zero()), |(max_dist, pos), dir| {
                 match CubeCoordinate::move_in_dir(pos, dir) {
-                    new => (new.distance_to_origin().max(max_dist), new),
+                    new_pos => (new_pos.distance_to_origin().max(max_dist), new_pos),
                 }
             })
             .0
