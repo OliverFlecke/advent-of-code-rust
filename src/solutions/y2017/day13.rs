@@ -4,46 +4,9 @@ use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day13 {}
 
-enum ScannerDirection {
-    Up,
-    Down,
-}
-struct SecurityScanner {
-    #[allow(dead_code)]
-    depth: usize,
-    range: usize,
-    position: usize,
-    direction: ScannerDirection,
-}
-
-impl SecurityScanner {
-    fn new(depth: usize, range: usize) -> Self {
-        SecurityScanner {
-            depth,
-            range,
-            position: 0,
-            direction: ScannerDirection::Up,
-        }
-    }
-    fn step(&mut self) {
-        match self.direction {
-            ScannerDirection::Up if self.position == self.range - 1 => {
-                self.direction = ScannerDirection::Down;
-                self.position -= 1;
-            }
-            ScannerDirection::Down if self.position == 0 => {
-                self.direction = ScannerDirection::Up;
-                self.position += 1;
-            }
-            ScannerDirection::Up => self.position += 1,
-            ScannerDirection::Down => self.position -= 1,
-        };
-    }
-}
-
-impl Solution for Day13 {
-    fn solve_a(&self, input: &str) -> Answer {
-        let mut firewall: HashMap<usize, SecurityScanner> = input
+impl Day13 {
+    fn parse_firewall(input: &str) -> HashMap<usize, SecurityScanner> {
+        input
             .lines()
             .map(|x| {
                 let mut parts = x.split(':');
@@ -53,29 +16,68 @@ impl Solution for Day13 {
                     SecurityScanner::new(depth, parts.next().unwrap().trim().parse().unwrap()),
                 )
             })
-            .collect();
+            .collect()
+    }
 
-        let max_depth = *firewall.keys().max().unwrap();
-        let mut position: usize = 0;
+    fn calculate_severity(
+        firewall: &HashMap<usize, SecurityScanner>,
+        delay: usize,
+    ) -> (bool, usize) {
+        let max_depth = firewall.values().max_by_key(|x| x.depth).unwrap().depth;
+        let mut position = 0;
         let mut severity: usize = 0;
+        let mut caught = false;
 
         while position <= max_depth {
             // Increment severity if caught
-            if let Some(scanner) = firewall.get(&position).filter(|s| s.position == 0) {
+            if let Some(scanner) = firewall.get(&position).filter(|s| s.caught(delay)) {
                 severity += scanner.range * position;
+                caught = true;
             }
 
-            firewall.values_mut().for_each(|x| {
-                x.step();
-            });
             position += 1;
         }
 
-        severity.into()
+        (caught, severity)
+    }
+}
+
+#[derive(Clone)]
+struct SecurityScanner {
+    depth: usize,
+    range: usize,
+}
+
+impl SecurityScanner {
+    fn new(depth: usize, range: usize) -> Self {
+        SecurityScanner { depth, range }
     }
 
+    fn caught(&self, delay: usize) -> bool {
+        (delay + self.depth) % (2 * (self.range - 1)) == 0
+    }
+}
+
+impl Solution for Day13 {
+    fn solve_a(&self, input: &str) -> Answer {
+        let firewall = Self::parse_firewall(input);
+
+        Self::calculate_severity(&firewall, 0).1.into()
+    }
+
+    // Bruteforcing, quite slow...
     fn solve_b(&self, input: &str) -> Answer {
-        todo!()
+        let firewall = Self::parse_firewall(input);
+        let mut delay: usize = 1;
+
+        loop {
+            let (caught, _) = Self::calculate_severity(&firewall, delay);
+            if !caught {
+                return delay.into();
+            }
+
+            delay += 1;
+        }
     }
 }
 
@@ -91,5 +93,10 @@ mod test {
     #[test]
     fn test_a() {
         assert_eq!(Day13 {}.solve_a(INPUT), Answer::UInt(24));
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day13 {}.solve_b(INPUT), Answer::UInt(10));
     }
 }
