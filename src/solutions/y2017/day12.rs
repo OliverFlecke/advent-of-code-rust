@@ -4,9 +4,10 @@ use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day12 {}
 
-impl Solution for Day12 {
-    fn solve_a(&self, input: &str) -> Answer {
-        let mut map = HashMap::new();
+type Relations = HashMap<usize, HashSet<usize>>;
+
+impl Day12 {
+    fn parse_input(input: &str) -> Relations {
         input
             .lines()
             .map(|line| {
@@ -19,7 +20,7 @@ impl Solution for Day12 {
                     .map(|x| x.trim().parse::<usize>().unwrap());
                 (from, to)
             })
-            .for_each(|(from, to)| {
+            .fold(HashMap::new(), |mut map, (from, to)| {
                 if !map.contains_key(&from) {
                     map.insert(from, HashSet::new());
                 }
@@ -31,25 +32,36 @@ impl Solution for Day12 {
                     }
                     map.get_mut(&n).unwrap().insert(from);
                 }
-            });
+                map
+            })
+    }
 
-        let mut visited: HashSet<usize> = HashSet::new();
+    fn find_group(map: Relations, from: usize) -> HashSet<usize> {
+        let mut group: HashSet<usize> = HashSet::new();
         let mut queue: Vec<usize> = Vec::new();
-        queue.push(0);
+        queue.push(from);
 
         while let Some(current) = queue.pop() {
-            if visited.contains(&current) {
+            if group.contains(&current) {
                 continue;
             }
-            visited.insert(current);
+            group.insert(current);
 
-            map
-                .get(&current)
+            map.get(&current)
                 .iter()
                 .for_each(|ns| queue.append(&mut ns.iter().map(|n| *n).collect::<Vec<usize>>()));
         }
 
-        visited.len().into()
+        group
+    }
+}
+
+impl Solution for Day12 {
+    fn solve_a(&self, input: &str) -> Answer {
+        let map = Self::parse_input(input);
+        let group = Self::find_group(map, 0);
+
+        group.len().into()
     }
 
     fn solve_b(&self, _input: &str) -> Answer {
