@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use itertools::Itertools;
-
 use crate::solutions::{Answer, Solution};
 
 pub struct Day03 {}
@@ -27,7 +25,7 @@ impl Solution for Day03 {
             .filter(|dist| *dist <= ((level - 1) / 2))
             .map(|dist| level - 1 - dist)
             .map(|x| x as u64)
-            .find_or_first(|_| true)
+            .find(|_| true)
             .unwrap()
             .into()
     }

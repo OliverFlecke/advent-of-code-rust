@@ -1,12 +1,10 @@
-use itertools::Itertools;
-
 use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day09 {}
 
 impl Solution for Day09 {
     fn solve_a(&self, input: &str) -> Answer {
-        let chars = input.chars().collect_vec();
+        let chars: Vec<char> = input.chars().collect();
         let mut score: u64 = 0;
         let mut depth: u64 = 0;
         let mut i = 0;
@@ -39,7 +37,7 @@ impl Solution for Day09 {
     }
 
     fn solve_b(&self, input: &str) -> Answer {
-        let chars = input.chars().collect_vec();
+        let chars: Vec<char> = input.chars().collect();
         let mut count: u64 = 0;
         let mut i = 0;
         let mut garbage = false;

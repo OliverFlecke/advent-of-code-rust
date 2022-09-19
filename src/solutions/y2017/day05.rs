@@ -1,5 +1,3 @@
-use itertools::Itertools;
-
 use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day05 {}
@@ -9,7 +7,7 @@ fn parse(input: &str) -> Vec<i64> {
         .split('\n')
         .filter(|x| !x.is_empty())
         .map(|x| x.parse::<i64>().unwrap())
-        .collect_vec()
+        .collect()
 }
 
 impl Solution for Day05 {

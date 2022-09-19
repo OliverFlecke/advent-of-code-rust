@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use itertools::Itertools;
-
 use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day08 {}
@@ -80,7 +78,7 @@ impl Statement {
 
 impl Day08 {
     fn parse_line(line: &str) -> Statement {
-        let parts = line.split(' ').collect_vec();
+        let parts: Vec<&str> = line.split(' ').collect();
         Statement {
             register: parts[0].to_string(),
             command: match parts[1] {

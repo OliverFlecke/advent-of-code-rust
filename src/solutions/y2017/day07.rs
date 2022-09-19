@@ -4,7 +4,6 @@ use std::{
     rc::Rc,
 };
 
-use itertools::Itertools;
 use regex::Regex;
 
 use crate::solutions::{answer::Answer, Solution};
@@ -26,7 +25,7 @@ impl Solution for Day07 {
                             cs.as_str()
                                 .split(',')
                                 .map(|s| s.trim().to_string())
-                                .collect_vec()
+                                .collect()
                         })
                         .unwrap_or_default(),
                 ),
@@ -44,7 +43,7 @@ impl Solution for Day07 {
 
         names
             .iter()
-            .find_or_first(|_| true)
+            .find(|_| true)
             .expect("there should be only one element remaining")
             .to_string()
             .into()
@@ -63,12 +62,7 @@ impl Solution for Day07 {
                         .expect("weight should be a number");
                     let children = caps
                         .name("children")
-                        .map(|cs| {
-                            cs.as_str()
-                                .split(',')
-                                .map(|s| s.trim().into())
-                                .collect_vec()
-                        })
+                        .map(|cs| cs.as_str().split(',').map(|s| s.trim().into()).collect())
                         .unwrap_or_default();
 
                     (name.into(), weight, children)
@@ -95,7 +89,7 @@ impl Solution for Day07 {
             nodes: &HashMap<String, (String, u64, Vec<String>)>,
         ) -> Rc<RefCell<Node>> {
             let (name, weight, cs) = nodes.get(&head).unwrap();
-            let children = cs.iter().map(|c| make_node(c.clone(), nodes)).collect_vec();
+            let children: Vec<_> = cs.iter().map(|c| make_node(c.clone(), nodes)).collect();
             let calculated_weight = children
                 .iter()
                 .fold(*weight, |sum, c| sum + c.borrow().calculated_weight);
@@ -138,9 +132,7 @@ impl Solution for Day07 {
                     .borrow()
                     .children
                     .iter()
-                    .find_or_first(|c| {
-                        weights_on_level.get(&c.borrow().calculated_weight) == Some(&1)
-                    })
+                    .find(|c| weights_on_level.get(&c.borrow().calculated_weight) == Some(&1))
                     .map(|c| c.clone())
                     .unwrap();
 
@@ -169,7 +161,7 @@ impl Solution for Day07 {
             }
         }
 
-        let tree = build_tree(input.trim().split('\n').collect_vec().as_slice());
+        let tree = build_tree(input.trim().split('\n').collect::<Vec<_>>().as_slice());
         find_imbalance(&tree).expect("no imbalance found").into()
     }
 }

@@ -3,8 +3,6 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use itertools::Itertools;
-
 use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day06 {}
@@ -53,7 +51,7 @@ impl Solution for Day06 {
             .trim()
             .split('\t')
             .map(|n| n.parse::<u32>().unwrap())
-            .collect_vec();
+            .collect();
 
         let mut seen = HashSet::new();
         seen.insert(hash(&blocks));
@@ -76,7 +74,7 @@ impl Solution for Day06 {
             .trim()
             .split('\t')
             .map(|n| n.parse::<u32>().unwrap())
-            .collect_vec();
+            .collect();
 
         let mut seen = HashMap::new();
         seen.insert(hash(&blocks), 0);

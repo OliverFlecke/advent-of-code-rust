@@ -1,7 +1,5 @@
 use std::collections::{HashMap, HashSet};
 
-use itertools::Itertools;
-
 use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day12 {}
@@ -71,7 +69,7 @@ impl Solution for Day12 {
         let mut nodes: HashSet<usize> = map.keys().cloned().collect();
 
         let mut count: usize = 0;
-        while let Some(start) = nodes.iter().find_or_first(|_| true) {
+        while let Some(start) = nodes.iter().find(|_| true) {
             count += 1;
             let group = Self::find_group(&map, *start);
             nodes = nodes.difference(&group).cloned().collect();
