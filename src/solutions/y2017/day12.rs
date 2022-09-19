@@ -1,5 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
+use itertools::Itertools;
+
 use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day12 {}
@@ -36,7 +38,7 @@ impl Day12 {
             })
     }
 
-    fn find_group(map: Relations, from: usize) -> HashSet<usize> {
+    fn find_group(map: &Relations, from: usize) -> HashSet<usize> {
         let mut group: HashSet<usize> = HashSet::new();
         let mut queue: Vec<usize> = Vec::new();
         queue.push(from);
@@ -59,13 +61,23 @@ impl Day12 {
 impl Solution for Day12 {
     fn solve_a(&self, input: &str) -> Answer {
         let map = Self::parse_input(input);
-        let group = Self::find_group(map, 0);
+        let group = Self::find_group(&map, 0);
 
         group.len().into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        let map = Self::parse_input(input);
+        let mut nodes: HashSet<usize> = map.keys().cloned().collect();
+
+        let mut count: usize = 0;
+        while let Some(start) = nodes.iter().find_or_first(|_| true) {
+            count += 1;
+            let group = Self::find_group(&map, *start);
+            nodes = nodes.difference(&group).cloned().collect();
+        }
+
+        count.into()
     }
 }
 
@@ -84,5 +96,17 @@ mod test {
 6 <-> 4, 5";
 
         assert_eq!(Day12 {}.solve_a(input), Answer::UInt(6));
+    }
+
+    #[test]
+    fn test_b() {
+        let input = "0 <-> 2
+1 <-> 1
+2 <-> 0, 3, 4
+3 <-> 2, 4
+4 <-> 2, 3, 6
+5 <-> 6
+6 <-> 4, 5";
+        assert_eq!(Day12 {}.solve_b(input), Answer::UInt(2));
     }
 }
