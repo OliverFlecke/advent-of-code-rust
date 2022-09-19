@@ -68,12 +68,22 @@ impl Solution for Day13 {
     // Bruteforcing, quite slow...
     fn solve_b(&self, input: &str) -> Answer {
         let firewall = Self::parse_firewall(input);
+        let max_depth = firewall.values().max_by_key(|x| x.depth).unwrap().depth;
         let mut delay: usize = 1;
 
         loop {
-            let (caught, _) = Self::calculate_severity(&firewall, delay);
-            if !caught {
-                return delay.into();
+            let mut position = 0;
+
+            while position <= max_depth {
+                if firewall.get(&position).filter(|s| s.caught(delay)).is_some() {
+                    break;
+                }
+
+                position += 1;
+            }
+
+            if position > max_depth {
+                return delay.into()
             }
 
             delay += 1;
