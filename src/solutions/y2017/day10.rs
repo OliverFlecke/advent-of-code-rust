@@ -95,6 +95,15 @@ impl KnotHash {
     }
 }
 
+impl IntoIterator for KnotHash {
+    type Item = u8;
+    type IntoIter = <Vec<u8> as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.value.into_iter()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
