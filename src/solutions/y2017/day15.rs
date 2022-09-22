@@ -14,8 +14,11 @@ impl Solution for Day15 {
         Self::count_matches(start, size).into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        let size = 5_000_000;
+        let start = Self::parse(input);
+
+        Self::count_matches_b(start, size).into()
     }
 }
 
@@ -73,6 +76,35 @@ impl Day15 {
             .filter(|(a, b)| Self::lower_bits_matches(*a, *b))
             .count()
     }
+
+    fn generate_seq_b(
+        initial_state: Pair,
+        size: u32,
+    ) -> Scan<Range<u32>, Pair, fn(&mut Pair, u32) -> Option<Pair>> {
+        (0..size).into_iter().scan(initial_state, |state, _| {
+            *state = (
+                Self::generate_next_b(state.0, Self::A_FACTOR, 4),
+                Self::generate_next_b(state.1, Self::B_FACTOR, 8),
+            );
+
+            Some(*state)
+        })
+    }
+
+    fn generate_next_b(current: u32, factor: u32, criteria: u32) -> u32 {
+        let mut next = Self::generate_next(current, factor);
+        while next % criteria != 0 {
+            next = Self::generate_next(next, factor);
+        }
+
+        next
+    }
+
+    fn count_matches_b(initial: (u32, u32), size: u32) -> usize {
+        Self::generate_seq_b(initial, size)
+            .filter(|(a, b)| Self::lower_bits_matches(*a, *b))
+            .count()
+    }
 }
 
 type Pair = (u32, u32);
@@ -107,5 +139,26 @@ Generator B starts with 8921";
     #[test]
     fn test_a() {
         assert_eq!(Day15 {}.solve_a(INPUT), Answer::UInt(588));
+    }
+
+    #[test]
+    fn generate_sequence_b() {
+        let mut x = Day15::generate_seq_b((65, 8921), 5);
+
+        assert_eq!(x.next().unwrap(), (1352636452, 1233683848));
+        assert_eq!(x.next().unwrap(), (1992081072, 862516352));
+        assert_eq!(x.next().unwrap(), (530830436, 1159784568));
+        assert_eq!(x.next().unwrap(), (1980017072, 1616057672));
+        assert_eq!(x.next().unwrap(), (740335192, 412269392));
+    }
+
+    #[test]
+    fn count_matches_b() {
+        assert_eq!(Day15::count_matches_b((65, 8921), 1056), 1);
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day15 {}.solve_b(INPUT), Answer::UInt(309));
     }
 }
