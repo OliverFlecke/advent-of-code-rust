@@ -11,17 +11,30 @@ impl Solution for Day15 {
         let size = 40_000_000;
         let start = Self::parse(input);
 
-        Self::count_matches(start, size).into()
+        Self::higher_order_count_matches(
+            start,
+            size,
+            |a| Self::generate_next(a, Self::A_FACTOR),
+            |b| Self::generate_next(b, Self::B_FACTOR),
+        )
+        .into()
     }
 
     fn solve_b(&self, input: &str) -> Answer {
         let size = 5_000_000;
         let start = Self::parse(input);
 
-        Self::count_matches_b(start, size).into()
+        Self::higher_order_count_matches(
+            start,
+            size,
+            |a| Self::generate_next_b(a, Self::A_FACTOR, 4),
+            |b| Self::generate_next_b(b, Self::B_FACTOR, 8),
+        )
+        .into()
     }
 }
 
+#[allow(dead_code)]
 impl Day15 {
     const A_FACTOR: u32 = 16807;
     const B_FACTOR: u32 = 48271;
@@ -102,6 +115,27 @@ impl Day15 {
 
     fn count_matches_b(initial: (u32, u32), size: u32) -> usize {
         Self::generate_seq_b(initial, size)
+            .filter(|(a, b)| Self::lower_bits_matches(*a, *b))
+            .count()
+    }
+
+    /// This is a refactor of the above code to allow for higher order functions
+    /// to be passed for calculating the sequence. When splitting this into
+    /// smaller methods, it causes issues with capture of variables when calling
+    /// the passed function pointer.
+    fn higher_order_count_matches(
+        initial_state: Pair,
+        size: u32,
+        next_a: fn(u32) -> u32,
+        next_b: fn(u32) -> u32,
+    ) -> usize {
+        (0..size)
+            .into_iter()
+            .scan(initial_state, |state, _| {
+                *state = (next_a(state.0), next_b(state.1));
+
+                Some(*state)
+            })
             .filter(|(a, b)| Self::lower_bits_matches(*a, *b))
             .count()
     }
