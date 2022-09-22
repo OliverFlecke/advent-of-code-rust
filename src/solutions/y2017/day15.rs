@@ -1,0 +1,111 @@
+use std::{convert::TryInto, iter::Scan, ops::Range};
+
+use regex::Regex;
+
+use crate::solutions::{answer::Answer, Solution};
+
+pub struct Day15 {}
+
+impl Solution for Day15 {
+    fn solve_a(&self, input: &str) -> Answer {
+        let size = 40_000_000;
+        let start = Self::parse(input);
+
+        Self::count_matches(start, size).into()
+    }
+
+    fn solve_b(&self, _input: &str) -> Answer {
+        todo!()
+    }
+}
+
+impl Day15 {
+    const A_FACTOR: u32 = 16807;
+    const B_FACTOR: u32 = 48271;
+
+    fn parse(input: &str) -> (u32, u32) {
+        let re = Regex::new(r"(?P<value>\d+)").expect("is hardcoded to a valid regex");
+        let get_start_value = |line: &str| -> u32 {
+            match re.captures(line) {
+                Some(captures) => captures["value"].parse().expect("value should be a number"),
+                None => panic!("Regex could not be matched"),
+            }
+        };
+
+        let mut lines = input.lines();
+
+        (
+            get_start_value(lines.next().unwrap()),
+            get_start_value(lines.next().unwrap()),
+        )
+    }
+
+    fn generate_seq(
+        initial_state: Pair,
+        size: u32,
+    ) -> Scan<Range<u32>, Pair, fn(&mut Pair, u32) -> Option<Pair>> {
+        (0..size).into_iter().scan(initial_state, |state, _| {
+            *state = (
+                Self::generate_next(state.0, Self::A_FACTOR),
+                Self::generate_next(state.1, Self::B_FACTOR),
+            );
+
+            Some(*state)
+        })
+    }
+
+    fn generate_next(current: u32, factor: u32) -> u32 {
+        ((current as u64) * (factor as u64) % (i32::MAX as u64))
+            .try_into()
+            .unwrap()
+    }
+
+    fn lower_bits_matches(a: u32, b: u32) -> bool {
+        let mask: u32 = u16::MAX as u32;
+        let a_lower = (a & mask) as u16;
+        let b_lower = (b & mask) as u16;
+
+        a_lower == b_lower
+    }
+
+    fn count_matches(initial: (u32, u32), size: u32) -> usize {
+        Self::generate_seq(initial, size)
+            .filter(|(a, b)| Self::lower_bits_matches(*a, *b))
+            .count()
+    }
+}
+
+type Pair = (u32, u32);
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    const INPUT: &str = "Generator A starts with 65
+Generator B starts with 8921";
+
+    #[test]
+    fn parsing() {
+        assert_eq!(Day15::parse(INPUT), (65, 8921));
+    }
+
+    #[test]
+    fn generate_sequence() {
+        let mut x = Day15::generate_seq((65, 8921), 5);
+        assert_eq!(x.next().unwrap(), (1092455, 430625591));
+        assert_eq!(x.next().unwrap(), (1181022009, 1233683848));
+        assert_eq!(x.next().unwrap(), (245556042, 1431495498));
+        assert_eq!(x.next().unwrap(), (1744312007, 137874439));
+        assert_eq!(x.next().unwrap(), (1352636452, 285222916));
+    }
+
+    #[test]
+    fn count_matches() {
+        assert_eq!(Day15::count_matches((65, 8921), 5), 1);
+    }
+
+    #[test]
+    fn test_a() {
+        assert_eq!(Day15 {}.solve_a(INPUT), Answer::UInt(588));
+    }
+}
