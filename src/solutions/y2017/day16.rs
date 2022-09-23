@@ -9,8 +9,9 @@ impl Solution for Day16 {
         Self::helper_a(input, 16).into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        let times = 1_000_000_000;
+        Self::helper_b(input, 16, times).into()
     }
 }
 
@@ -53,6 +54,28 @@ impl Day16 {
     fn helper_a(input: &str, size: usize) -> String {
         Self::dance(Self::parse(input), size)
     }
+
+    fn helper_b(input: &str, size: usize, times: usize) -> String {
+        let moves: Vec<DanceMove> = Self::parse(input).collect();
+        let mut dancers = Self::create_dancers(size);
+        let mut seen = vec![dancers.clone()];
+
+        for _ in 0..times {
+            moves.iter().for_each(|m| m.dance(&mut dancers));
+
+            if seen.contains(&dancers) {
+                if let Some((rep, _)) = seen.iter().enumerate().find(|&(_, d)| d == &dancers) {
+                    let cycle_length = seen.len() - rep;
+                    let index = rep + (times % cycle_length);
+                    return seen[index].iter().collect();
+                }
+            } else {
+                seen.push(dancers.clone());
+            }
+        }
+
+        dancers.iter().collect()
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -63,13 +86,13 @@ enum DanceMove {
 }
 
 impl DanceMove {
-    fn dance(self, dancers: &mut Vec<char>) {
+    fn dance(&self, dancers: &mut Vec<char>) {
         match self {
-            DanceMove::Spin(x) => dancers.rotate_right(x),
-            DanceMove::Exchange(i, j) => dancers.swap(i, j),
+            DanceMove::Spin(x) => dancers.rotate_right(*x),
+            DanceMove::Exchange(i, j) => dancers.swap(*i, *j),
             DanceMove::Partner(a, b) => {
-                let i = dancers.iter().position(|x| *x == a).unwrap();
-                let j = dancers.iter().position(|x| *x == b).unwrap();
+                let i = dancers.iter().position(|x| *x == *a).unwrap();
+                let j = dancers.iter().position(|x| *x == *b).unwrap();
                 dancers.swap(i, j);
             }
         }
@@ -112,5 +135,10 @@ mod test {
     #[test]
     fn helper_a() {
         assert_eq!(Day16::helper_a(INPUT, 5), "baedc");
+    }
+
+    #[test]
+    fn helper_b() {
+        assert_eq!(Day16::helper_b(INPUT, 5, 2), "ceadb");
     }
 }
