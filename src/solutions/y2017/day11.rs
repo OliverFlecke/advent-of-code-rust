@@ -114,9 +114,8 @@ impl Solution for Day11 {
             .split(',')
             .map(|dir_str| dir_str.into())
             .fold((0, CubeCoordinate::zero()), |(max_dist, pos), dir| {
-                match CubeCoordinate::move_in_dir(pos, dir) {
-                    new_pos => (new_pos.distance_to_origin().max(max_dist), new_pos),
-                }
+                let new_pos = CubeCoordinate::move_in_dir(pos, dir);
+                (new_pos.distance_to_origin().max(max_dist), new_pos)
             })
             .0
             .into()

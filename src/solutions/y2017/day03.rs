@@ -13,7 +13,6 @@ impl Solution for Day03 {
 
         let level = (1..)
             .step_by(2)
-            .map(|x| x)
             .take_while(|x| *x * *x < n)
             .map(|x| x + 2)
             .last()
@@ -33,8 +32,7 @@ impl Solution for Day03 {
     fn solve_b(&self, input: &str) -> Answer {
         fn sum_of_neighbors(a: i32, b: i32, grid: &HashMap<(i32, i32), u32>) -> u32 {
             (-1..=1)
-                .map(|x| (-1..=1).map(move |y| (x, y)))
-                .flatten()
+                .flat_map(|x| (-1..=1).map(move |y| (x, y)))
                 .filter(|p| *p != (0, 0))
                 .map(|(x, y)| grid.get(&(a + x, b + y)).unwrap_or(&0))
                 .sum::<u32>()

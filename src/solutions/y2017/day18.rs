@@ -49,7 +49,7 @@ impl From<&str> for RegOrVal {
         match value.parse::<i64>() {
             Ok(n) => RegOrVal::Value(n),
             Err(_) => match value.len() {
-                1 => RegOrVal::Register(value.chars().nth(0).unwrap()),
+                1 => RegOrVal::Register(value.chars().next().unwrap()),
                 _ => panic!("str is wrong length"),
             },
         }
@@ -74,29 +74,29 @@ impl Inst {
     fn execute(&self, registers: &mut Registers, index: &mut usize) -> ThreadState {
         match self {
             Inst::Set(x, y) => {
-                registers.insert(x.get_register(), y.get_value(&registers));
+                registers.insert(x.get_register(), y.get_value(registers));
             }
             Inst::Add(x, y) => {
                 registers.insert(
                     x.get_register(),
-                    x.get_value(&registers) + y.get_value(&registers),
+                    x.get_value(registers) + y.get_value(registers),
                 );
             }
             Inst::Mul(x, y) => {
                 registers.insert(
                     x.get_register(),
-                    x.get_value(&registers) * y.get_value(&registers),
+                    x.get_value(registers) * y.get_value(registers),
                 );
             }
             Inst::Mod(x, y) => {
                 registers.insert(
                     x.get_register(),
-                    x.get_value(&registers) % y.get_value(&registers),
+                    x.get_value(registers) % y.get_value(registers),
                 );
             }
             Inst::Jgz(x, y) => {
-                if x.get_value(&registers) > 0 {
-                    let dist = y.get_value(&registers);
+                if x.get_value(registers) > 0 {
+                    let dist = y.get_value(registers);
                     let current = *index as i64 + dist;
                     if current < 0 {
                         return ThreadState::Finished;

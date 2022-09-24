@@ -25,7 +25,7 @@ impl Solution for Day04 {
         input
             .split('\n')
             .filter(|phrase| !phrase.is_empty())
-            .filter(|phrase| is_valid_passphrase(&phrase))
+            .filter(|phrase| is_valid_passphrase(phrase))
             .count()
             .into()
     }
@@ -50,7 +50,7 @@ impl Solution for Day04 {
         input
             .split('\n')
             .filter(|phrase| !phrase.is_empty())
-            .filter(|phrase| is_valid_passphrase(&phrase))
+            .filter(|phrase| is_valid_passphrase(phrase))
             .count()
             .into()
     }

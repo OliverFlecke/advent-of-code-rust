@@ -21,16 +21,9 @@ impl Day12 {
                 (from, to)
             })
             .fold(HashMap::new(), |mut map, (from, to)| {
-                if !map.contains_key(&from) {
-                    map.insert(from, HashSet::new());
-                }
-
                 for n in to {
-                    map.get_mut(&from).unwrap().insert(n);
-                    if !map.contains_key(&n) {
-                        map.insert(n, HashSet::new());
-                    }
-                    map.get_mut(&n).unwrap().insert(from);
+                    map.entry(from).or_insert_with(HashSet::new).insert(n);
+                    map.entry(n).or_insert_with(HashSet::new).insert(from);
                 }
                 map
             })
@@ -49,7 +42,7 @@ impl Day12 {
 
             map.get(&current)
                 .iter()
-                .for_each(|ns| queue.append(&mut ns.iter().map(|n| *n).collect::<Vec<usize>>()));
+                .for_each(|ns| queue.append(&mut ns.iter().copied().collect::<Vec<usize>>()));
         }
 
         group

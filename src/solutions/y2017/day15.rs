@@ -34,6 +34,8 @@ impl Solution for Day15 {
     }
 }
 
+type GeneratorSequence = Scan<Range<u32>, Pair, fn(&mut Pair, u32) -> Option<Pair>>;
+
 #[allow(dead_code)]
 impl Day15 {
     const A_FACTOR: u32 = 16807;
@@ -56,10 +58,7 @@ impl Day15 {
         )
     }
 
-    fn generate_seq(
-        initial_state: Pair,
-        size: u32,
-    ) -> Scan<Range<u32>, Pair, fn(&mut Pair, u32) -> Option<Pair>> {
+    fn generate_seq(initial_state: Pair, size: u32) -> GeneratorSequence {
         (0..size).into_iter().scan(initial_state, |state, _| {
             *state = (
                 Self::generate_next(state.0, Self::A_FACTOR),
@@ -90,10 +89,7 @@ impl Day15 {
             .count()
     }
 
-    fn generate_seq_b(
-        initial_state: Pair,
-        size: u32,
-    ) -> Scan<Range<u32>, Pair, fn(&mut Pair, u32) -> Option<Pair>> {
+    fn generate_seq_b(initial_state: Pair, size: u32) -> GeneratorSequence {
         (0..size).into_iter().scan(initial_state, |state, _| {
             *state = (
                 Self::generate_next_b(state.0, Self::A_FACTOR, 4),

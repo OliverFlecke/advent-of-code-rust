@@ -71,7 +71,7 @@ impl Solution for Day07 {
             }
         }
 
-        fn build_tree<'a>(items: &[&str]) -> Rc<RefCell<Node>> {
+        fn build_tree(items: &[&str]) -> Rc<RefCell<Node>> {
             let nodes = items
                 .iter()
                 .map(|l| {
@@ -133,7 +133,7 @@ impl Solution for Day07 {
                     .children
                     .iter()
                     .find(|c| weights_on_level.get(&c.borrow().calculated_weight) == Some(&1))
-                    .map(|c| c.clone())
+                    .cloned()
                     .unwrap();
 
                 let uneven_weight = uneven_child.borrow().calculated_weight;

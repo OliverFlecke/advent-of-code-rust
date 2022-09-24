@@ -12,7 +12,7 @@ fn parse(input: &str) -> Vec<i64> {
 
 impl Solution for Day05 {
     fn solve_a(&self, input: &str) -> Answer {
-        let mut jumps = parse(&input);
+        let mut jumps = parse(input);
 
         let mut count: u64 = 0;
         let mut index: i64 = 0;
@@ -30,7 +30,7 @@ impl Solution for Day05 {
     }
 
     fn solve_b(&self, input: &str) -> Answer {
-        let mut jumps = parse(&input);
+        let mut jumps = parse(input);
 
         let mut count: u64 = 0;
         let mut index: i64 = 0;

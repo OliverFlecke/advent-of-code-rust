@@ -63,27 +63,27 @@ impl Grid {
         Grid { map }
     }
 
-    #[allow(dead_code)]
-    pub fn to_string(&self) -> String {
-        let mut s = String::with_capacity(Self::SIZE * (Self::SIZE + 1));
+    // #[allow(dead_code)]
+    // pub fn to_string(&self) -> String {
+    //     let mut s = String::with_capacity(Self::SIZE * (Self::SIZE + 1));
 
-        for row in 0..Self::SIZE {
-            for col in 0..Self::SIZE {
-                s.push(
-                    self.map
-                        .get(&(col, row))
-                        .map(|v| match v {
-                            CellType::Free => '.',
-                            CellType::Used => '#',
-                        })
-                        .unwrap(),
-                )
-            }
-            s.push('\n')
-        }
+    //     for row in 0..Self::SIZE {
+    //         for col in 0..Self::SIZE {
+    //             s.push(
+    //                 self.map
+    //                     .get(&(col, row))
+    //                     .map(|v| match v {
+    //                         CellType::Free => '.',
+    //                         CellType::Used => '#',
+    //                     })
+    //                     .unwrap(),
+    //             )
+    //         }
+    //         s.push('\n')
+    //     }
 
-        s
-    }
+    //     s
+    // }
 
     pub fn count_groups(&mut self) -> usize {
         let neighbors: [(i32, i32); 4] = [(0, 1), (0, -1), (1, 0), (-1, 0)];

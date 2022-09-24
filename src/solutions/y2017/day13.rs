@@ -71,7 +71,7 @@ impl Solution for Day13 {
         let mut delay: usize = 1;
 
         loop {
-            if firewall.values().find(|s| s.caught(delay)).is_none() {
+            if firewall.values().any(|s| s.caught(delay)) {
                 return delay.into();
             }
 
@@ -84,7 +84,7 @@ impl Solution for Day13 {
 mod test {
     use super::*;
 
-    const INPUT: &'static str = "0: 3
+    const INPUT: &str = "0: 3
 1: 2
 4: 4
 6: 4";

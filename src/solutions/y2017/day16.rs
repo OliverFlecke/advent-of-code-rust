@@ -46,9 +46,7 @@ impl Day16 {
     }
 
     fn create_dancers(size: usize) -> Vec<char> {
-        (0..size)
-            .map(|i| (('a' as u8) + (i as u8)) as char)
-            .collect()
+        (0..size).map(|i| (b'a' + (i as u8)) as char).collect()
     }
 
     fn helper_a(input: &str, size: usize) -> String {
@@ -86,7 +84,7 @@ enum DanceMove {
 }
 
 impl DanceMove {
-    fn dance(&self, dancers: &mut Vec<char>) {
+    fn dance(&self, dancers: &mut [char]) {
         match self {
             DanceMove::Spin(x) => dancers.rotate_right(*x),
             DanceMove::Exchange(i, j) => dancers.swap(*i, *j),

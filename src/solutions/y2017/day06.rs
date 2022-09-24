@@ -13,25 +13,22 @@ fn hash(blocks: &Vec<u32>) -> u64 {
     hasher.finish()
 }
 
-fn find_max(blocks: &Vec<u32>) -> (usize, u32) {
+fn find_max(blocks: &[u32]) -> (usize, u32) {
     let mut max_index = 0;
     let mut max_value = 0;
-    for i in 0..blocks.len() {
+    for (i, v) in blocks.iter().enumerate() {
         if blocks[i] > max_value {
             max_index = i;
-            max_value = blocks[i];
+            max_value = *v;
         }
     }
 
-    return (max_index, max_value);
+    (max_index, max_value)
 }
 
 fn next(blocks: &Vec<u32>) -> Vec<u32> {
-    let (max_index, max_value) = find_max(&blocks);
-    let mut new_blocks: Vec<u32> = Vec::with_capacity(blocks.len());
-    for i in 0..blocks.len() {
-        new_blocks.push(blocks[i]);
-    }
+    let (max_index, max_value) = find_max(blocks);
+    let mut new_blocks = blocks.clone();
     new_blocks[max_index] = 0;
 
     let mut index = (max_index + 1) % blocks.len();
@@ -42,7 +39,7 @@ fn next(blocks: &Vec<u32>) -> Vec<u32> {
         index = (index + 1) % blocks.len();
     }
 
-    return new_blocks;
+    new_blocks
 }
 
 impl Solution for Day06 {
@@ -100,12 +97,12 @@ mod test {
     #[test]
     fn test_a() {
         let input = "0\t2\t7\t0";
-        assert_eq!(Day06 {}.solve_a(&input), Answer::UInt(5));
+        assert_eq!(Day06 {}.solve_a(input), Answer::UInt(5));
     }
 
     #[test]
     fn test_b() {
         let input = "0\t2\t7\t0";
-        assert_eq!(Day06 {}.solve_b(&input), Answer::UInt(4));
+        assert_eq!(Day06 {}.solve_b(input), Answer::UInt(4));
     }
 }
