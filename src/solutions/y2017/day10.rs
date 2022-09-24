@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter, Result};
+
 use crate::solutions::{answer::Answer, Solution};
 
 const BLOCK_SIZE: usize = 16;
@@ -84,14 +86,15 @@ impl KnotHash {
 
         KnotHash { value: dense_hash }
     }
+}
 
-    pub fn to_string(self) -> String {
-        let mut hash = String::new();
-        for value in self.value {
-            hash.push_str(&format!("{:02x}", value));
+impl Display for KnotHash {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        for value in &self.value {
+            write!(f, "{:02x}", value)?;
         }
 
-        hash
+        Ok(())
     }
 }
 
