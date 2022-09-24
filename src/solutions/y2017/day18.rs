@@ -1,4 +1,8 @@
-use std::{collections::HashMap, iter::Map, str::Lines};
+use std::{
+    collections::{HashMap, VecDeque},
+    iter::Map,
+    str::Lines,
+};
 
 use crate::solutions::{answer::Answer, Solution};
 
@@ -6,12 +10,11 @@ pub struct Day18;
 
 impl Solution for Day18 {
     fn solve_a(&self, input: &str) -> Answer {
-        let instrutions: Vec<Inst> = parse(input).collect();
-        Inst::execute(instrutions).unwrap().into()
+        Inst::run_a(parse(input).collect()).unwrap().into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        Inst::run_b(parse(input).collect()).into()
     }
 }
 
@@ -68,58 +71,122 @@ enum Inst {
 }
 
 impl Inst {
-    fn execute(instructions: Vec<Inst>) -> Option<i64> {
+    fn execute(&self, registers: &mut Registers, index: &mut usize) -> ThreadState {
+        match self {
+            Inst::Set(x, y) => {
+                registers.insert(x.get_register(), y.get_value(&registers));
+            }
+            Inst::Add(x, y) => {
+                registers.insert(
+                    x.get_register(),
+                    x.get_value(&registers) + y.get_value(&registers),
+                );
+            }
+            Inst::Mul(x, y) => {
+                registers.insert(
+                    x.get_register(),
+                    x.get_value(&registers) * y.get_value(&registers),
+                );
+            }
+            Inst::Mod(x, y) => {
+                registers.insert(
+                    x.get_register(),
+                    x.get_value(&registers) % y.get_value(&registers),
+                );
+            }
+            Inst::Jgz(x, y) => {
+                if x.get_value(&registers) > 0 {
+                    let dist = y.get_value(&registers);
+                    let current = *index as i64 + dist;
+                    if current < 0 {
+                        return ThreadState::Finished;
+                    }
+
+                    *index = current as usize;
+                    return ThreadState::Ready;
+                }
+            }
+            _ => unimplemented!(
+                "execute not supported and must be implemented yourself: {:?}",
+                self
+            ),
+        };
+
+        *index += 1;
+        ThreadState::Ready
+    }
+
+    fn run_a(instructions: Vec<Inst>) -> Option<i64> {
         let mut registers = Registers::new();
         let mut sounds = Sounds::new();
         let mut index = 0;
 
         while index < instructions.len() {
             match &instructions[index] {
-                Inst::Snd(x) => sounds.push(x.get_value(&registers)),
-                Inst::Set(x, y) => {
-                    registers.insert(x.get_register(), y.get_value(&registers));
-                }
-                Inst::Add(x, y) => {
-                    registers.insert(
-                        x.get_register(),
-                        x.get_value(&registers) + y.get_value(&registers),
-                    );
-                }
-                Inst::Mul(x, y) => {
-                    registers.insert(
-                        x.get_register(),
-                        x.get_value(&registers) * y.get_value(&registers),
-                    );
-                }
-                Inst::Mod(x, y) => {
-                    registers.insert(
-                        x.get_register(),
-                        x.get_value(&registers) % y.get_value(&registers),
-                    );
+                Inst::Snd(x) => {
+                    sounds.push(x.get_value(&registers));
+                    index += 1;
                 }
                 Inst::Rcv(x) => {
                     if x.get_value(&registers) != 0 {
                         return sounds.pop();
                     }
+                    index += 1;
                 }
-                Inst::Jgz(x, y) => {
-                    if x.get_value(&registers) > 0 {
-                        let dist = y.get_value(&registers);
-                        let current = index as i64 + dist;
-                        if current < 0 {
-                            panic!("Program pointer out of range!");
-                        }
-
-                        index = current as usize;
-                        continue;
-                    }
-                }
+                inst => match inst.execute(&mut registers, &mut index) {
+                    ThreadState::Ready => continue,
+                    _ => break,
+                },
             };
-
-            index += 1;
         }
 
         unreachable!();
+    }
+
+    fn run_b(instructions: Vec<Inst>) -> u64 {
+        let mut a_context = ThreadContext::new(0);
+        let mut b_context = ThreadContext::new(1);
+
+        fn run(
+            context: &mut ThreadContext,
+            other: &mut ThreadContext,
+            instructions: &Vec<Inst>,
+        ) -> ThreadState {
+            while context.index < instructions.len() {
+                match &instructions[context.index] {
+                    Inst::Snd(x) => {
+                        other.queue.push_back(x.get_value(&context.registers));
+                        context.send_count += 1;
+                        context.index += 1;
+                    }
+                    Inst::Rcv(x) => {
+                        if let Some(value) = context.queue.pop_front() {
+                            context.registers.insert(x.get_register(), value);
+                            context.index += 1;
+                        } else {
+                            return ThreadState::Waiting;
+                        }
+                    }
+                    inst => {
+                        match inst.execute(&mut context.registers, &mut context.index) {
+                            ThreadState::Ready => continue,
+                            state => return state,
+                        };
+                    }
+                };
+            }
+
+            ThreadState::Finished
+        }
+
+        while a_context.can_run() || b_context.can_run() {
+            // println!("Switching to A {:?}", a_context);
+            a_context.state = run(&mut a_context, &mut b_context, &instructions);
+            // println!("Switching to B {:?}", b_context);
+            b_context.state = run(&mut b_context, &mut a_context, &instructions);
+        }
+
+        b_context.send_count
     }
 }
 
@@ -137,6 +204,42 @@ impl From<&str> for Inst {
             Some(x) => panic!("instrution '{}' not supported", x),
             None => todo!(),
         }
+    }
+}
+
+#[derive(PartialEq, Debug)]
+enum ThreadState {
+    Ready,
+    Waiting,
+    Finished,
+}
+
+#[derive(Debug)]
+struct ThreadContext {
+    state: ThreadState,
+    registers: Registers,
+    queue: VecDeque<i64>,
+    index: usize,
+    send_count: u64,
+}
+
+impl ThreadContext {
+    fn new(thread_id: i64) -> Self {
+        let mut registers = Registers::new();
+        registers.insert('p', thread_id);
+
+        ThreadContext {
+            state: ThreadState::Ready,
+            registers,
+            queue: VecDeque::new(),
+            index: 0,
+            send_count: 0,
+        }
+    }
+
+    fn can_run(&self) -> bool {
+        self.state == ThreadState::Ready
+            || (self.state == ThreadState::Waiting && !self.queue.is_empty())
     }
 }
 
@@ -198,5 +301,17 @@ jgz a -2";
     #[test]
     fn test_a() {
         assert_eq!(Day18 {}.solve_a(INPUT), Answer::Int(4));
+    }
+
+    #[test]
+    fn test_b() {
+        let input = "snd 1
+snd 2
+snd p
+rcv a
+rcv b
+rcv c
+rcv d";
+        assert_eq!(Day18 {}.solve_b(input), Answer::UInt(3));
     }
 }
