@@ -4,6 +4,8 @@ use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day19;
 
+type Map = Vec<Vec<char>>;
+
 #[derive(Debug, Clone, Copy)]
 enum Direction {
     Up,
@@ -79,44 +81,41 @@ impl ops::Add<(i64, i64)> for Position {
 
 impl Solution for Day19 {
     fn solve_a(&self, input: &str) -> Answer {
-        // println!("Map:\n{input}");
-        let map: &Vec<Vec<char>> = &input.lines().map(|line| line.chars().collect()).collect();
-        let mut pos = Position {
-            x: map[0]
-                .iter()
-                .enumerate()
-                .find(|(_, x)| **x == '|')
-                .unwrap()
-                .0 as i64,
-            y: 0,
-        };
+        Self::solve(input).0
+    }
+
+    fn solve_b(&self, input: &str) -> Answer {
+        Self::solve(input).1
+    }
+}
+
+impl Day19 {
+    fn solve(input: &str) -> (Answer, Answer) {
+        let map: &Map = &input.lines().map(|line| line.chars().collect()).collect();
+        let mut pos = Self::find_start_position(map);
         let mut dir = Direction::Down;
         let mut letters: String = String::new();
-
-        // println!("Start: {pos:?}");
+        let mut count: usize = 1;
 
         loop {
             let next = pos.next_in_dir(dir);
             let symbol = next.get_symbol(map);
-            // println!("Looking at {next:?} = '{symbol:?}'");
 
             match symbol {
                 Some(' ') | None => {
-                    // Need to change direction
                     if let Some(&(new_dir, next, symbol)) = dir
                         .orthogonal_directions()
                         .map(|d| (d, pos.next_in_dir(d)))
                         .map(|(d, p)| (d, p, p.get_symbol(map)))
                         .iter()
-                        // .inspect(|x| println!("Check sides {x:?} with '{:?}'", x.1.get_symbol(map)))
                         .find(|(_, _, s)| s.map(|s| s != ' ').unwrap_or(false))
                     {
-                        // println!("Now going {new_dir:?}");
                         pos = next;
                         dir = new_dir;
+                        count += 1;
 
                         if let Some(s) = symbol {
-                            push_letter(&mut letters, s);
+                            Self::push_letter(&mut letters, s);
                         }
                     } else {
                         break;
@@ -124,23 +123,32 @@ impl Solution for Day19 {
                 }
                 Some(c) => {
                     pos = next;
-                    push_letter(&mut letters, c);
+                    count += 1;
+                    Self::push_letter(&mut letters, c);
                 }
             }
         }
 
-        letters.into()
+        (letters.into(), count.into())
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn find_start_position(map: &Map) -> Position {
+        Position {
+            x: map[0]
+                .iter()
+                .enumerate()
+                .find(|(_, x)| **x == '|')
+                .unwrap()
+                .0 as i64,
+            y: 0,
+        }
     }
-}
 
-fn push_letter(letters: &mut String, c: char) {
-    match c {
-        '|' | '-' | '+' | ' ' => {}
-        _ => letters.push(c),
+    fn push_letter(letters: &mut String, c: char) {
+        match c {
+            '|' | '-' | '+' | ' ' => {}
+            _ => letters.push(c),
+        }
     }
 }
 
@@ -158,5 +166,10 @@ F---|----E|--+
     #[test]
     fn test_a() {
         assert_eq!(Day19 {}.solve_a(INPUT), Answer::String("ABCDEF".to_owned()));
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day19 {}.solve_b(INPUT), Answer::UInt(38));
     }
 }
