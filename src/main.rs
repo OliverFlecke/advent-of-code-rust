@@ -16,6 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let start_a = Instant::now();
     let answer_a = solver.solve_a(&problem_input);
     println!("Part A: {:?}", start_a.elapsed());
+    println!("Part A answer: '{:?}'", answer_a);
 
     submit(year, day, Level::A, &answer_a.to_string());
 

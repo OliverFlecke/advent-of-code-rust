@@ -147,7 +147,6 @@ fn download_input(year: Year, day: Day) -> String {
         .unwrap()
         .text()
         .unwrap()
-        .trim()
         .to_string()
 }
 
