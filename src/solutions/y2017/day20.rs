@@ -1,4 +1,8 @@
-use std::fmt::Display;
+use std::{
+    collections::HashSet,
+    fmt::{Display, Error},
+    str::FromStr,
+};
 
 use regex::Regex;
 
@@ -6,7 +10,7 @@ use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day20;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Hash)]
 struct Vec3D {
     x: i64,
     y: i64,
@@ -14,17 +18,31 @@ struct Vec3D {
 }
 
 impl Vec3D {
-    fn parse(input: &str) -> Vec3D {
-        let mut splits = input.split(',');
-        Vec3D {
+    fn magnitude(&self) -> usize {
+        (self.x.abs() + self.y.abs() + self.z.abs()) as usize
+    }
+
+    fn as_triple(&self) -> (i64, i64, i64) {
+        (self.x, self.y, self.z)
+    }
+}
+
+impl Ord for Vec3D {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.as_triple().cmp(&other.as_triple())
+    }
+}
+
+impl FromStr for Vec3D {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut splits = s.split(',');
+        Ok(Vec3D {
             x: splits.next().unwrap().parse().unwrap(),
             y: splits.next().unwrap().parse().unwrap(),
             z: splits.next().unwrap().parse().unwrap(),
-        }
-    }
-
-    fn magnitude(&self) -> usize {
-        (self.x.abs() + self.y.abs() + self.z.abs()) as usize
+        })
     }
 }
 
@@ -34,10 +52,10 @@ impl Display for Vec3D {
     }
 }
 
-impl std::ops::Add<&Vec3D> for Vec3D {
+impl std::ops::Add<Vec3D> for Vec3D {
     type Output = Vec3D;
 
-    fn add(self, rhs: &Vec3D) -> Self::Output {
+    fn add(self, rhs: Vec3D) -> Self::Output {
         Vec3D {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
@@ -46,7 +64,15 @@ impl std::ops::Add<&Vec3D> for Vec3D {
     }
 }
 
-#[derive(Debug, PartialEq)]
+impl std::ops::AddAssign<Vec3D> for Vec3D {
+    fn add_assign(&mut self, rhs: Vec3D) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+        self.z += rhs.z;
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 struct Particle {
     id: usize,
     position: Vec3D,
@@ -63,10 +89,19 @@ impl Particle {
         let captures = re.captures(input).unwrap();
         Particle {
             id,
-            position: Vec3D::parse(&captures["position"]),
-            velocity: Vec3D::parse(&captures["velocity"]),
-            acceleration: Vec3D::parse(&captures["acceleration"]),
+            position: Vec3D::from_str(&captures["position"]).unwrap(),
+            velocity: Vec3D::from_str(&captures["velocity"]).unwrap(),
+            acceleration: Vec3D::from_str(&captures["acceleration"]).unwrap(),
         }
+    }
+
+    fn collide(&self, other: &Particle) -> bool {
+        self.position == other.position
+    }
+
+    fn tick(&mut self) {
+        self.velocity += self.acceleration;
+        self.position += self.velocity;
     }
 }
 
@@ -118,8 +153,40 @@ impl Solution for Day20 {
         particles[0].id.into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        let iterations = 100_000;
+        let mut particles = Self::parse(input);
+
+        for _ in 0..iterations {
+            let mut collided = HashSet::new();
+            particles.iter().for_each(|a| {
+                particles.iter().for_each(|b| {
+                    if a.id != b.id && a.collide(b) {
+                        collided.insert(*a);
+                        collided.insert(*b);
+                    }
+                })
+            });
+
+            // particles.sort_unstable_by_key(|p| p.position);
+            // for i in 0..(particles.len() - 1) {
+            //     while (i + 1 < particles.len()) && particles[i].collide(&particles[i + 1]) {
+            //         while (i + 1 < particles.len()) && particles[i].collide(&particles[i + 1]) {
+            //             // println!("Removing {}", particles[i + 1].id);
+            //             particles.remove(i + 1);
+            //         }
+            //         // println!("Removing {}", particles[i].id);
+            //         particles.remove(i + 1);
+            //     }
+            // }
+
+            particles.retain(|p| !collided.contains(p));
+            for p in &mut particles {
+                p.tick();
+            }
+        }
+
+        particles.len().into()
     }
 }
 
@@ -129,7 +196,10 @@ mod test {
 
     #[test]
     fn parse_vec3d() {
-        assert_eq!(Vec3D::parse("1,2,-3"), Vec3D { x: 1, y: 2, z: -3 });
+        assert_eq!(
+            Vec3D::from_str("1,2,-3").unwrap(),
+            Vec3D { x: 1, y: 2, z: -3 }
+        );
     }
 
     #[test]
@@ -152,5 +222,14 @@ mod test {
 p=<4,0,0>, v=<0,0,0>, a=<-2,0,0>";
 
         assert_eq!(Day20 {}.solve_a(input), Answer::UInt(0));
+    }
+
+    #[test]
+    fn test_b() {
+        let input = "p=<-6,0,0>, v=<3,0,0>, a=<0,0,0>
+p=<-4,0,0>, v=<2,0,0>, a=<0,0,0>
+p=<-2,0,0>, v=<1,0,0>, a=<0,0,0>
+p=<3,0,0>, v=<-1,0,0>, a=<0,0,0>";
+        assert_eq!(Day20 {}.solve_b(input), Answer::UInt(1));
     }
 }
