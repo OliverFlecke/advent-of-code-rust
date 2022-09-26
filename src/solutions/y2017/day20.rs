@@ -154,31 +154,22 @@ impl Solution for Day20 {
     }
 
     fn solve_b(&self, input: &str) -> Answer {
-        let iterations = 100_000;
+        // NOTE: This has been chosen arbitrarily and adjusted until nothing
+        // seemed to move around any more.
+        const MAGIC_ITERATIONS: usize = 5_000;
+
         let mut particles = Self::parse(input);
 
-        for _ in 0..iterations {
+        for _ in 0..MAGIC_ITERATIONS {
             let mut collided = HashSet::new();
-            particles.iter().for_each(|a| {
-                particles.iter().for_each(|b| {
-                    if a.id != b.id && a.collide(b) {
-                        collided.insert(*a);
-                        collided.insert(*b);
-                    }
-                })
-            });
 
-            // particles.sort_unstable_by_key(|p| p.position);
-            // for i in 0..(particles.len() - 1) {
-            //     while (i + 1 < particles.len()) && particles[i].collide(&particles[i + 1]) {
-            //         while (i + 1 < particles.len()) && particles[i].collide(&particles[i + 1]) {
-            //             // println!("Removing {}", particles[i + 1].id);
-            //             particles.remove(i + 1);
-            //         }
-            //         // println!("Removing {}", particles[i].id);
-            //         particles.remove(i + 1);
-            //     }
-            // }
+            particles.sort_unstable_by_key(|p| p.position);
+            for i in 0..(particles.len() - 1) {
+                if particles[i].collide(&particles[i + 1]) {
+                    collided.insert(particles[i]);
+                    collided.insert(particles[i + 1]);
+                }
+            }
 
             particles.retain(|p| !collided.contains(p));
             for p in &mut particles {
