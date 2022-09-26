@@ -93,6 +93,20 @@ impl Day20 {
 impl Solution for Day20 {
     fn solve_a(&self, input: &str) -> Answer {
         let mut particles = Self::parse(input);
+
+        // NOTE: This is not correct in every chase.
+        // The general idea is: the particale that will remain the closest to the
+        // origin is the one with the smallest acceleration. If two particles have
+        // the same acceleration, it will be the one with the smallest velocity.
+        // (And if the velocities are the same, the one initially closest to
+        // the origin wins).
+        //
+        // However, here we only look at the magnitude for the velocity (which
+        // works well enough for my input), which is not enough. If the
+        // acceleration is in the same direction as the velocity, higher
+        // velocity is better, while if it is the opposite direction, lower
+        // is better. The same argument holds for the relationship between the
+        // velocity and position.
         particles.sort_unstable_by_key(|p| {
             (
                 p.acceleration.magnitude(),
