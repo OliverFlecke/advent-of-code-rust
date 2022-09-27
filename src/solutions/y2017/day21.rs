@@ -2,21 +2,198 @@ use std::{collections::HashMap, str::FromStr};
 
 use crate::solutions::{answer::Answer, Solution};
 
-const START: &str = ".#.
-..#
-###";
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct Grid {
+    cells: Vec<Vec<bool>>,
+}
 
+impl Grid {
+    fn new(size: usize) -> Self {
+        let mut row = Vec::with_capacity(size);
+        let mut cells = Vec::with_capacity(size);
+        row.resize(size, false);
+        cells.resize(size, row);
 
-type Rules = HashMap<String, String>;
+        Self { cells }
+    }
+
+    fn size(&self) -> usize {
+        self.cells.len()
+    }
+
+    fn get(&self, (x, y): (usize, usize)) -> bool {
+        self.cells[y][x]
+    }
+
+    fn set(&mut self, (x, y): (usize, usize), val: bool) {
+        self.cells[y][x] = val;
+    }
+
+    fn flip(&self) -> Self {
+        Self {
+            cells: self
+                .cells
+                .iter()
+                .map(|row| row.iter().rev().map(|c| *c).collect())
+                .collect(),
+        }
+    }
+
+    fn rotate(&self) -> Self {
+        let l = self.size();
+        let mut rv = Self::new(l);
+        for x in 0..l {
+            for y in 0..l {
+                rv.set((y, l - x - 1), self.get((x, y)));
+            }
+        }
+
+        rv
+    }
+
+    fn variants(&self) -> Vec<Grid> {
+        let mut rv = Vec::with_capacity(8);
+        rv.push(self.clone());
+        rv.push(self.flip());
+        for _ in 0..6 {
+            let g = rv[rv.len() - 2].rotate();
+            rv.push(g);
+        }
+        rv
+    }
+
+    fn count_lights(&self) -> usize {
+        self.cells.iter().flatten().filter(|c| **c).count()
+    }
+
+    fn split(&self) -> Vec<Grid> {
+        let l = self.size();
+        let m = match l {
+            _ if l % 2 == 0 => 2,
+            _ if l % 3 == 0 => 3,
+            _ => panic!("Unsupported size"),
+        };
+
+        let s = l / m;
+
+        (0..(s * s))
+            .map(|i| {
+                let mut part = Grid::new(m);
+                let gx = i % s;
+                let gy = i / s;
+                for x in 0..m {
+                    for y in 0..m {
+                        part.set((x, y), self.get((x + gx * m, y + gy * m)));
+                    }
+                }
+                part
+            })
+            .collect()
+    }
+
+    fn assemble_from(parts: Vec<Grid>) -> Grid {
+        let size = (parts.len() as f64).sqrt() as usize;
+        let subgrid_size = parts[0].size();
+
+        let mut rv = Grid::new(subgrid_size * size);
+
+        for (idx, subgrid) in parts.iter().enumerate() {
+            let gx = idx % size;
+            let gy = idx / size;
+            for x in 0..subgrid_size {
+                for y in 0..subgrid_size {
+                    rv.set(
+                        (x + gx * subgrid_size, y + gy * subgrid_size),
+                        subgrid.get((x, y)),
+                    );
+                }
+            }
+        }
+
+        rv
+    }
+}
+
+impl Default for Grid {
+    fn default() -> Self {
+        Self {
+            cells: vec![
+                vec![false, true, false],
+                vec![false, false, true],
+                vec![true, true, true],
+            ],
+        }
+    }
+}
+
+impl FromStr for Grid {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            cells: input
+                .split("/")
+                .map(|row| {
+                    row.chars()
+                        .map(|c| match c {
+                            '#' => true,
+                            '.' => false,
+                            _ => panic!("unexpected char in input: '{}'", c),
+                        })
+                        .collect()
+                })
+                .collect(),
+        })
+    }
+}
+
+#[derive(Debug)]
+struct Rules {
+    patterns: HashMap<Grid, Grid>,
+}
+
+impl Rules {
+    fn new() -> Self {
+        Self {
+            patterns: HashMap::new(),
+        }
+    }
+
+    fn add_rule(&mut self, from: Grid, to: Grid) {
+        for variant in from.variants() {
+            self.patterns.insert(variant, to.clone());
+        }
+    }
+
+    fn apply_to(&self, from: &Grid) -> Grid {
+        self.patterns.get(from).unwrap_or(&from).clone()
+    }
+}
+
+impl FromStr for Rules {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        Ok(input
+            .lines()
+            .map(|l| {
+                let mut splits = l.split(" => ").map(|p| p.parse::<Grid>().unwrap());
+                (splits.next().unwrap(), splits.next().unwrap())
+            })
+            .fold(Self::new(), |mut rules, (from, to)| {
+                rules.add_rule(from, to);
+                rules
+            }))
+    }
+}
 
 pub struct Day21;
 
 impl Solution for Day21 {
     fn solve_a(&self, input: &str) -> Answer {
-        let rules = Self::parse(input);
-        let mut image = START.clone();
+        let rules: &Rules = &input.parse().unwrap();
 
-        Self::count_lights(image).into()
+        run_iterations(rules, 5).count_lights().into()
     }
 
     fn solve_b(&self, _input: &str) -> Answer {
@@ -24,61 +201,15 @@ impl Solution for Day21 {
     }
 }
 
-impl Day21 {
-    fn parse(input: &str) -> Rules {
-        input
-            .lines()
-            .map(|l| l.split(" => "))
-            .fold(HashMap::new(), |mut state, mut split| {
-                state.insert(
-                    split.next().unwrap().replace("/", "\n").to_string(),
-                    split.next().unwrap().replace("/", "\n").to_string(),
-                );
+fn run_iterations(rules: &Rules, iterations: usize) -> Grid {
+    let mut image = Grid::default();
 
-                state
-            })
+    for _ in 0..iterations {
+        let parts: Vec<Grid> = image.split().iter().map(|g| rules.apply_to(g)).collect();
+        image = Grid::assemble_from(parts);
     }
 
-    /// Count the number of lights turned on in the image.
-    /// A light is defined to be on if it is equal to '#'.
-    fn count_lights(image: &str) -> usize {
-        image.chars().filter(|c| *c == '#').count()
-    }
-
-    fn lookup(input: &String, rules: &Rules) -> String {
-        let l = input;
-        println!("Looking up: {l}");
-        rules.get(l.as_str()).unwrap().replace("/", "\n")
-    }
-
-    fn change(input: &String, rules: &Rules) -> String {
-        Self::lookup(input, rules)
-    }
-
-    fn get_size(input: &str) -> usize {
-        input.chars().take_while(|c| *c != '\n').count()
-    }
-
-    fn divide(input: String) -> Vec<String> {
-        let size = Self::get_size(input.as_str());
-        let lookup_size = if size % 2 == 0 { 2 } else { 3 };
-        let lines: Vec<&str> = input.lines().collect();
-        let mut parts: Vec<String> = Vec::new();
-
-        for y_start in (0..size).step_by(lookup_size) {
-            for x_start in (0..size).step_by(lookup_size) {
-                let mut s = String::with_capacity(lookup_size * lookup_size);
-
-                for y in y_start..(y_start + lookup_size) {
-                    s.push_str(&lines[y][x_start..(x_start + lookup_size)]);
-                    s.push('\n');
-                }
-                parts.push(s.trim_end().to_string());
-            }
-        }
-
-        parts
-    }
+    image
 }
 
 #[cfg(test)]
@@ -88,88 +219,44 @@ mod test {
     const INPUT: &str = "../.# => ##./#../...
 .#./..#/### => #..#/..../..../#..#";
 
-    const FINAL: &str = "##.##.
-#..#..
-......
-##.##.
-#..#..
-......";
+    const FINAL: &str = "##.##./#..#../....../##.##./#..#../......";
 
     #[test]
     fn parse() {
-        let rules = Day21::parse(INPUT);
+        let rules: Rules = INPUT.parse().unwrap();
 
-        assert_eq!(*rules.get("..\n.#").unwrap(), "##.\n#..\n...");
         assert_eq!(
-            *rules.get(".#.\n..#\n###").unwrap(),
-            "#..#\n....\n....\n#..#"
+            rules.apply_to(&"../.#".parse::<Grid>().unwrap()),
+            "##./#../...".parse().unwrap()
+        );
+        assert_eq!(
+            rules.apply_to(&".#./..#/###".parse::<Grid>().unwrap()),
+            "#..#/..../..../#..#".parse().unwrap()
         );
     }
 
     #[test]
-    fn get_size_test() {
-        assert_eq!(Day21::get_size(START), 3);
+    fn splits() {
+        let image: Grid = "#..#/..../..../#..#".parse().unwrap();
 
-        let image = "#..#
-....
-....
-#..#";
-        assert_eq!(Day21::get_size(image), 4);
-    }
-
-    #[test]
-    fn divide() {
-        let image = "#..#
-....
-....
-#..#";
-        println!("Finding divides of:\n{image}");
-
-        let divided = Day21::divide(image.to_string());
+        let divided = image.split();
         let mut it = divided.iter();
-        assert_eq!(it.next(), Some(&"#.\n..".to_string()));
-        assert_eq!(it.next(), Some(&".#\n..".to_string()));
-        assert_eq!(it.next(), Some(&"..\n#.".to_string()));
-        assert_eq!(it.next(), Some(&"..\n.#".to_string()));
+        assert_eq!(it.next(), Some(&"#./..".parse::<Grid>().unwrap()));
+        assert_eq!(it.next(), Some(&".#/..".parse::<Grid>().unwrap()));
+        assert_eq!(it.next(), Some(&"../#.".parse::<Grid>().unwrap()));
+        assert_eq!(it.next(), Some(&"../.#".parse::<Grid>().unwrap()));
         assert_eq!(it.next(), None);
     }
 
     #[test]
-    fn lookup() {
-        let rules = &Day21::parse(INPUT);
-        assert_eq!(Day21::lookup(&"#.\n..".to_string(), rules), "##.\n#..\n...");
-        assert_eq!(Day21::lookup(&".#\n..".to_string(), rules), "##.\n#..\n...");
-        assert_eq!(Day21::lookup(&"..\n#.".to_string(), rules), "##.\n#..\n...");
-        assert_eq!(Day21::lookup(&"..\n.#".to_string(), rules), "##.\n#..\n...");
-    }
-
-    #[test]
-    fn change_test() {
-        let rules = &Day21::parse(INPUT);
-        let mut image = START.to_string();
-
-        image = Day21::change(&image, rules);
-        assert_eq!(image, "#..#\n....\n....\n#..#");
-
-        image = Day21::change(&image, rules);
-        assert_eq!(
-            image,
-            "##.##.
-#..#..
-......
-##.##.
-#..#..
-......"
-        );
-    }
-
-    #[test]
     fn count_lights() {
-        assert_eq!(Day21::count_lights(FINAL), 12);
+        assert_eq!(FINAL.parse::<Grid>().unwrap().count_lights(), 12);
     }
 
     #[test]
     fn test_a() {
-        assert_eq!(Day21 {}.solve_a(INPUT), Answer::UInt(12));
+        let rules: &Rules = &INPUT.parse().unwrap();
+
+        assert_eq!(run_iterations(rules, 2).count_lights(), 12);
     }
 }
