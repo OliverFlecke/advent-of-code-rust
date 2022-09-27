@@ -147,7 +147,6 @@ fn download_input(year: Year, day: Day) -> String {
         .unwrap()
         .text()
         .unwrap()
-        .to_string()
 }
 
 fn store_input_in_cache(year: Year, day: Day, input: &String) -> std::io::Result<()> {

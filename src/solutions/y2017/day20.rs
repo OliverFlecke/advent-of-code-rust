@@ -10,7 +10,7 @@ use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day20;
 
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 struct Vec3D {
     x: i64,
     y: i64,
@@ -20,16 +20,6 @@ struct Vec3D {
 impl Vec3D {
     fn magnitude(&self) -> usize {
         (self.x.abs() + self.y.abs() + self.z.abs()) as usize
-    }
-
-    fn as_triple(&self) -> (i64, i64, i64) {
-        (self.x, self.y, self.z)
-    }
-}
-
-impl Ord for Vec3D {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.as_triple().cmp(&other.as_triple())
     }
 }
 
