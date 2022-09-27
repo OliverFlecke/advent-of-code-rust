@@ -34,7 +34,7 @@ impl Grid {
             cells: self
                 .cells
                 .iter()
-                .map(|row| row.iter().rev().map(|c| *c).collect())
+                .map(|row| row.iter().rev().copied().collect())
                 .collect(),
         }
     }
@@ -132,7 +132,7 @@ impl FromStr for Grid {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Ok(Self {
             cells: input
-                .split("/")
+                .split('/')
                 .map(|row| {
                     row.chars()
                         .map(|c| match c {
@@ -166,7 +166,7 @@ impl Rules {
     }
 
     fn apply_to(&self, from: &Grid) -> Grid {
-        self.patterns.get(from).unwrap_or(&from).clone()
+        self.patterns.get(from).unwrap_or(from).clone()
     }
 }
 
@@ -196,8 +196,10 @@ impl Solution for Day21 {
         run_iterations(rules, 5).count_lights().into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        let rules: &Rules = &input.parse().unwrap();
+
+        run_iterations(rules, 18).count_lights().into()
     }
 }
 
