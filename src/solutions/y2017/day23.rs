@@ -17,8 +17,41 @@ impl Solution for Day23 {
     }
 
     fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+        // Optimized from the assembly code.
+        // first manually calculate what b and c is set to at the beginning,
+        // then the middle part of the algorithm is simply checking whether
+        // the number is a composite number.
+        let b = 107900;
+        let c = 124900;
+        let mut h = 0;
+        for x in (b..c + 1).step_by(17) {
+            if !is_prime(x) {
+                h += 1;
+            }
+        }
+
+        h.into()
     }
+}
+
+fn is_prime(n: i64) -> bool {
+    if n == 2 || n == 3 {
+        return true;
+    } else if n % 2 == 0 || n % 3 == 0 {
+        return false;
+    }
+
+    let mut i: i64 = 5;
+    let mut w: i64 = 2;
+    while i * i <= n {
+        if n % i == 0 {
+            return false;
+        }
+        i += w;
+        w = 6 - w;
+    }
+
+    true
 }
 
 type Registers = HashMap<char, i64>;
