@@ -1,4 +1,4 @@
-use std::{collections::HashSet, str::FromStr};
+use std::{collections::HashMap, str::FromStr};
 
 use crate::solutions::{answer::Answer, Solution};
 
@@ -24,6 +24,15 @@ impl Direction {
             Direction::Right => Direction::Up,
             Direction::Down => Direction::Right,
             Direction::Left => Direction::Down,
+        }
+    }
+
+    fn reverse(&self) -> Direction {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Right => Direction::Left,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
         }
     }
 }
@@ -62,30 +71,76 @@ impl Position {
     }
 }
 
-struct Grid {
-    grid: HashSet<Position>,
+#[derive(Debug, PartialEq)]
+enum State {
+    Cleaned,
+    Infected,
+    Weakened,
+    Flagged,
 }
 
-impl FromStr for Grid {
+struct World {
+    grid: HashMap<Position, State>,
+}
+
+impl FromStr for World {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let size = (s.lines().count() / 2) as i32;
-        let mut grid = HashSet::new();
+        let mut grid = HashMap::new();
 
         s.lines().enumerate().for_each(|(y, line)| {
             line.chars().enumerate().for_each(|(x, c)| match c {
                 '#' => {
-                    grid.insert(Position {
-                        x: x as i32 - size,
-                        y: y as i32 - size,
-                    });
+                    grid.insert(
+                        Position {
+                            x: x as i32 - size,
+                            y: y as i32 - size,
+                        },
+                        State::Infected,
+                    );
                 }
                 _ => {}
             })
         });
 
-        Ok(Grid { grid })
+        Ok(World { grid })
+    }
+}
+
+impl World {
+    fn get_cell(&self, pos: &Position) -> &State {
+        self.grid.get(pos).unwrap_or(&State::Cleaned)
+    }
+
+    fn is_infected(&self, pos: &Position) -> bool {
+        *self.get_cell(pos) == State::Infected
+    }
+
+    fn clean(&mut self, pos: &Position) {
+        self.grid.remove(pos);
+    }
+
+    fn infect(&mut self, pos: &Position) {
+        self.grid.insert(*pos, State::Infected);
+    }
+
+    fn update_cell(&mut self, pos: &Position) {
+        match self.get_cell(pos) {
+            State::Flagged => {
+                self.grid.insert(*pos, State::Cleaned);
+            }
+            State::Infected => {
+                self.grid.insert(*pos, State::Flagged);
+            }
+            State::Weakened => {
+                self.grid.insert(*pos, State::Infected);
+            }
+            State::Cleaned => {
+                self.grid.insert(*pos, State::Weakened);
+            }
+        }
     }
 }
 
@@ -97,30 +152,59 @@ impl Solution for Day22 {
     }
 
     fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+        const BURSTS: usize = 10_000_000;
+        Self::run_b(_input, BURSTS).into()
     }
 }
 
 impl Day22 {
     fn run(input: &str, bursts: usize) -> usize {
-        let mut grid: Grid = input.parse().unwrap();
+        let mut world: World = input.parse().unwrap();
         let mut pos: Position = Position::default();
         let mut dir: Direction = Direction::Up;
         let mut infections = 0;
 
         for _ in 0..bursts {
             // Step 1
-            dir = if grid.grid.contains(&pos) {
+            dir = if world.is_infected(&pos) {
                 dir.turn_right()
             } else {
                 dir.turn_left()
             };
 
             // Step 2
-            if grid.grid.contains(&pos) {
-                grid.grid.remove(&pos);
+            if world.is_infected(&pos) {
+                world.clean(&pos);
             } else {
-                grid.grid.insert(pos);
+                world.infect(&pos);
+                infections += 1;
+            }
+
+            // Step 3
+            pos = pos.forward(&dir);
+        }
+
+        infections
+    }
+
+    fn run_b(input: &str, bursts: usize) -> usize {
+        let mut grid: World = input.parse().unwrap();
+        let mut pos: Position = Position::default();
+        let mut dir: Direction = Direction::Up;
+        let mut infections = 0;
+
+        for _ in 0..bursts {
+            // Step 1
+            dir = match grid.get_cell(&pos) {
+                State::Cleaned => dir.turn_left(),
+                State::Infected => dir.turn_right(),
+                State::Weakened => dir,
+                State::Flagged => dir.reverse(),
+            };
+
+            // Step 2
+            grid.update_cell(&pos);
+            if grid.is_infected(&pos) {
                 infections += 1;
             }
 
@@ -140,10 +224,10 @@ mod test {
 
     #[test]
     fn parse_grid() {
-        let grid: Grid = INPUT.parse().unwrap();
-        assert_eq!(grid.grid.len(), 2);
-        assert!(grid.grid.contains(&(-1, 0).into()));
-        assert!(grid.grid.contains(&(1, -1).into()));
+        let w: World = INPUT.parse().unwrap();
+        assert_eq!(w.grid.len(), 2);
+        assert!(w.grid.contains_key(&(-1, 0).into()));
+        assert!(w.grid.contains_key(&(1, -1).into()));
     }
 
     #[test]
@@ -155,5 +239,15 @@ mod test {
     #[test]
     fn test_a() {
         assert_eq!(Day22 {}.solve_a(INPUT), Answer::UInt(5587));
+    }
+
+    #[test]
+    fn run_b() {
+        assert_eq!(Day22::run_b(INPUT, 100), 26);
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day22 {}.solve_b(INPUT), Answer::UInt(2511944));
     }
 }
