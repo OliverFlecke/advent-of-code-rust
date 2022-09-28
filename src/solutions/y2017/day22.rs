@@ -91,8 +91,8 @@ impl FromStr for World {
         let mut grid = HashMap::new();
 
         s.lines().enumerate().for_each(|(y, line)| {
-            line.chars().enumerate().for_each(|(x, c)| match c {
-                '#' => {
+            line.chars().enumerate().for_each(|(x, c)| {
+                if c == '#' {
                     grid.insert(
                         Position {
                             x: x as i32 - size,
@@ -101,7 +101,6 @@ impl FromStr for World {
                         State::Infected,
                     );
                 }
-                _ => {}
             })
         });
 
