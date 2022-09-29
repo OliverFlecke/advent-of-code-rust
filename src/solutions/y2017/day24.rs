@@ -16,8 +16,21 @@ impl Solution for Day24 {
         bridges.iter().map(|b| b.strength()).max().unwrap().into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        let mut components = Port::to_bag(input);
+        let mut bridges: Vec<Bridge> = Vec::new();
+
+        Day24::build_bridges(&mut components, &mut Vec::new(), &mut bridges, 0);
+
+        let longest = bridges.iter().max_by_key(|b| b.len()).unwrap().len();
+
+        bridges
+            .iter()
+            .filter(|b| b.len() == longest)
+            .map(|b| b.strength())
+            .max()
+            .unwrap()
+            .into()
     }
 }
 
@@ -94,6 +107,10 @@ struct Bridge {
 impl Bridge {
     fn strength(&self) -> usize {
         self.ports.iter().map(|p| p.from + p.to).sum()
+    }
+
+    fn len(&self) -> usize {
+        self.ports.len()
     }
 }
 
@@ -199,5 +216,10 @@ mod test {
     #[test]
     fn test_a() {
         assert_eq!(Day24 {}.solve_a(INPUT), Answer::UInt(31));
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day24 {}.solve_b(INPUT), Answer::UInt(19));
     }
 }
