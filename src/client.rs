@@ -1,3 +1,4 @@
+use colored::Colorize;
 use reqwest::{
     blocking::{Client, Response},
     header::{HeaderMap, HeaderValue, COOKIE},
@@ -69,8 +70,9 @@ pub fn submit(year: Year, day: Day, level: Level, answer: &String) {
 
     if value.map(|x| x >= level).unwrap_or_default() {
         println!(
-            "Skipping submission - problem is already solved. Answer given: {}",
-            answer
+            "{} {}",
+            "Skipping submission - problem is already solved. Answer given:".green(),
+            answer.bold().green()
         );
         return;
     }
@@ -86,15 +88,18 @@ pub fn submit(year: Year, day: Day, level: Level, answer: &String) {
     match post_answer(year, day, level, answer) {
         Ok(res) => match parse_submission_response_text(res) {
             SubmissionResult::Correct => {
-                println!("Answer is correct");
+                println!("{}", "Answer is correct".green());
                 scores.set_score_for_day(day, &level);
             }
             SubmissionResult::AlreadyCompleted => {
-                println!("Problem already solved, but answer was correct");
+                println!(
+                    "{}",
+                    "Problem already solved, but answer was correct".green()
+                );
                 scores.set_score_for_day(day, &level);
             }
             SubmissionResult::Incorrect => {
-                println!("You answered incorrectly!");
+                println!("{}", "You answered incorrectly!".red());
             }
             SubmissionResult::TooRecent(_) => {
                 println!("You have submitted an answer too recently. Wait a bit and try again")
@@ -141,12 +146,7 @@ fn download_input(year: Year, day: Day) -> String {
     let url = format!("{base}/input", base = get_base_url(year, day));
     let client = build_client();
 
-    client
-        .get(url)
-        .send()
-        .unwrap()
-        .text()
-        .unwrap()
+    client.get(url).send().unwrap().text().unwrap()
 }
 
 fn store_input_in_cache(year: Year, day: Day, input: &String) -> std::io::Result<()> {

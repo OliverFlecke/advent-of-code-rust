@@ -15,13 +15,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     let solver = get_solver(year, day);
     let start_a = Instant::now();
     let answer_a = solver.solve_a(&problem_input);
-    println!("Part A - Answer: {:?} - Time: {:?}", answer_a, start_a.elapsed());
+    println!(
+        "Part A - Answer: {:?} - Time: {:?}",
+        answer_a,
+        start_a.elapsed()
+    );
 
     submit(year, day, Level::A, &answer_a.to_string());
 
     let start_b = Instant::now();
     let answer_b = solver.solve_b(&problem_input);
-    println!("Part B - Answer: {:?} - Time: {:?}", answer_b, start_b.elapsed());
+    println!(
+        "Part B - Answer: {:?} - Time: {:?}",
+        answer_b,
+        start_b.elapsed()
+    );
     submit(year, day, Level::B, &answer_b.to_string());
 
     Ok(())
