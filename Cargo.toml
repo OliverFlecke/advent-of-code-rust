@@ -9,3 +9,4 @@ itertools = { version = "0.10.3" }
 serde = { version = "1.0.144" }
 serde_json = { version = "1.0" }
 regex = "1.6.0"
+hashbag = { version = "0.1.9" }
