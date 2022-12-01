@@ -4,6 +4,7 @@ use self::answer::Answer;
 
 pub mod answer;
 pub mod y2017;
+pub mod y2022;
 
 pub trait Solution {
     fn solve_a(&self, input: &str) -> Answer;
@@ -38,6 +39,10 @@ pub fn get_solver(year: Year, day: Day) -> Box<dyn Solution> {
             23 => Box::new(y2017::day23::Day23 {}),
             24 => Box::new(y2017::day24::Day24 {}),
             25 => Box::new(y2017::day25::Day25 {}),
+            _ => panic!("Solution for day {} not found", day),
+        },
+        Year::Y2022 => match day {
+            1 => Box::new(y2022::day01::Day01 {}),
             _ => panic!("Solution for day {} not found", day),
         },
         _ => panic!("Solution for year {:?} was not found", year),
