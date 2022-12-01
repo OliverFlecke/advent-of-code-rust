@@ -1,5 +1,6 @@
 [package]
 name = "advent-of-code"
+authors = ["Oliver Fleckenstein <oliverfl@live.dk>"]
 version = "0.1.0"
 edition = "2021"
 
