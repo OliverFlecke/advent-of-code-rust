@@ -10,7 +10,9 @@ impl Solution for Day02 {
             .trim_end()
             .lines()
             .map(|l| {
-                let mut it = l.split(' ').map(|x| Hand::from(x));
+                let mut it = l
+                    .split(' ')
+                    .map(|x| Hand::try_from(x).expect("valid character"));
                 (it.next().unwrap(), it.next().unwrap())
             })
             .map(|(other, me)| me.wins_over(&other).score() + me.score())
@@ -25,8 +27,8 @@ impl Solution for Day02 {
             .map(|l| {
                 let mut split = l.split(' ');
                 (
-                    Hand::from(split.next().unwrap()),
-                    Outcome::from(split.next().unwrap()),
+                    Hand::try_from(split.next().unwrap()).expect("valid hand character"),
+                    Outcome::try_from(split.next().unwrap()).expect("to be valid outcome"),
                 )
             })
             .map(|(op, goal)| goal.score() + get_hand_to_play(goal, op).score())
@@ -58,13 +60,15 @@ enum Outcome {
     Loss,
 }
 
-impl From<&str> for Outcome {
-    fn from(s: &str) -> Self {
-        match s {
-            "X" => Self::Loss,
-            "Y" => Self::Draw,
-            "Z" => Self::Win,
-            _ => panic!("Invalid output {s}"),
+impl TryFrom<&str> for Outcome {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "X" => Ok(Self::Loss),
+            "Y" => Ok(Self::Draw),
+            "Z" => Ok(Self::Win),
+            _ => Err(value.to_string()),
         }
     }
 }
@@ -96,13 +100,15 @@ enum Hand {
     Scissor,
 }
 
-impl From<&str> for Hand {
-    fn from(s: &str) -> Self {
-        match s {
-            "A" | "X" => Hand::Rock,
-            "B" | "Y" => Hand::Paper,
-            "C" | "Z" => Hand::Scissor,
-            _ => panic!("Unhandled character: '{}'", s),
+impl TryFrom<&str> for Hand {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "A" | "X" => Ok(Self::Rock),
+            "B" | "Y" => Ok(Self::Paper),
+            "C" | "Z" => Ok(Self::Scissor),
+            _ => Err(value.to_string()),
         }
     }
 }
