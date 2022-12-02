@@ -5,8 +5,8 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day02;
 
 impl Solution for Day02 {
-    fn solve_a(&self, _input: &str) -> Answer {
-        _input
+    fn solve_a(&self, input: &str) -> Answer {
+        input
             .trim_end()
             .lines()
             .map(|l| {
@@ -18,8 +18,36 @@ impl Solution for Day02 {
             .into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        input
+            .trim_end()
+            .lines()
+            .map(|l| {
+                let mut split = l.split(' ');
+                (
+                    Hand::from(split.next().unwrap()),
+                    Outcome::from(split.next().unwrap()),
+                )
+            })
+            .map(|(op, goal)| goal.score() + get_hand_to_play(goal, op).score())
+            .sum::<u64>()
+            .into()
+    }
+}
+
+fn get_hand_to_play(goal: Outcome, opponent: Hand) -> Hand {
+    match goal {
+        Outcome::Draw => opponent,
+        Outcome::Win => match opponent {
+            Hand::Rock => Hand::Paper,
+            Hand::Paper => Hand::Scissor,
+            Hand::Scissor => Hand::Rock,
+        },
+        Outcome::Loss => match opponent {
+            Hand::Rock => Hand::Scissor,
+            Hand::Paper => Hand::Rock,
+            Hand::Scissor => Hand::Paper,
+        },
     }
 }
 
@@ -28,6 +56,17 @@ enum Outcome {
     Win,
     Draw,
     Loss,
+}
+
+impl From<&str> for Outcome {
+    fn from(s: &str) -> Self {
+        match s {
+            "X" => Self::Loss,
+            "Y" => Self::Draw,
+            "Z" => Self::Win,
+            _ => panic!("Invalid output {s}"),
+        }
+    }
 }
 
 impl Outcome {
@@ -77,11 +116,11 @@ impl Hand {
         }
     }
 
-    fn wins_over(&self, other: &Hand) -> Outcome {
+    fn wins_over(&self, opponent: &Hand) -> Outcome {
         match self {
-            Hand::Rock if *other == Hand::Scissor => Outcome::Win,
-            Hand::Scissor if *other == Hand::Rock => Outcome::Loss,
-            _ => self.cmp(other).into(),
+            Hand::Rock if *opponent == Hand::Scissor => Outcome::Win,
+            Hand::Scissor if *opponent == Hand::Rock => Outcome::Loss,
+            _ => self.cmp(opponent).into(),
         }
     }
 }
@@ -96,6 +135,11 @@ C Z";
     #[test]
     fn test_a() {
         assert_eq!(Day02 {}.solve_a(SAMPLE_INPUT), Answer::UInt(15));
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day02 {}.solve_b(SAMPLE_INPUT), Answer::UInt(12));
     }
 
     #[test]
