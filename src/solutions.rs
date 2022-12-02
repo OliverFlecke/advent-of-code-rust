@@ -43,6 +43,7 @@ pub fn get_solver(year: Year, day: Day) -> Box<dyn Solution> {
         },
         Year::Y2022 => match day {
             1 => Box::new(y2022::day01::Day01 {}),
+            2 => Box::new(y2022::day02::Day02 {}),
             _ => panic!("Solution for day {} not found", day),
         },
         _ => panic!("Solution for year {:?} was not found", year),
