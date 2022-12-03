@@ -11,7 +11,7 @@ fn parse(input: &str) -> Vec<i64> {
 }
 
 impl Solution for Day05 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let mut jumps = parse(input);
 
         let mut count: u64 = 0;
@@ -21,7 +21,7 @@ impl Solution for Day05 {
             let current = jumps[index as usize];
             let next = index + current;
             if next < 0 || jumps.len() as i64 <= next {
-                return count.into();
+                return Some(count.into());
             }
 
             jumps[index as usize] += 1;
@@ -29,7 +29,7 @@ impl Solution for Day05 {
         }
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let mut jumps = parse(input);
 
         let mut count: u64 = 0;
@@ -39,7 +39,7 @@ impl Solution for Day05 {
             let current = jumps[index as usize];
             let next = index + current;
             if next < 0 || jumps.len() as i64 <= next {
-                return count.into();
+                return Some(count.into());
             }
 
             if current >= 3 {
@@ -59,12 +59,12 @@ mod test {
     #[test]
     fn test_a() {
         let input = "0\n3\n0\n1\n-3";
-        assert_eq!(Day05 {}.solve_a(input), Answer::UInt(5));
+        assert_eq!(Day05 {}.solve_a(input), Some(Answer::UInt(5)));
     }
 
     #[test]
     fn test_b() {
         let input = "0\n3\n0\n1\n-3";
-        assert_eq!(Day05 {}.solve_b(input), Answer::UInt(10));
+        assert_eq!(Day05 {}.solve_b(input), Some(Answer::UInt(10)));
     }
 }

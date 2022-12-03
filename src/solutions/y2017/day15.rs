@@ -7,30 +7,34 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day15 {}
 
 impl Solution for Day15 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let size = 40_000_000;
         let start = Self::parse(input);
 
-        Self::higher_order_count_matches(
-            start,
-            size,
-            |a| Self::generate_next(a, Self::A_FACTOR),
-            |b| Self::generate_next(b, Self::B_FACTOR),
+        Some(
+            Self::higher_order_count_matches(
+                start,
+                size,
+                |a| Self::generate_next(a, Self::A_FACTOR),
+                |b| Self::generate_next(b, Self::B_FACTOR),
+            )
+            .into(),
         )
-        .into()
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let size = 5_000_000;
         let start = Self::parse(input);
 
-        Self::higher_order_count_matches(
-            start,
-            size,
-            |a| Self::generate_next_b(a, Self::A_FACTOR, 4),
-            |b| Self::generate_next_b(b, Self::B_FACTOR, 8),
+        Some(
+            Self::higher_order_count_matches(
+                start,
+                size,
+                |a| Self::generate_next_b(a, Self::A_FACTOR, 4),
+                |b| Self::generate_next_b(b, Self::B_FACTOR, 8),
+            )
+            .into(),
         )
-        .into()
     }
 }
 
@@ -168,7 +172,7 @@ Generator B starts with 8921";
 
     #[test]
     fn test_a() {
-        assert_eq!(Day15 {}.solve_a(INPUT), Answer::UInt(588));
+        assert_eq!(Day15 {}.solve_a(INPUT), Some(Answer::UInt(588)))
     }
 
     #[test]
@@ -189,6 +193,6 @@ Generator B starts with 8921";
 
     #[test]
     fn test_b() {
-        assert_eq!(Day15 {}.solve_b(INPUT), Answer::UInt(309));
+        assert_eq!(Day15 {}.solve_b(INPUT), Some(Answer::UInt(309)))
     }
 }

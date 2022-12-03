@@ -100,27 +100,31 @@ impl CubeCoordinate {
 }
 
 impl Solution for Day11 {
-    fn solve_a(&self, input: &str) -> Answer {
-        input
-            .trim_end()
-            .split(',')
-            .map(|dir_str| dir_str.into())
-            .fold(CubeCoordinate::zero(), CubeCoordinate::move_in_dir)
-            .distance_to_origin()
-            .into()
+    fn solve_a(&self, input: &str) -> Option<Answer> {
+        Some(
+            input
+                .trim_end()
+                .split(',')
+                .map(|dir_str| dir_str.into())
+                .fold(CubeCoordinate::zero(), CubeCoordinate::move_in_dir)
+                .distance_to_origin()
+                .into(),
+        )
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
-        input
-            .trim_end()
-            .split(',')
-            .map(|dir_str| dir_str.into())
-            .fold((0, CubeCoordinate::zero()), |(max_dist, pos), dir| {
-                let new_pos = CubeCoordinate::move_in_dir(pos, dir);
-                (new_pos.distance_to_origin().max(max_dist), new_pos)
-            })
-            .0
-            .into()
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        Some(
+            input
+                .trim_end()
+                .split(',')
+                .map(|dir_str| dir_str.into())
+                .fold((0, CubeCoordinate::zero()), |(max_dist, pos), dir| {
+                    let new_pos = CubeCoordinate::move_in_dir(pos, dir);
+                    (new_pos.distance_to_origin().max(max_dist), new_pos)
+                })
+                .0
+                .into(),
+        )
     }
 }
 
@@ -130,9 +134,9 @@ mod test {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day11 {}.solve_a("ne,ne,ne"), Answer::UInt(3));
-        assert_eq!(Day11 {}.solve_a("ne,ne,sw,sw"), Answer::UInt(0));
-        assert_eq!(Day11 {}.solve_a("ne,ne,s,s"), Answer::UInt(2));
-        assert_eq!(Day11 {}.solve_a("se,sw,se,sw,sw"), Answer::UInt(3));
+        assert_eq!(Day11 {}.solve_a("ne,ne,ne"), Some(Answer::UInt(3)));
+        assert_eq!(Day11 {}.solve_a("ne,ne,sw,sw"), Some(Answer::UInt(0)));
+        assert_eq!(Day11 {}.solve_a("ne,ne,s,s"), Some(Answer::UInt(2)));
+        assert_eq!(Day11 {}.solve_a("se,sw,se,sw,sw"), Some(Answer::UInt(3)));
     }
 }

@@ -3,7 +3,7 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day17;
 
 impl Solution for Day17 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let times = 2017;
         let amount: usize = input.trim_end().parse().unwrap();
         let mut buffer = vec![0];
@@ -14,10 +14,10 @@ impl Solution for Day17 {
             buffer.insert(index, size + 1);
         }
 
-        buffer[index + 1 % buffer.len()].into()
+        Some(buffer[index + 1 % buffer.len()].into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let times = 50_000_000;
         let amount: usize = input.trim_end().parse().unwrap();
         let mut next = 0;
@@ -30,7 +30,7 @@ impl Solution for Day17 {
             next += 1;
         }
 
-        answer.into()
+        Some(answer.into())
     }
 }
 
@@ -42,14 +42,14 @@ mod test {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day17 {}.solve_a("3"), Answer::UInt(638));
+        assert_eq!(Day17 {}.solve_a("3"), Some(Answer::UInt(638)));
     }
 
     #[test]
     fn test_b() {
         assert_eq!(
             Day17 {}.solve_b(get_input(advent_of_code::Year::Y2017, 17).unwrap().as_str()),
-            Answer::UInt(41797835)
+            Some(Answer::UInt(41797835))
         );
     }
 }

@@ -7,16 +7,16 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day24;
 
 impl Solution for Day24 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let mut components = Port::to_bag(input);
         let mut bridges: Vec<Bridge> = Vec::new();
 
         Day24::build_bridges(&mut components, &mut Vec::new(), &mut bridges, 0);
 
-        bridges.iter().map(|b| b.strength()).max().unwrap().into()
+        Some(bridges.iter().map(|b| b.strength()).max().unwrap().into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let mut components = Port::to_bag(input);
         let mut bridges: Vec<Bridge> = Vec::new();
 
@@ -24,13 +24,15 @@ impl Solution for Day24 {
 
         let longest = bridges.iter().max_by_key(|b| b.len()).unwrap().len();
 
-        bridges
-            .iter()
-            .filter(|b| b.len() == longest)
-            .map(|b| b.strength())
-            .max()
-            .unwrap()
-            .into()
+        Some(
+            bridges
+                .iter()
+                .filter(|b| b.len() == longest)
+                .map(|b| b.strength())
+                .max()
+                .unwrap()
+                .into(),
+        )
     }
 }
 
@@ -213,11 +215,11 @@ mod test {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day24 {}.solve_a(INPUT), Answer::UInt(31));
+        assert_eq!(Day24 {}.solve_a(INPUT), Some(Answer::UInt(31)))
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day24 {}.solve_b(INPUT), Answer::UInt(19));
+        assert_eq!(Day24 {}.solve_b(INPUT), Some(Answer::UInt(19)))
     }
 }

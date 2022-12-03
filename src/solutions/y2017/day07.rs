@@ -11,7 +11,7 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day07 {}
 
 impl Solution for Day07 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let mut map: HashMap<String, Vec<String>> = HashMap::new();
         let re = Regex::new(r"(?P<name>\w+) \((?P<weight>\d+)\)( -> (?P<children>[\w ,]*))?")
             .expect("regex should always be valid");
@@ -41,15 +41,17 @@ impl Solution for Day07 {
             }
         }
 
-        names
-            .iter()
-            .find(|_| true)
-            .expect("there should be only one element remaining")
-            .to_string()
-            .into()
+        Some(
+            names
+                .iter()
+                .find(|_| true)
+                .expect("there should be only one element remaining")
+                .to_string()
+                .into(),
+        )
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         fn parse_line(line: &str) -> (String, u64, Vec<String>) {
             let re: regex::Regex =
                 Regex::new(r"(?P<name>\w+) \((?P<weight>\d+)\)( -> (?P<children>[\w ,]*))?")
@@ -162,7 +164,7 @@ impl Solution for Day07 {
         }
 
         let tree = build_tree(input.trim().split('\n').collect::<Vec<_>>().as_slice());
-        find_imbalance(&tree).expect("no imbalance found").into()
+        Some(find_imbalance(&tree).expect("no imbalance found").into())
     }
 }
 
@@ -194,11 +196,11 @@ cntj (57)";
 
     #[test]
     fn test_a() {
-        assert_eq!(Day07 {}.solve_a(INPUT), "tknk".into());
+        assert_eq!(Day07 {}.solve_a(INPUT), Some("tknk".into()));
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day07 {}.solve_b(INPUT), Answer::UInt(60));
+        assert_eq!(Day07 {}.solve_b(INPUT), Some(Answer::UInt(60)));
     }
 }

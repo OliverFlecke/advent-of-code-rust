@@ -3,7 +3,7 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day09 {}
 
 impl Solution for Day09 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let chars: Vec<char> = input.chars().collect();
         let mut score: u64 = 0;
         let mut depth: u64 = 0;
@@ -33,10 +33,10 @@ impl Solution for Day09 {
             i += 1;
         }
 
-        score.into()
+        Some(score.into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let chars: Vec<char> = input.chars().collect();
         let mut count: u64 = 0;
         let mut i = 0;
@@ -61,7 +61,7 @@ impl Solution for Day09 {
             i += 1;
         }
 
-        count.into()
+        Some(count.into())
     }
 }
 
@@ -71,33 +71,36 @@ mod test {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day09 {}.solve_a("{}"), Answer::UInt(1));
-        assert_eq!(Day09 {}.solve_a("{{{}}}"), Answer::UInt(6));
-        assert_eq!(Day09 {}.solve_a("{{},{}}"), Answer::UInt(5));
-        assert_eq!(Day09 {}.solve_a("{{{},{},{{}}}}"), Answer::UInt(16));
-        assert_eq!(Day09 {}.solve_a("{<a>,<a>,<a>,<a>}"), Answer::UInt(1));
+        assert_eq!(Day09 {}.solve_a("{}"), Some(Answer::UInt(1)));
+        assert_eq!(Day09 {}.solve_a("{{{}}}"), Some(Answer::UInt(6)));
+        assert_eq!(Day09 {}.solve_a("{{},{}}"), Some(Answer::UInt(5)));
+        assert_eq!(Day09 {}.solve_a("{{{},{},{{}}}}"), Some(Answer::UInt(16)));
+        assert_eq!(Day09 {}.solve_a("{<a>,<a>,<a>,<a>}"), Some(Answer::UInt(1)));
         assert_eq!(
             Day09 {}.solve_a("{{<ab>},{<ab>},{<ab>},{<ab>}}"),
-            Answer::UInt(9),
+            Some(Answer::UInt(9)),
         );
         assert_eq!(
             Day09 {}.solve_a("{{<!!>},{<!!>},{<!!>},{<!!>}}"),
-            Answer::UInt(9),
+            Some(Answer::UInt(9)),
         );
         assert_eq!(
             Day09 {}.solve_a("{{<a!>},{<a!>},{<a!>},{<ab>}}"),
-            Answer::UInt(3),
+            Some(Answer::UInt(3)),
         );
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day09 {}.solve_b("<>"), Answer::UInt(0));
-        assert_eq!(Day09 {}.solve_b("<random characters>"), Answer::UInt(17));
-        assert_eq!(Day09 {}.solve_b("<<<<>"), Answer::UInt(3));
-        assert_eq!(Day09 {}.solve_b("<{!>}>"), Answer::UInt(2));
-        assert_eq!(Day09 {}.solve_b("<!!>"), Answer::UInt(0));
-        assert_eq!(Day09 {}.solve_b("<!!!>>"), Answer::UInt(0));
-        assert_eq!(Day09 {}.solve_b("<{o\"i!a,<{i<a>"), Answer::UInt(10));
+        assert_eq!(Day09 {}.solve_b("<>"), Some(Answer::UInt(0)));
+        assert_eq!(
+            Day09 {}.solve_b("<random characters>"),
+            Some(Answer::UInt(17))
+        );
+        assert_eq!(Day09 {}.solve_b("<<<<>"), Some(Answer::UInt(3)));
+        assert_eq!(Day09 {}.solve_b("<{!>}>"), Some(Answer::UInt(2)));
+        assert_eq!(Day09 {}.solve_b("<!!>"), Some(Answer::UInt(0)));
+        assert_eq!(Day09 {}.solve_b("<!!!>>"), Some(Answer::UInt(0)));
+        assert_eq!(Day09 {}.solve_b("<{o\"i!a,<{i<a>"), Some(Answer::UInt(10)));
     }
 }

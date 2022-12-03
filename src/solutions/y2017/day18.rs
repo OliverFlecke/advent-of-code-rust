@@ -9,12 +9,12 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day18;
 
 impl Solution for Day18 {
-    fn solve_a(&self, input: &str) -> Answer {
-        Inst::run_a(parse(input).collect()).unwrap().into()
+    fn solve_a(&self, input: &str) -> Option<Answer> {
+        Some(Inst::run_a(parse(input).collect()).unwrap().into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
-        Inst::run_b(parse(input).collect()).into()
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        Some(Inst::run_b(parse(input).collect()).into())
     }
 }
 
@@ -300,7 +300,7 @@ jgz a -2";
 
     #[test]
     fn test_a() {
-        assert_eq!(Day18 {}.solve_a(INPUT), Answer::Int(4));
+        assert_eq!(Day18 {}.solve_a(INPUT), Some(Answer::Int(4)))
     }
 
     #[test]
@@ -312,6 +312,6 @@ rcv a
 rcv b
 rcv c
 rcv d";
-        assert_eq!(Day18 {}.solve_b(input), Answer::UInt(3));
+        assert_eq!(Day18 {}.solve_b(input), Some(Answer::UInt(3)))
     }
 }

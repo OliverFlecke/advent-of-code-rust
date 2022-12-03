@@ -5,7 +5,7 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day23;
 
 impl Solution for Day23 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let instructions: Vec<Inst> = input.lines().map(|l| l.parse().unwrap()).collect();
         let mut context = ThreadContext::default();
 
@@ -13,10 +13,10 @@ impl Solution for Day23 {
             instructions[context.index].execute(&mut context);
         }
 
-        context.multi_count.into()
+        Some(context.multi_count.into())
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
+    fn solve_b(&self, _input: &str) -> Option<Answer> {
         // Optimized from the assembly code.
         // first manually calculate what b and c is set to at the beginning,
         // then the middle part of the algorithm is simply checking whether
@@ -30,7 +30,7 @@ impl Solution for Day23 {
             }
         }
 
-        h.into()
+        Some(h.into())
     }
 }
 

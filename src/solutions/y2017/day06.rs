@@ -43,7 +43,7 @@ fn next(blocks: &Vec<u32>) -> Vec<u32> {
 }
 
 impl Solution for Day06 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let mut blocks = input
             .trim()
             .split('\t')
@@ -58,7 +58,7 @@ impl Solution for Day06 {
             let new_blocks = next(&blocks);
             let h = hash(&new_blocks);
             if seen.contains(&h) {
-                return iterations.into();
+                return Some(iterations.into());
             }
 
             seen.insert(h);
@@ -66,7 +66,7 @@ impl Solution for Day06 {
         }
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let mut blocks = input
             .trim()
             .split('\t')
@@ -81,7 +81,7 @@ impl Solution for Day06 {
             let new_blocks = next(&blocks);
             let h = hash(&new_blocks);
             if seen.contains_key(&h) {
-                return (iterations - seen.get(&h).unwrap()).into();
+                return Some((iterations - seen.get(&h).unwrap()).into());
             }
 
             seen.insert(h, iterations);
@@ -97,12 +97,12 @@ mod test {
     #[test]
     fn test_a() {
         let input = "0\t2\t7\t0";
-        assert_eq!(Day06 {}.solve_a(input), Answer::UInt(5));
+        assert_eq!(Day06 {}.solve_a(input), Some(Answer::UInt(5)));
     }
 
     #[test]
     fn test_b() {
         let input = "0\t2\t7\t0";
-        assert_eq!(Day06 {}.solve_b(input), Answer::UInt(4));
+        assert_eq!(Day06 {}.solve_b(input), Some(Answer::UInt(4)));
     }
 }

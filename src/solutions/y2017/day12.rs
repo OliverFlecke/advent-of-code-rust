@@ -50,14 +50,14 @@ impl Day12 {
 }
 
 impl Solution for Day12 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let map = Self::parse_input(input);
         let group = Self::find_group(&map, 0);
 
-        group.len().into()
+        Some(group.len().into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let map = Self::parse_input(input);
         let mut nodes: HashSet<usize> = map.keys().cloned().collect();
 
@@ -68,7 +68,7 @@ impl Solution for Day12 {
             nodes = nodes.difference(&group).cloned().collect();
         }
 
-        count.into()
+        Some(count.into())
     }
 }
 
@@ -86,7 +86,7 @@ mod test {
 5 <-> 6
 6 <-> 4, 5";
 
-        assert_eq!(Day12 {}.solve_a(input), Answer::UInt(6));
+        assert_eq!(Day12 {}.solve_a(input), Some(Answer::UInt(6)));
     }
 
     #[test]
@@ -98,6 +98,6 @@ mod test {
 4 <-> 2, 3, 6
 5 <-> 6
 6 <-> 4, 5";
-        assert_eq!(Day12 {}.solve_b(input), Answer::UInt(2));
+        assert_eq!(Day12 {}.solve_b(input), Some(Answer::UInt(2)));
     }
 }

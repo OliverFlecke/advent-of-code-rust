@@ -30,25 +30,27 @@ fn solve_day(args: &Args, year: Year, day: u8) {
         get_solver(year, day).unwrap_or_else(|| panic!("no solver found for {year:?}/{day}"));
 
     let start_a = Instant::now();
-    let answer_a = solver.solve_a(&problem_input);
-    println!(
-        "Part A: {:>16} \tTime: {:>16?}",
-        answer_a.to_string().cyan(),
-        start_a.elapsed()
-    );
-    if args.submit_a {
-        submit(year, day, Level::A, &answer_a.to_string());
+    if let Some(answer_a) = solver.solve_a(&problem_input) {
+        println!(
+            "Part A: {:>16} \tTime: {:>16?}",
+            answer_a.to_string().cyan(),
+            start_a.elapsed()
+        );
+        if args.submit_a {
+            submit(year, day, Level::A, &answer_a.to_string());
+        }
     }
 
     let start_b = Instant::now();
-    let answer_b = solver.solve_b(&problem_input);
-    println!(
-        "Part B: {:>16} \tTime: {:>16?}",
-        answer_b.to_string().cyan(),
-        start_b.elapsed()
-    );
-    if args.submit_b {
-        submit(year, day, Level::B, &answer_b.to_string());
+    if let Some(answer_b) = solver.solve_b(&problem_input) {
+        println!(
+            "Part B: {:>16} \tTime: {:>16?}",
+            answer_b.to_string().cyan(),
+            start_b.elapsed()
+        );
+        if args.submit_b {
+            submit(year, day, Level::B, &answer_b.to_string());
+        }
     }
 }
 
@@ -88,8 +90,8 @@ fn benchmark_year(year: Year) {
 
         println!(
             "Day {day: >2} \t| {:>ANSWER_WIDTH$} | {:>ANSWER_WIDTH$} | {elapsed_a:>16?} | {elapsed_b:>16?} ",
-            answer_a.to_string(),
-            answer_b.to_string(),
+            answer_a.map(|x| x.to_string()).unwrap_or_default(),
+            answer_b.map(|x| x.to_string()).unwrap_or_default(),
         );
 
         total_a += elapsed_a;

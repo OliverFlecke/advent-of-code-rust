@@ -59,20 +59,20 @@ impl SecurityScanner {
 }
 
 impl Solution for Day13 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let firewall = Self::parse_firewall(input);
 
-        Self::calculate_severity(&firewall, 0).1.into()
+        Some(Self::calculate_severity(&firewall, 0).1.into())
     }
 
     // Bruteforcing, quite slow...
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let firewall = Self::parse_firewall(input);
         let mut delay: usize = 1;
 
         loop {
             if firewall.values().any(|s| s.caught(delay)) {
-                return delay.into();
+                return Some(delay.into());
             }
 
             delay += 1;
@@ -91,11 +91,11 @@ mod test {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day13 {}.solve_a(INPUT), Answer::UInt(24));
+        assert_eq!(Day13 {}.solve_a(INPUT), Some(Answer::UInt(24)))
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day13 {}.solve_b(INPUT), Answer::UInt(10));
+        assert_eq!(Day13 {}.solve_b(INPUT), Some(Answer::UInt(10)))
     }
 }

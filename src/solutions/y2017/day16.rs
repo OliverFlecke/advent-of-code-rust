@@ -5,13 +5,13 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day16;
 
 impl Solution for Day16 {
-    fn solve_a(&self, input: &str) -> Answer {
-        Self::helper_a(input, 16).into()
+    fn solve_a(&self, input: &str) -> Option<Answer> {
+        Some(Self::helper_a(input, 16).into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let times = 1_000_000_000;
-        Self::helper_b(input, 16, times).into()
+        Some(Self::helper_b(input, 16, times).into())
     }
 }
 

@@ -8,26 +8,28 @@ const SIZE: usize = 256;
 pub struct Day10 {}
 
 impl Solution for Day10 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let mut array: Vec<usize> = (0..SIZE).collect();
         let mut position = 0;
         let mut skip_size = 0;
 
-        (KnotHash::calc_round(
-            &mut position,
-            &mut skip_size,
-            &mut array,
-            &input
-                .trim_end()
-                .split(',')
-                .map(|number| number.parse::<usize>().unwrap())
-                .collect(),
-        ) as u64)
-            .into()
+        Some(
+            (KnotHash::calc_round(
+                &mut position,
+                &mut skip_size,
+                &mut array,
+                &input
+                    .trim_end()
+                    .split(',')
+                    .map(|number| number.parse::<usize>().unwrap())
+                    .collect(),
+            ) as u64)
+                .into(),
+        )
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
-        KnotHash::compute_hash(input).to_string().into()
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        Some(KnotHash::compute_hash(input).to_string().into())
     }
 }
 

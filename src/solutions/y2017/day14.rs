@@ -10,7 +10,7 @@ use super::day10::KnotHash;
 pub struct Day14 {}
 
 impl Solution for Day14 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let mut count: u32 = 0;
         for row in 0..128 {
             let row_input = format!("{}-{}", input, row);
@@ -19,11 +19,11 @@ impl Solution for Day14 {
                 .for_each(|x| count += x.count_ones());
         }
 
-        count.into()
+        Some(count.into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
-        Grid::new(input).count_groups().into()
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        Some(Grid::new(input).count_groups().into())
     }
 }
 
@@ -142,11 +142,11 @@ mod test {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day14 {}.solve_a(TEST_INPUT), Answer::UInt(8108));
+        assert_eq!(Day14 {}.solve_a(TEST_INPUT), Some(Answer::UInt(8108)))
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day14 {}.solve_b(TEST_INPUT), Answer::UInt(1242));
+        assert_eq!(Day14 {}.solve_b(TEST_INPUT), Some(Answer::UInt(1242)))
     }
 }

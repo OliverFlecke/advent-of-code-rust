@@ -80,12 +80,12 @@ impl ops::Add<(i64, i64)> for Position {
 }
 
 impl Solution for Day19 {
-    fn solve_a(&self, input: &str) -> Answer {
-        Self::solve(input).0
+    fn solve_a(&self, input: &str) -> Option<Answer> {
+        Some(Self::solve(input).0)
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
-        Self::solve(input).1
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        Some(Self::solve(input).1)
     }
 }
 
@@ -165,11 +165,14 @@ F---|----E|--+
 
     #[test]
     fn test_a() {
-        assert_eq!(Day19 {}.solve_a(INPUT), Answer::String("ABCDEF".to_owned()));
+        assert_eq!(
+            Day19 {}.solve_a(INPUT),
+            Some(Answer::String("ABCDEF".to_owned()))
+        )
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day19 {}.solve_b(INPUT), Answer::UInt(38));
+        assert_eq!(Day19 {}.solve_b(INPUT), Some(Answer::UInt(38)))
     }
 }

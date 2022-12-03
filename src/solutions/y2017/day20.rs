@@ -116,7 +116,7 @@ impl Day20 {
 }
 
 impl Solution for Day20 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let mut particles = Self::parse(input);
 
         // NOTE: This is not correct in every chase.
@@ -140,10 +140,10 @@ impl Solution for Day20 {
             )
         });
 
-        particles[0].id.into()
+        Some(particles[0].id.into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         // NOTE: This has been chosen arbitrarily and adjusted until nothing
         // seemed to move around any more.
         const MAGIC_ITERATIONS: usize = 5_000;
@@ -167,7 +167,7 @@ impl Solution for Day20 {
             }
         }
 
-        particles.len().into()
+        Some(particles.len().into())
     }
 }
 
@@ -202,7 +202,7 @@ mod test {
         let input = "p=<3,0,0>, v=<2,0,0>, a=<-1,0,0>
 p=<4,0,0>, v=<0,0,0>, a=<-2,0,0>";
 
-        assert_eq!(Day20 {}.solve_a(input), Answer::UInt(0));
+        assert_eq!(Day20 {}.solve_a(input), Some(Answer::UInt(0)))
     }
 
     #[test]
@@ -211,6 +211,6 @@ p=<4,0,0>, v=<0,0,0>, a=<-2,0,0>";
 p=<-4,0,0>, v=<2,0,0>, a=<0,0,0>
 p=<-2,0,0>, v=<1,0,0>, a=<0,0,0>
 p=<3,0,0>, v=<-1,0,0>, a=<0,0,0>";
-        assert_eq!(Day20 {}.solve_b(input), Answer::UInt(1));
+        assert_eq!(Day20 {}.solve_b(input), Some(Answer::UInt(1)))
     }
 }

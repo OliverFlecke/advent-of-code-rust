@@ -5,26 +5,30 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day01;
 
 impl Solution for Day01 {
-    fn solve_a(&self, input: &str) -> Answer {
-        input
-            .trim_end()
-            .split("\n\n")
-            .map(|elf| elf.lines().map(|s| s.parse::<u32>().unwrap()).sum::<u32>())
-            .max()
-            .unwrap()
-            .into()
+    fn solve_a(&self, input: &str) -> Option<Answer> {
+        Some(
+            input
+                .trim_end()
+                .split("\n\n")
+                .map(|elf| elf.lines().map(|s| s.parse::<u32>().unwrap()).sum::<u32>())
+                .max()
+                .unwrap()
+                .into(),
+        )
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
-        input
-            .trim_end()
-            .split("\n\n")
-            .map(|elf| elf.lines().map(|s| s.parse::<u32>().unwrap()).sum::<u32>())
-            .sorted()
-            .rev()
-            .take(3)
-            .sum::<u32>()
-            .into()
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        Some(
+            input
+                .trim_end()
+                .split("\n\n")
+                .map(|elf| elf.lines().map(|s| s.parse::<u32>().unwrap()).sum::<u32>())
+                .sorted()
+                .rev()
+                .take(3)
+                .sum::<u32>()
+                .into(),
+        )
     }
 }
 
@@ -49,11 +53,11 @@ mod tests {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day01 {}.solve_a(SAMPLE_INPUT), Answer::UInt(24000))
+        assert_eq!(Day01 {}.solve_a(SAMPLE_INPUT), Some(Answer::UInt(24000)))
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day01 {}.solve_b(SAMPLE_INPUT), Answer::UInt(45000))
+        assert_eq!(Day01 {}.solve_b(SAMPLE_INPUT), Some(Answer::UInt(45000)))
     }
 }

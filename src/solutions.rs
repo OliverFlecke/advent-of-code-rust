@@ -7,8 +7,8 @@ pub mod y2017;
 pub mod y2022;
 
 pub trait Solution {
-    fn solve_a(&self, input: &str) -> Answer;
-    fn solve_b(&self, input: &str) -> Answer;
+    fn solve_a(&self, input: &str) -> Option<Answer>;
+    fn solve_b(&self, input: &str) -> Option<Answer>;
 }
 
 pub fn get_solver(year: Year, day: Day) -> Option<Box<dyn Solution>> {

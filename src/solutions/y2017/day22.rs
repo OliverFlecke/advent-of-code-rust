@@ -146,13 +146,13 @@ impl World {
 pub struct Day22;
 
 impl Solution for Day22 {
-    fn solve_a(&self, input: &str) -> Answer {
-        Self::run(input, 10_000).into()
+    fn solve_a(&self, input: &str) -> Option<Answer> {
+        Some(Self::run(input, 10_000).into())
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
+    fn solve_b(&self, _input: &str) -> Option<Answer> {
         const BURSTS: usize = 10_000_000;
-        Self::run_b(_input, BURSTS).into()
+        Some(Self::run_b(_input, BURSTS).into())
     }
 }
 
@@ -237,7 +237,7 @@ mod test {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day22 {}.solve_a(INPUT), Answer::UInt(5587));
+        assert_eq!(Day22 {}.solve_a(INPUT), Some(Answer::UInt(5587)))
     }
 
     #[test]
@@ -247,6 +247,6 @@ mod test {
 
     #[test]
     fn test_b() {
-        assert_eq!(Day22 {}.solve_b(INPUT), Answer::UInt(2511944));
+        assert_eq!(Day22 {}.solve_b(INPUT), Some(Answer::UInt(2511944)))
     }
 }

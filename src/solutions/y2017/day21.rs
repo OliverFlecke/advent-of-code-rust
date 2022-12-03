@@ -190,16 +190,16 @@ impl FromStr for Rules {
 pub struct Day21;
 
 impl Solution for Day21 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let rules: &Rules = &input.parse().unwrap();
 
-        run_iterations(rules, 5).count_lights().into()
+        Some(run_iterations(rules, 5).count_lights().into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let rules: &Rules = &input.parse().unwrap();
 
-        run_iterations(rules, 18).count_lights().into()
+        Some(run_iterations(rules, 18).count_lights().into())
     }
 }
 

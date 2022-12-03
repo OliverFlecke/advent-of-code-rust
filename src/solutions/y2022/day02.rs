@@ -5,35 +5,39 @@ use crate::solutions::{answer::Answer, Solution};
 pub struct Day02;
 
 impl Solution for Day02 {
-    fn solve_a(&self, input: &str) -> Answer {
-        input
-            .trim_end()
-            .lines()
-            .map(|l| {
-                let mut it = l
-                    .split(' ')
-                    .map(|x| Hand::try_from(x).expect("valid character"));
-                (it.next().unwrap(), it.next().unwrap())
-            })
-            .map(|(other, me)| me.wins_over(&other).score() + me.score())
-            .sum::<u64>()
-            .into()
+    fn solve_a(&self, input: &str) -> Option<Answer> {
+        Some(
+            input
+                .trim_end()
+                .lines()
+                .map(|l| {
+                    let mut it = l
+                        .split(' ')
+                        .map(|x| Hand::try_from(x).expect("valid character"));
+                    (it.next().unwrap(), it.next().unwrap())
+                })
+                .map(|(other, me)| me.wins_over(&other).score() + me.score())
+                .sum::<u64>()
+                .into(),
+        )
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
-        input
-            .trim_end()
-            .lines()
-            .map(|l| {
-                let mut split = l.split(' ');
-                (
-                    Hand::try_from(split.next().unwrap()).expect("valid hand character"),
-                    Outcome::try_from(split.next().unwrap()).expect("to be valid outcome"),
-                )
-            })
-            .map(|(op, goal)| goal.score() + get_hand_to_play(goal, op).score())
-            .sum::<u64>()
-            .into()
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        Some(
+            input
+                .trim_end()
+                .lines()
+                .map(|l| {
+                    let mut split = l.split(' ');
+                    (
+                        Hand::try_from(split.next().unwrap()).expect("valid hand character"),
+                        Outcome::try_from(split.next().unwrap()).expect("to be valid outcome"),
+                    )
+                })
+                .map(|(op, goal)| goal.score() + get_hand_to_play(goal, op).score())
+                .sum::<u64>()
+                .into(),
+        )
     }
 }
 
@@ -140,12 +144,12 @@ C Z";
 
     #[test]
     fn test_a() {
-        assert_eq!(Day02 {}.solve_a(SAMPLE_INPUT), Answer::UInt(15));
+        assert_eq!(Day02 {}.solve_a(SAMPLE_INPUT), Some(Answer::UInt(15)));
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day02 {}.solve_b(SAMPLE_INPUT), Answer::UInt(12));
+        assert_eq!(Day02 {}.solve_b(SAMPLE_INPUT), Some(Answer::UInt(12)));
     }
 
     #[test]

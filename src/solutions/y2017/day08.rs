@@ -99,7 +99,7 @@ impl Day08 {
 }
 
 impl Solution for Day08 {
-    fn solve_a(&self, input: &str) -> Answer {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         let mut registers: HashMap<String, i64> = HashMap::new();
 
         input
@@ -108,10 +108,10 @@ impl Solution for Day08 {
             .map(Day08::parse_line)
             .for_each(|statement| statement.execute(&mut registers));
 
-        (*registers.values().max().unwrap()).into()
+        Some((*registers.values().max().unwrap()).into())
     }
 
-    fn solve_b(&self, input: &str) -> Answer {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         let mut registers: HashMap<String, i64> = HashMap::new();
         let mut max = 0;
 
@@ -127,7 +127,7 @@ impl Solution for Day08 {
                 }
             });
 
-        max.into()
+        Some(max.into())
     }
 }
 
@@ -140,11 +140,11 @@ mod test {
 
     #[test]
     fn test_a() {
-        assert_eq!(Day08 {}.solve_a(INPUT), Answer::Int(1));
+        assert_eq!(Day08 {}.solve_a(INPUT), Some(Answer::Int(1)))
     }
 
     #[test]
     fn test_b() {
-        assert_eq!(Day08 {}.solve_b(INPUT), Answer::Int(10));
+        assert_eq!(Day08 {}.solve_b(INPUT), Some(Answer::Int(10)))
     }
 }

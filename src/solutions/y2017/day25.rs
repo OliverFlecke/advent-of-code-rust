@@ -8,7 +8,7 @@ const LEFT: i64 = -1;
 pub struct Day25;
 
 impl Solution for Day25 {
-    fn solve_a(&self, _input: &str) -> Answer {
+    fn solve_a(&self, _input: &str) -> Option<Answer> {
         const ITERATIONS: usize = 12_172_063;
         // const ITERATIONS: usize = 6;
         let mut tape: HashSet<i64> = HashSet::new();
@@ -86,11 +86,11 @@ impl Solution for Day25 {
             }
         }
 
-        tape.len().into()
+        Some(tape.len().into())
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        unimplemented!("No answer necessary for this part");
+    fn solve_b(&self, _input: &str) -> Option<Answer> {
+        None
     }
 }
 
