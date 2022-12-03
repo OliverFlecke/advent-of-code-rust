@@ -138,10 +138,7 @@ pub fn get_input(year: Year, day: u8) -> Result<String, Box<dyn Error>> {
 fn build_client() -> Client {
     reqwest::blocking::Client::builder()
         .default_headers(get_headers())
-        .user_agent(format!(
-            "github.com/OliverFlecke/advent-of-code-rust v{} by oliverfl@live.dk",
-            env::var("CARGO_PKG_VERSION").unwrap()
-        ))
+        .user_agent("github.com/OliverFlecke/advent-of-code-rust by oliverfl@live.dk")
         .build()
         .unwrap()
 }
