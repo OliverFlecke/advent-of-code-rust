@@ -24,10 +24,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 /// Solve a given day, and submit to the AoC server (if desired).
 fn solve_day(args: &Args, year: Year, day: u8) {
     let problem_input =
-        get_input(year, day).expect(format!("no input for {year:?}/{day} was found").as_str());
+        get_input(year, day).unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
 
     let solver =
-        get_solver(year, day).expect(format!("no solver found for {year:?}/{day}").as_str());
+        get_solver(year, day).unwrap_or_else(|| panic!("no solver found for {year:?}/{day}"));
 
     let start_a = Instant::now();
     let answer_a = solver.solve_a(&problem_input);
@@ -71,8 +71,8 @@ fn benchmark_year(year: Year) {
     let mut total_b = Duration::ZERO;
 
     for day in 1..=25 {
-        let problem_input =
-            get_input(year, day).expect(format!("no input for {year:?}/{day} was found").as_str());
+        let problem_input = get_input(year, day)
+            .unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
         let solver = match get_solver(year, day) {
             Some(solver) => solver,
             None => break,
