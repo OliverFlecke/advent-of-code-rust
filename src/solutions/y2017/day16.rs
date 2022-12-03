@@ -17,24 +17,27 @@ impl Solution for Day16 {
 
 impl Day16 {
     fn parse(input: &str) -> Map<std::str::Split<'_, char>, fn(&str) -> DanceMove> {
-        input.split(',').map(|s| match s.as_bytes()[0] as char {
-            's' => DanceMove::Spin(s.get(1..).unwrap().parse().unwrap()),
-            'x' => {
-                let mut split = s.get(1..).unwrap().split('/');
-                DanceMove::Exchange(
-                    split.next().unwrap().parse().unwrap(),
-                    split.next().unwrap().parse().unwrap(),
-                )
-            }
-            'p' => {
-                let mut split = s.get(1..).unwrap().split('/');
-                DanceMove::Partner(
-                    split.next().unwrap().as_bytes()[0] as char,
-                    split.next().unwrap().as_bytes()[0] as char,
-                )
-            }
-            x => panic!("unable to understand input: `{}`", x),
-        })
+        input
+            .trim_end()
+            .split(',')
+            .map(|s| match s.as_bytes()[0] as char {
+                's' => DanceMove::Spin(s.get(1..).unwrap().parse().unwrap()),
+                'x' => {
+                    let mut split = s.get(1..).unwrap().split('/');
+                    DanceMove::Exchange(
+                        split.next().unwrap().parse().unwrap(),
+                        split.next().unwrap().parse().unwrap(),
+                    )
+                }
+                'p' => {
+                    let mut split = s.get(1..).unwrap().split('/');
+                    DanceMove::Partner(
+                        split.next().unwrap().as_bytes()[0] as char,
+                        split.next().unwrap().as_bytes()[0] as char,
+                    )
+                }
+                x => panic!("unable to understand input: `{}`", x),
+            })
     }
 
     fn dance(moves: impl Iterator<Item = DanceMove>, size: usize) -> String {

@@ -102,6 +102,7 @@ impl CubeCoordinate {
 impl Solution for Day11 {
     fn solve_a(&self, input: &str) -> Answer {
         input
+            .trim_end()
             .split(',')
             .map(|dir_str| dir_str.into())
             .fold(CubeCoordinate::zero(), CubeCoordinate::move_in_dir)
@@ -111,6 +112,7 @@ impl Solution for Day11 {
 
     fn solve_b(&self, input: &str) -> Answer {
         input
+            .trim_end()
             .split(',')
             .map(|dir_str| dir_str.into())
             .fold((0, CubeCoordinate::zero()), |(max_dist, pos), dir| {

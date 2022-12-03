@@ -32,8 +32,8 @@ fn solve_day(args: &Args, year: Year, day: u8) {
     let start_a = Instant::now();
     let answer_a = solver.solve_a(&problem_input);
     println!(
-        "Part A - Answer: {:?} - Time: {:?}",
-        answer_a,
+        "Part A: {:>16} \tTime: {:>16?}",
+        answer_a.to_string().cyan(),
         start_a.elapsed()
     );
     if args.submit_a {
@@ -43,8 +43,8 @@ fn solve_day(args: &Args, year: Year, day: u8) {
     let start_b = Instant::now();
     let answer_b = solver.solve_b(&problem_input);
     println!(
-        "Part B - Answer: {:?} - Time: {:?}",
-        answer_b,
+        "Part B: {:>16} \tTime: {:>16?}",
+        answer_b.to_string().cyan(),
         start_b.elapsed()
     );
     if args.submit_b {
@@ -56,11 +56,12 @@ fn solve_day(args: &Args, year: Year, day: u8) {
 /// It assumes that the solutions are created from the start and to the end, and will break
 /// if on the first day that is missing.
 fn benchmark_year(year: Year) {
+    const ANSWER_WIDTH: usize = 32;
     println!("Running benchmarks for {year:?}");
     println!(
         "{}",
         format!(
-            "        | {:^16} | {:^16} | {:^16} | {:^16} ",
+            "        | {:^ANSWER_WIDTH$} | {:^ANSWER_WIDTH$} | {:^16} | {:^16} ",
             "Part A", "Part B", "Elapsed A", "Elapsed B"
         )
         .cyan()
@@ -86,7 +87,7 @@ fn benchmark_year(year: Year) {
         let elapsed_b = start_b.elapsed();
 
         println!(
-            "Day {day: >2} \t| {:>16} | {:>16} | {elapsed_a:>16?} | {elapsed_b:>16?} ",
+            "Day {day: >2} \t| {:>ANSWER_WIDTH$} | {:>ANSWER_WIDTH$} | {elapsed_a:>16?} | {elapsed_b:>16?} ",
             answer_a.to_string(),
             answer_b.to_string(),
         );
@@ -98,7 +99,7 @@ fn benchmark_year(year: Year) {
     println!(
         "{}",
         format!(
-            "Total   | {:^16} | {:^16} | {total_a:>16?} | {total_b:>16?} ",
+            "Total   | {:^ANSWER_WIDTH$} | {:^ANSWER_WIDTH$} | {total_a:>16?} | {total_b:>16?} ",
             "", ""
         )
         .green()

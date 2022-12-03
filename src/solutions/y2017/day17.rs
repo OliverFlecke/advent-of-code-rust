@@ -5,7 +5,7 @@ pub struct Day17;
 impl Solution for Day17 {
     fn solve_a(&self, input: &str) -> Answer {
         let times = 2017;
-        let amount: usize = input.parse().unwrap();
+        let amount: usize = input.trim_end().parse().unwrap();
         let mut buffer = vec![0];
         let mut index = 0;
 
@@ -19,7 +19,7 @@ impl Solution for Day17 {
 
     fn solve_b(&self, input: &str) -> Answer {
         let times = 50_000_000;
-        let amount: usize = input.parse().unwrap();
+        let amount: usize = input.trim_end().parse().unwrap();
         let mut next = 0;
         let mut answer = 0;
         for i in 1..times + 1 {

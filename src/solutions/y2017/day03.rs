@@ -6,7 +6,7 @@ pub struct Day03 {}
 
 impl Solution for Day03 {
     fn solve_a(&self, input: &str) -> Answer {
-        let n: i64 = input.parse().unwrap();
+        let n: i64 = input.trim_end().parse().unwrap();
         if n == 1 {
             return Answer::UInt(0);
         }
@@ -38,7 +38,7 @@ impl Solution for Day03 {
                 .sum::<u32>()
         }
 
-        let target: u32 = input.parse().unwrap();
+        let target: u32 = input.trim_end().parse().unwrap();
 
         let mut grid: HashMap<(i32, i32), u32> = HashMap::new();
         grid.insert((0, 0), 1);

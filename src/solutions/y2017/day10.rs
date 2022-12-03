@@ -18,6 +18,7 @@ impl Solution for Day10 {
             &mut skip_size,
             &mut array,
             &input
+                .trim_end()
                 .split(',')
                 .map(|number| number.parse::<usize>().unwrap())
                 .collect(),
