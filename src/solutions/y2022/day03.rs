@@ -17,7 +17,7 @@ impl Solution for Day03 {
                 )
             })
             .map(|(a, b)| a.intersection(&b).cloned().collect::<HashSet<_>>())
-            .map(|set| set.iter().next().unwrap().clone())
+            .map(|set| *set.iter().next().unwrap())
             .map(|c| char_to_priority(c) as u64)
             .sum::<u64>()
             .into()
@@ -32,7 +32,7 @@ impl Solution for Day03 {
                 chunk
                     .map(|l| l.chars().collect::<HashSet<_>>())
                     .reduce(|acc, item| acc.intersection(&item).cloned().collect::<HashSet<_>>())
-                    .map(|set| set.iter().next().unwrap().clone())
+                    .map(|set| *set.iter().next().unwrap())
                     .map(|c| char_to_priority(c) as u64)
                     .unwrap()
             })
@@ -43,9 +43,9 @@ impl Solution for Day03 {
 
 fn char_to_priority(c: char) -> u8 {
     if c.is_uppercase() {
-        c as u8 - ('A' as u8) + 27
+        c as u8 - b'A' + 27
     } else {
-        c as u8 - ('a' as u8) + 1
+        c as u8 - b'a' + 1
     }
 }
 

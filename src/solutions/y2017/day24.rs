@@ -126,9 +126,7 @@ impl FromStr for Bridge {
 
 impl From<Vec<Port>> for Bridge {
     fn from(ports: Vec<Port>) -> Self {
-        Bridge {
-            ports: ports.clone(),
-        }
+        Bridge { ports }
     }
 }
 
