@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::collections::HashSet;
 
 use crate::solutions::{answer::Answer, Solution};
@@ -16,17 +17,27 @@ impl Solution for Day03 {
                 )
             })
             .map(|(a, b)| a.intersection(&b).cloned().collect::<HashSet<_>>())
-            .map(|set| {
-                debug_assert_eq!(set.len(), 1);
-                set.iter().next().unwrap().clone()
-            })
+            .map(|set| set.iter().next().unwrap().clone())
             .map(|c| char_to_priority(c) as u64)
             .sum::<u64>()
             .into()
     }
 
-    fn solve_b(&self, _input: &str) -> Answer {
-        todo!()
+    fn solve_b(&self, input: &str) -> Answer {
+        input
+            .lines()
+            .chunks(3)
+            .into_iter()
+            .map(|chunk| {
+                chunk
+                    .map(|l| l.chars().collect::<HashSet<_>>())
+                    .reduce(|acc, item| acc.intersection(&item).cloned().collect::<HashSet<_>>())
+                    .map(|set| set.iter().next().unwrap().clone())
+                    .map(|c| char_to_priority(c) as u64)
+                    .unwrap()
+            })
+            .sum::<u64>()
+            .into()
     }
 }
 
@@ -60,5 +71,10 @@ CrZsJsPPZsGzwwsLwLmpwMDw";
     #[test]
     fn test_a() {
         assert_eq!(Day03 {}.solve_a(SAMPLE_INPUT), Answer::UInt(157));
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day03 {}.solve_b(SAMPLE_INPUT), Answer::UInt(70))
     }
 }
