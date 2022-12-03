@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use std::collections::HashSet;
 
 use crate::solutions::{answer::Answer, Solution};
@@ -26,10 +25,13 @@ impl Solution for Day03 {
     fn solve_b(&self, input: &str) -> Answer {
         input
             .lines()
+            .collect::<Vec<_>>()
+            .as_slice()
             .chunks(3)
             .into_iter()
             .map(|chunk| {
                 chunk
+                    .iter()
                     .map(|l| l.chars().collect::<HashSet<_>>())
                     .reduce(|acc, item| acc.intersection(&item).cloned().collect::<HashSet<_>>())
                     .map(|set| *set.iter().next().unwrap())
