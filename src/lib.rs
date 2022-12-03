@@ -1,6 +1,6 @@
 pub mod client;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, clap::ValueEnum)]
 pub enum Year {
     Y2016 = 2016,
     Y2017 = 2017,
