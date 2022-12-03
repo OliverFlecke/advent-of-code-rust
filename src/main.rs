@@ -23,7 +23,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         start_a.elapsed()
     );
 
-    submit(args.year, args.day, Level::A, &answer_a.to_string());
+    if args.submit_a {
+        submit(args.year, args.day, Level::A, &answer_a.to_string());
+    }
 
     let start_b = Instant::now();
     let answer_b = solver.solve_b(&problem_input);
@@ -32,7 +34,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         answer_b,
         start_b.elapsed()
     );
-    submit(args.year, args.day, Level::B, &answer_b.to_string());
+
+    if args.submit_b {
+        submit(args.year, args.day, Level::B, &answer_b.to_string());
+    }
 
     Ok(())
 }
@@ -43,4 +48,9 @@ struct Args {
     #[arg(value_enum)]
     year: Year,
     day: u8,
+
+    #[arg(short = 'a', long)]
+    submit_a: bool,
+    #[arg(short = 'b', long)]
+    submit_b: bool,
 }
