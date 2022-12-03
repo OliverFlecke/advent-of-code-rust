@@ -13,7 +13,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(_) => panic!("Unable to get input"),
     };
 
-    let solver = get_solver(args.year, args.day);
+    let solver = get_solver(args.year, args.day).expect("No solver is found for this day");
+
     let start_a = Instant::now();
     let answer_a = solver.solve_a(&problem_input);
     println!(
