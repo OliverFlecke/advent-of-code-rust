@@ -106,6 +106,10 @@ fn benchmark_year(year: Year) {
         )
         .green()
     );
+    println!(
+        "Total time for both parts: {}",
+        format!("{:?}", total_a + total_b).green()
+    );
 }
 
 #[derive(Debug, Parser)]
