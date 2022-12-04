@@ -8,6 +8,7 @@ use std::{
     error::Error,
     fs,
     path::{Path, PathBuf},
+    process::exit,
 };
 pub mod score;
 
@@ -147,7 +148,20 @@ fn download_input(year: Year, day: Day) -> String {
     let url = format!("{base}/input", base = get_base_url(year, day));
     let client = build_client();
 
-    client.get(url).send().unwrap().text().unwrap()
+    match client.get(url).send() {
+        Ok(response) if response.status().is_success() => {
+            response.text().expect("input to be valid")
+        }
+        Ok(response) => {
+            print!(
+                "Invalid status code: {}. Message from server:\n{}",
+                response.status(),
+                response.text().unwrap()
+            );
+            exit(1);
+        }
+        Err(e) => panic!("Failed to download input {e:?}"),
+    }
 }
 
 fn store_input_in_cache(year: Year, day: Day, input: &String) -> std::io::Result<()> {
