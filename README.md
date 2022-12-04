@@ -15,6 +15,13 @@ To run and submit solutions for a given year and day (note the `y` prefix on the
 cargo run y<year> <day>
 ```
 
+### Toolchain
+
+Currently validated Rust version is `v1.65.0`. No nightly features are used.
+
+Solutions are implemented in Rust, and are normally run with the latest version of the language (but usually only updated each december in this project).
+See [here for installation instructions](https://www.rust-lang.org/learn/get-started).
+
 ## Authentication
 
 To use the helper functions to retreive input and submit answers, the library will look for a AOC_TOKEN environment variable with a valid cookie session.
@@ -35,7 +42,7 @@ To use the helper functions to retreive input and submit answers, the library wi
   - Note that a few problems cannot be downloaded automatically, as it is part of the description page.
 - [x] Submitting answers to the AoC server
   - [ ] This is currently only available through the CLI, but could be exposed as a crate.
-- [ ] Benchmarking of solutions
+- [x] Benchmarking of solutions
 
 ## How to add a new solution
 
@@ -45,3 +52,13 @@ Both of these takes a string as input and should return an `Answer`.
 
 The `solution.rs` also contains a helper function that can generate the correct solution struct for a given day.
 When adding a new solution struct, it should also be added to this method.
+
+## Benchmarking solutions
+
+Each year of solutions can be benchmarked together.
+This can be done by running the binary **without** the day parameter, e.g. to benchmark year 2017 use:
+```sh
+cargo run -r -- y<year>
+```
+
+Remember to use the `-r` to build in release mode for proper results.
