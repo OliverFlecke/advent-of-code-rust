@@ -16,8 +16,7 @@ impl Solution for Day03 {
                         b.chars().collect::<HashSet<_>>(),
                     )
                 })
-                .map(|(a, b)| a.intersection(&b).cloned().collect::<HashSet<_>>())
-                .map(|set| *set.iter().next().unwrap())
+                .map(|(a, b)| a.intersection(&b).into_iter().next().unwrap().clone())
                 .map(|c| char_to_priority(c) as u64)
                 .sum::<u64>()
                 .into(),
