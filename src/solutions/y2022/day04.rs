@@ -16,6 +16,25 @@ impl Solution for Day04 {
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
+        // This was just an experiment to see the time difference between doing both at once.
+        // From this, I couldn't see any runtime difference between this and doing only part B,
+        // which makes sense, as the only difference is a few extra comprisons and one addition.
+        // But I plan to stick with two different methods, mainly so I can time and submit them independently.
+
+        // let pairs = input.trim_end().lines().map(parse);
+        // let mut contains = 0;
+        // let mut overlaps = 0;
+        // for (a, b) in pairs {
+        //     if a.fully_contains(&b) || b.fully_contains(&a) {
+        //         contains += 1;
+        //     }
+        //     if a.overlap(&b) {
+        //         overlaps += 1
+        //     }
+        // }
+
+        // Some(overlaps.into())
+
         Some(
             input
                 .trim_end()
