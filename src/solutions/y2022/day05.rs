@@ -13,10 +13,10 @@ impl Solution for Day05 {
 
         for command in commands {
             let from = stacks.get_mut(&command.from).unwrap();
-            let items = from.split_off(from.len() - command.amount);
+            let mut items = from.split_off(from.len() - command.amount);
+            items.reverse();
 
-            let to = stacks.get_mut(&command.to).unwrap();
-            items.iter().rev().for_each(|x| to.push(*x));
+            stacks.get_mut(&command.to).unwrap().extend(items);
         }
 
         Some(get_top_items(stacks).into())
@@ -28,8 +28,7 @@ impl Solution for Day05 {
             let from = stacks.get_mut(&command.from).unwrap();
             let items = from.split_off(from.len() - command.amount);
 
-            let to = stacks.get_mut(&command.to).unwrap();
-            items.iter().for_each(|x| to.push(*x));
+            stacks.get_mut(&command.to).unwrap().extend(items);
         }
 
         Some(get_top_items(stacks).into())
