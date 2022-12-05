@@ -12,11 +12,11 @@ impl Solution for Day05 {
         let (mut stacks, commands) = parse(input);
 
         for command in commands {
-            for _ in 0..command.amount {
-                let item = stacks.get_mut(&command.from).unwrap().pop().unwrap();
-                let to = stacks.get_mut(&command.to).unwrap();
-                to.push(item)
-            }
+            let from = stacks.get_mut(&command.from).unwrap();
+            let items = from.split_off(from.len() - command.amount);
+
+            let to = stacks.get_mut(&command.to).unwrap();
+            items.iter().rev().for_each(|x| to.push(*x));
         }
 
         Some(get_top_items(stacks).into())
@@ -25,14 +25,11 @@ impl Solution for Day05 {
     fn solve_b(&self, input: &str) -> Option<Answer> {
         let (mut stacks, commands) = parse(input);
         for command in commands {
-            let mut items = vec![];
-            for _ in 0..command.amount {
-                let item = stacks.get_mut(&command.from).unwrap().pop().unwrap();
-                items.push(item);
-            }
+            let from = stacks.get_mut(&command.from).unwrap();
+            let items = from.split_off(from.len() - command.amount);
 
             let to = stacks.get_mut(&command.to).unwrap();
-            items.iter().rev().for_each(|x| to.push(*x));
+            items.iter().for_each(|x| to.push(*x));
         }
 
         Some(get_top_items(stacks).into())
@@ -58,17 +55,17 @@ fn parse(input: &str) -> (Stacks, Vec<Command>) {
     let mut mapping: Stacks = HashMap::new();
     stacks
         .lines()
-        .map(|l| l.chars().skip(1).step_by(4)) //s.collect::<Vec<_>>())
+        .map(|l| l.chars().skip(1).step_by(4))
         .rev()
         .for_each(|l| {
-            l.enumerate().for_each(|(i, c)| {
-                if 'A' <= c && c <= 'Z' {
+            l.enumerate()
+                .filter(|(_, c)| 'A' <= *c && *c <= 'Z')
+                .for_each(|(i, c)| {
                     mapping
                         .entry(i + 1)
                         .and_modify(|v| v.push(c))
                         .or_insert(vec![c]);
-                }
-            })
+                })
         });
 
     let re = Regex::new(r"move (?P<amount>\d+) from (?P<from>\d+) to (?P<to>\d+)")
