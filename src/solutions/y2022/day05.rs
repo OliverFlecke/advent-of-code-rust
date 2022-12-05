@@ -19,19 +19,32 @@ impl Solution for Day05 {
             }
         }
 
-        Some(
-            stacks
-                .iter()
-                .sorted_by_key(|x| x.0)
-                .map(|(_, x)| x.last().unwrap())
-                .collect::<String>()
-                .into(),
-        )
+        Some(get_top_items(stacks).into())
     }
 
-    fn solve_b(&self, _input: &str) -> Option<Answer> {
-        None
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        let (mut stacks, commands) = parse(input);
+        for command in commands {
+            let mut items = vec![];
+            for _ in 0..command.amount {
+                let item = stacks.get_mut(&command.from).unwrap().pop().unwrap();
+                items.push(item);
+            }
+
+            let to = stacks.get_mut(&command.to).unwrap();
+            items.iter().rev().for_each(|x| to.push(*x));
+        }
+
+        Some(get_top_items(stacks).into())
     }
+}
+
+fn get_top_items(stacks: HashMap<usize, Vec<char>>) -> String {
+    stacks
+        .iter()
+        .sorted_by_key(|x| x.0)
+        .map(|(_, x)| x.last().unwrap())
+        .collect::<String>()
 }
 
 // Stack can just be a Vec
@@ -100,6 +113,14 @@ move 1 from 1 to 2";
         assert_eq!(
             Day05 {}.solve_a(SAMPLE_INPUT),
             Some(Answer::String("CMZ".to_string()))
+        )
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(
+            Day05 {}.solve_b(SAMPLE_INPUT),
+            Some(Answer::String("MCD".to_string()))
         )
     }
 }
