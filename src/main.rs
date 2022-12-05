@@ -1,7 +1,7 @@
 use advent_of_code::{client::*, Level, Year};
 use clap::Parser;
 use colored::Colorize;
-use solutions::get_solver;
+use solutions::{answer::Answer, get_solver};
 use std::{
     error::Error,
     time::{Duration, Instant},
@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Some(day) = args.day {
         solve_day(&args, args.year, day);
     } else {
-        benchmark_year(args.year);
+        benchmark_year(&args);
     }
 
     Ok(())
@@ -57,8 +57,9 @@ fn solve_day(args: &Args, year: Year, day: u8) {
 /// Benchmark a year. This will run and time all available solutions for the given year.
 /// It assumes that the solutions are created from the start and to the end, and will break
 /// if on the first day that is missing.
-fn benchmark_year(year: Year) {
+fn benchmark_year(args: &Args) {
     const ANSWER_WIDTH: usize = 32;
+    let year = args.year;
     println!("Running benchmarks for {year:?}");
     println!(
         "{}",
@@ -80,13 +81,9 @@ fn benchmark_year(year: Year) {
         let problem_input = get_input(year, day)
             .unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
 
-        let start_a = Instant::now();
-        let answer_a = solver.solve_a(&problem_input);
-        let elapsed_a = start_a.elapsed();
-
-        let start_b = Instant::now();
-        let answer_b = solver.solve_b(&problem_input);
-        let elapsed_b = start_b.elapsed();
+        let iterations = args.benchmark_iterations.unwrap_or(1_000);
+        let (answer_a, elapsed_a) = benchmark(iterations, &problem_input, |s| solver.solve_a(&s));
+        let (answer_b, elapsed_b) = benchmark(iterations, &problem_input, |s| solver.solve_b(&s));
 
         println!(
             "Day {day: >2} \t| {:>ANSWER_WIDTH$} | {:>ANSWER_WIDTH$} | {elapsed_a:>16?} | {elapsed_b:>16?} ",
@@ -112,6 +109,26 @@ fn benchmark_year(year: Year) {
     );
 }
 
+fn benchmark<F>(iterations: u32, problem_input: &String, solver: F) -> (Option<Answer>, Duration)
+where
+    F: Fn(&str) -> Option<Answer>,
+{
+    let mut total = Duration::ZERO;
+    let mut answer: Option<Answer> = None;
+
+    for _ in 0..iterations {
+        let start = Instant::now();
+        let a = solver(&problem_input);
+        total += start.elapsed();
+
+        if answer.is_none() {
+            answer = a;
+        }
+    }
+
+    (answer, total / iterations)
+}
+
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
 struct Args {
@@ -124,4 +141,6 @@ struct Args {
     submit_a: bool,
     #[arg(short = 'b', long)]
     submit_b: bool,
+    #[arg(short = 'i', long)]
+    benchmark_iterations: Option<u32>,
 }
