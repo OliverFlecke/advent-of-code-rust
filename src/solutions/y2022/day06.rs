@@ -17,7 +17,16 @@ impl Solution for Day06 {
         None
     }
 
-    fn solve_b(&self, _input: &str) -> Option<Answer> {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        let input = input.trim_end();
+        const DIST: usize = 14;
+
+        for i in 0..input.len() - DIST {
+            if is_unique(&input[i..i + DIST]) {
+                return Some((i + DIST).into());
+            }
+        }
+
         None
     }
 }
@@ -58,6 +67,30 @@ mod test {
         assert_eq!(
             Day06.solve_a("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"),
             Some(Answer::UInt(11))
+        );
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(
+            Day06.solve_b("mjqjpqmgbljsphdztnvjfqwrcgsmlb"),
+            Some(Answer::UInt(19))
+        );
+        assert_eq!(
+            Day06.solve_b("bvwbjplbgvbhsrlpgdmjqwftvncz"),
+            Some(Answer::UInt(23))
+        );
+        assert_eq!(
+            Day06.solve_b("nppdvjthqldpwncqszvftbrmjlhg"),
+            Some(Answer::UInt(23))
+        );
+        assert_eq!(
+            Day06.solve_b("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"),
+            Some(Answer::UInt(29))
+        );
+        assert_eq!(
+            Day06.solve_b("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"),
+            Some(Answer::UInt(26))
         );
     }
 }
