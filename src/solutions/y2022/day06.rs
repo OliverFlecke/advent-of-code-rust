@@ -1,4 +1,5 @@
-use itertools::Itertools;
+use std::collections::HashMap;
+
 
 use crate::solutions::{answer::Answer, Solution};
 
@@ -15,11 +16,43 @@ impl Solution for Day06 {
 }
 
 fn find_first_unique(input: &str, len: usize) -> Option<usize> {
-    for i in 0..input.len() - len {
-        if input[i..i + len].chars().all_unique() {
-            return Some((i + len).into());
+    // Optimized solution to keep track of the last `len` chars and remove/add them manually.
+    // This is instead of going through each `len` chars in each inner loop (done in the simpler solution below).
+    // Runs in less than 50% compared to the original solution (338.696µs vs 125.458µs for part B).
+
+    let bytes = input.as_bytes();
+    let mut map: HashMap<u8, u8> = HashMap::new();
+    for (i, b) in bytes.iter().enumerate() {
+        if i >= len {
+            let first = &bytes[i - len];
+            let count = map.get(first).unwrap();
+            if *count == 1 {
+                map.remove(first);
+            } else {
+                map.entry(*first).and_modify(|x| {
+                    *x -= 1;
+                });
+            }
+        }
+
+        map.entry(*b)
+            .and_modify(|x| {
+                *x += 1;
+            })
+            .or_insert(1);
+
+        if map.len() == len {
+            return Some(i + 1);
         }
     }
+
+    // This is my original, simpler solution to solving the problem
+    // use itertools::Itertools;
+    // for i in 0..input.len() - len {
+    //     if input[i..i + len].chars().all_unique() {
+    //         return Some((i + len).into());
+    //     }
+    // }
 
     None
 }
