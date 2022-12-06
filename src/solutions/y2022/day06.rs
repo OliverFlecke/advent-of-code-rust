@@ -1,5 +1,7 @@
-use std::collections::HashMap;
-
+use std::{
+    collections::HashMap,
+    ops::{AddAssign, SubAssign},
+};
 
 use crate::solutions::{answer::Answer, Solution};
 
@@ -25,21 +27,14 @@ fn find_first_unique(input: &str, len: usize) -> Option<usize> {
     for (i, b) in bytes.iter().enumerate() {
         if i >= len {
             let first = &bytes[i - len];
-            let count = map.get(first).unwrap();
-            if *count == 1 {
+            if *map.get(first).unwrap() == 1 {
                 map.remove(first);
             } else {
-                map.entry(*first).and_modify(|x| {
-                    *x -= 1;
-                });
+                map.entry(*first).and_modify(|x| x.sub_assign(1));
             }
         }
 
-        map.entry(*b)
-            .and_modify(|x| {
-                *x += 1;
-            })
-            .or_insert(1);
+        map.entry(*b).and_modify(|x| x.add_assign(1)).or_insert(1);
 
         if map.len() == len {
             return Some(i + 1);
