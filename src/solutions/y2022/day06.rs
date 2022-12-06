@@ -6,40 +6,22 @@ pub struct Day06;
 
 impl Solution for Day06 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
-        let input = input.trim_end();
-
-        for i in 0..input.len() - 4 {
-            if is_unique(&input[i..i + 4]) {
-                return Some((i + 4).into());
-            }
-        }
-
-        None
+        find_first_unique(input.trim_end(), 4).map(Answer::from)
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        let input = input.trim_end();
-        const DIST: usize = 14;
-
-        for i in 0..input.len() - DIST {
-            if is_unique(&input[i..i + DIST]) {
-                return Some((i + DIST).into());
-            }
-        }
-
-        None
+        find_first_unique(input.trim_end(), 14).map(Answer::from)
     }
 }
 
-fn is_unique(input: &str) -> bool {
-    input.chars().all_unique()
-    // for i in 0..input.len() - 1 {
-    //     if input[i] == input[i + 1] {
-    //         return false
-    //     }
-    // }
+fn find_first_unique(input: &str, len: usize) -> Option<usize> {
+    for i in 0..input.len() - len {
+        if input[i..i + len].chars().all_unique() {
+            return Some((i + len).into());
+        }
+    }
 
-    // true
+    None
 }
 
 #[cfg(test)]
