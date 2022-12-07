@@ -65,6 +65,16 @@ struct File {
     size: usize,
 }
 
+impl File {
+    #[allow(dead_code)]
+    pub fn new(name: &str, size: usize) -> Self {
+        Self {
+            name: name.to_string(),
+            size,
+        }
+    }
+}
+
 impl TryFrom<&str> for File {
     type Error = ();
 
@@ -78,7 +88,7 @@ impl TryFrom<&str> for File {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 struct Dir {
     name: String,
     parent: Option<Rc<RefCell<Dir>>>,
@@ -305,9 +315,63 @@ $ ls
 
     #[test]
     fn get_files_and_dirs_test() {
+        #[derive(Debug, Clone, PartialEq)]
+        struct SimpleDir {
+            name: String,
+            directories: Vec<SimpleDir>,
+            files: Vec<File>,
+        }
+
+        impl From<Dir> for SimpleDir {
+            fn from(d: Dir) -> Self {
+                Self {
+                    name: d.name,
+                    files: d.files.clone(),
+                    directories: d
+                        .directories
+                        .iter()
+                        .map(|x| x.borrow().clone().into())
+                        .collect(),
+                }
+            }
+        }
+
         let cmds = parse_commands(SAMPLE_INPUT);
         let root = get_files_and_dirs(cmds);
         root.borrow().pretty_display(0);
+
+        assert_eq!(
+            SimpleDir::from(root.clone().borrow().to_owned()),
+            SimpleDir {
+                name: "/".to_string(),
+                files: vec![File::new("b.txt", 14848514), File::new("c.dat", 8504156)],
+                directories: vec![
+                    SimpleDir {
+                        name: "a".to_string(),
+                        files: vec![
+                            File::new("f", 29116),
+                            File::new("g", 2557),
+                            File::new("h.lst", 62596)
+                        ],
+                        directories: vec![SimpleDir {
+                            name: "e".to_string(),
+                            files: vec![File::new("i", 584)],
+                            directories: vec![],
+                        }]
+                    },
+                    SimpleDir {
+                        name: "d".to_string(),
+                        files: vec![
+                            File::new("j", 4060174),
+                            File::new("d.log", 8033020),
+                            File::new("d.ext", 5626152),
+                            File::new("k", 7214296)
+                        ],
+                        directories: vec![]
+                    }
+                ]
+            }
+        )
     }
 
     #[test]
