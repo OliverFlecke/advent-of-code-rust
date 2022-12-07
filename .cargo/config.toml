@@ -1,0 +1,3 @@
+[alias]
+solve = "run --bin solve -r --"
+benchmark = "run --bin benchmark -r --"

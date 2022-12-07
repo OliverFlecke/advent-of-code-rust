@@ -1,4 +1,5 @@
 pub mod client;
+pub mod solutions;
 
 #[derive(Copy, Clone, Debug, clap::ValueEnum)]
 pub enum Year {

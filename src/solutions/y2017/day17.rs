@@ -36,7 +36,7 @@ impl Solution for Day17 {
 
 #[cfg(test)]
 mod test {
-    use advent_of_code::client::get_input;
+    use crate::client::get_input;
 
     use super::*;
 
@@ -48,7 +48,7 @@ mod test {
     #[test]
     fn test_b() {
         assert_eq!(
-            Day17 {}.solve_b(get_input(advent_of_code::Year::Y2017, 17).unwrap().as_str()),
+            Day17 {}.solve_b(get_input(crate::Year::Y2017, 17).unwrap().as_str()),
             Some(Answer::UInt(41797835))
         );
     }

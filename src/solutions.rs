@@ -1,4 +1,4 @@
-use advent_of_code::{Day, Year};
+use crate::{Day, Year};
 
 use self::answer::Answer;
 
