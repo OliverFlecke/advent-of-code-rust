@@ -9,11 +9,13 @@ This is mostly as a learning experience.
 The solutions can be run an executed using `cargo`, with some tests for both the library and problems for the individual days.
 These are both implemented with Rust's standard test structure, and can therefore be execute with `cargo test`.
 
-To run and submit solutions for a given year and day (note the `y` prefix on the year):
+To run solutions for a given year and day (note the `y` prefix on the year):
 
 ```sh
-cargo run y<year> <day>
+cargo solve y<year> <day>
 ```
+
+Use the `-a` or `-b` to submit part A and B for the individual days.
 
 ### Toolchain
 
