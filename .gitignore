@@ -3,3 +3,4 @@
 .token
 .input/
 .stars/
+*.csv
