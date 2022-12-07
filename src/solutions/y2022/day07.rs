@@ -8,23 +8,15 @@ pub struct Day07;
 
 impl Solution for Day07 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
+        const LIMIT: usize = 100_000;
         let root = parse(input);
         let mut sum = 0;
 
-        let mut queue = VecDeque::new();
-        queue.push_front(root);
-
-        while let Some(current) = queue.pop_back() {
-            let size = current.borrow().get_size();
-            if size <= 100_000 {
+        traverse(root, |size| {
+            if size <= LIMIT {
                 sum += size;
             }
-            current
-                .borrow()
-                .directories
-                .iter()
-                .for_each(|d| queue.push_front(d.clone()));
-        }
+        });
 
         Some(sum.into())
     }
@@ -34,26 +26,36 @@ impl Solution for Day07 {
         const NEEDED_SPACE: usize = 30_000_000;
 
         let root = parse(input);
-        let root_size = root.borrow().get_size();
-        let unused = TOTAL_SPACE - root_size;
+        let unused = TOTAL_SPACE - root.borrow().get_size();
 
         let mut smallest = usize::MAX;
-        let mut queue = VecDeque::new();
-        queue.push_front(root);
 
-        while let Some(current) = queue.pop_back() {
-            let size = current.borrow().get_size();
+        traverse(root, |size| {
             if size + unused >= NEEDED_SPACE {
                 smallest = smallest.min(size);
             }
-            current
-                .borrow()
-                .directories
-                .iter()
-                .for_each(|d| queue.push_front(d.clone()));
-        }
+        });
 
         Some(smallest.into())
+    }
+}
+
+fn traverse<F>(root: Rc<RefCell<Dir>>, mut f: F)
+where
+    F: FnMut(usize),
+{
+    let mut queue = VecDeque::new();
+    queue.push_front(root);
+
+    while let Some(current) = queue.pop_back() {
+        let size = current.borrow().get_size();
+        f(size);
+
+        current
+            .borrow()
+            .directories
+            .iter()
+            .for_each(|d| queue.push_front(d.clone()));
     }
 }
 
@@ -77,7 +79,6 @@ impl TryFrom<&str> for File {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        // TODO: Error handling
         let mut split = value.split(' ');
         Ok(Self {
             size: split.next().unwrap().parse::<usize>().unwrap(),
