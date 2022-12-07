@@ -8,8 +8,7 @@ pub struct Day07;
 
 impl Solution for Day07 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
-        let cmds = parse_commands(input);
-        let root = get_files_and_dirs(cmds);
+        let root = parse(input);
         let mut sum = 0;
 
         let mut queue = VecDeque::new();
@@ -34,8 +33,7 @@ impl Solution for Day07 {
         const TOTAL_SPACE: usize = 70_000_000;
         const NEEDED_SPACE: usize = 30_000_000;
 
-        let cmds = parse_commands(input);
-        let root = get_files_and_dirs(cmds);
+        let root = parse(input);
         let root_size = root.borrow().get_size();
         let unused = TOTAL_SPACE - root_size;
 
@@ -250,6 +248,10 @@ fn get_files_and_dirs(commands: Vec<Command>) -> Rc<RefCell<Dir>> {
     root
 }
 
+fn parse(input: &str) -> Rc<RefCell<Dir>> {
+    get_files_and_dirs(parse_commands(input))
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -336,8 +338,7 @@ $ ls
             }
         }
 
-        let cmds = parse_commands(SAMPLE_INPUT);
-        let root = get_files_and_dirs(cmds);
+        let root = parse(SAMPLE_INPUT);
         root.borrow().pretty_display(0);
 
         assert_eq!(
@@ -376,8 +377,7 @@ $ ls
 
     #[test]
     fn get_size_test() {
-        let cmds = parse_commands(SAMPLE_INPUT);
-        let root = get_files_and_dirs(cmds);
+        let root = parse(SAMPLE_INPUT);
         assert_eq!(root.borrow().get_size(), 48381165);
         assert_eq!(
             root.borrow()
