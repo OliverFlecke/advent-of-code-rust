@@ -224,7 +224,7 @@ fn get_files_and_dirs(commands: Vec<Command>) -> Rc<RefCell<Dir>> {
                     .directories
                     .iter()
                     .find(|d| d.borrow().name.as_str() == x)
-                    .map(|x| x.clone())
+                    .cloned()
                     .unwrap_or_else(|| Rc::new(RefCell::new(Dir::new(x.to_string()))));
             }
             Command::Ls(lines) => {

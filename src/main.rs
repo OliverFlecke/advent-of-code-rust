@@ -82,8 +82,8 @@ fn benchmark_year(args: &Args) {
             .unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
 
         let iterations = args.benchmark_iterations.unwrap_or(1_000);
-        let (answer_a, elapsed_a) = benchmark(iterations, &problem_input, |s| solver.solve_a(&s));
-        let (answer_b, elapsed_b) = benchmark(iterations, &problem_input, |s| solver.solve_b(&s));
+        let (answer_a, elapsed_a) = benchmark(iterations, &problem_input, |s| solver.solve_a(s));
+        let (answer_b, elapsed_b) = benchmark(iterations, &problem_input, |s| solver.solve_b(s));
 
         println!(
             "Day {day: >2} \t| {:>ANSWER_WIDTH$} | {:>ANSWER_WIDTH$} | {elapsed_a:>16?} | {elapsed_b:>16?} ",
@@ -109,7 +109,7 @@ fn benchmark_year(args: &Args) {
     );
 }
 
-fn benchmark<F>(iterations: u32, problem_input: &String, solver: F) -> (Option<Answer>, Duration)
+fn benchmark<F>(iterations: u32, problem_input: &str, solver: F) -> (Option<Answer>, Duration)
 where
     F: Fn(&str) -> Option<Answer>,
 {
@@ -118,7 +118,7 @@ where
 
     for _ in 0..iterations {
         let start = Instant::now();
-        let a = solver(&problem_input);
+        let a = solver(problem_input);
         total += start.elapsed();
 
         if answer.is_none() {

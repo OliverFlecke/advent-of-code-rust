@@ -63,7 +63,7 @@ fn parse(input: &str) -> (Stacks, Vec<Command>) {
                     mapping
                         .entry(i + 1)
                         .and_modify(|v| v.push(c))
-                        .or_insert(vec![c]);
+                        .or_insert_with(|| vec![c]);
                 })
         });
 
