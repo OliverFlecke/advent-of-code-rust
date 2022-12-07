@@ -31,7 +31,31 @@ impl Solution for Day07 {
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        None
+        const TOTAL_SPACE: usize = 70_000_000;
+        const NEEDED_SPACE: usize = 30_000_000;
+
+        let cmds = parse_commands(input);
+        let root = get_files_and_dirs(cmds);
+        let root_size = root.borrow().get_size();
+        let unused = TOTAL_SPACE - root_size;
+
+        let mut smallest = usize::MAX;
+        let mut queue = VecDeque::new();
+        queue.push_front(root);
+
+        while let Some(current) = queue.pop_back() {
+            let size = current.borrow().get_size();
+            if size + unused >= NEEDED_SPACE {
+                smallest = smallest.min(size);
+            }
+            current
+                .borrow()
+                .directories
+                .iter()
+                .for_each(|d| queue.push_front(d.clone()));
+        }
+
+        Some(smallest.into())
     }
 }
 
@@ -83,6 +107,7 @@ impl Dir {
         files + dirs
     }
 
+    #[allow(dead_code)]
     fn pretty_display(&self, depth: usize) {
         let padding = 4 * depth;
         for x in self.files.iter() {
@@ -128,7 +153,6 @@ impl TryFrom<&str> for Command {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        // println!("value: {value}");
         if value.starts_with("cd") {
             let mut split = value.split(' ');
             split.next();
@@ -175,8 +199,6 @@ fn get_files_and_dirs(commands: Vec<Command>) -> Rc<RefCell<Dir>> {
     // Skip the first one, as that always seems to be `cd /`
     for cmd in commands.iter().skip(1) {
         match cmd {
-            // Command::Cd(CdArg::Root) => stack = vec![root.clone()],
-            // Command::Cd(CdArg::Out) => _ = stack.pop(),
             Command::Cd(CdArg::Root) => current_dir = root.clone(),
             Command::Cd(CdArg::Out) => {
                 current_dir = current_dir
@@ -308,5 +330,10 @@ $ ls
     #[test]
     fn test_a() {
         assert_eq!(Day07.solve_a(SAMPLE_INPUT), Some(Answer::UInt(95437)))
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day07.solve_b(SAMPLE_INPUT), Some(Answer::UInt(24933642)))
     }
 }
