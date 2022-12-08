@@ -133,24 +133,29 @@ fn scenic_score_loop(forest: &Array2D<u8>, height: &u8, col: usize, row: usize) 
 /// Compute the scenic score with iterators. Not sure if I actually think this is cleaner,
 /// and it takes roughly 10µs longer (230µs with this solution vs 220µs with loops).
 fn scenic_score(forest: &Array2D<u8>, height: &u8, col: usize, row: usize) -> usize {
-    fn check_direction<F, I>(it: I, mapper: F, height: &u8) -> usize
+    fn check_direction<F, I>(it: I, mapper: F, forest: &Array2D<u8>, height: &u8) -> usize
     where
-        F: Fn(usize) -> u8,
+        F: Fn(usize) -> (usize, usize),
         I: Iterator<Item = usize>,
     {
-        it.map(mapper).take_until_inclusive(|x| x >= height).count()
+        it.map(mapper)
+            .map(|(row, col)| forest.get(row, col).unwrap())
+            .take_until_inclusive(|x| *x >= height)
+            .count()
     }
 
-    let left = check_direction((0..col).rev(), |col| *forest.get(row, col).unwrap(), height);
+    let left = check_direction((0..col).rev(), |col| (row, col), forest, height);
     let right = check_direction(
         (col + 1)..forest.column_len(),
-        |col| *forest.get(row, col).unwrap(),
+        |col| (row, col),
+        forest,
         height,
     );
-    let above = check_direction((0..row).rev(), |row| *forest.get(row, col).unwrap(), height);
+    let above = check_direction((0..row).rev(), |row| (row, col), forest, height);
     let below = check_direction(
         (row + 1)..forest.row_len(),
-        |row| *forest.get(row, col).unwrap(),
+        |row| (row, col),
+        forest,
         height,
     );
 
