@@ -14,3 +14,4 @@ hashbag = { version = "0.1.9" }
 colored = { version = "2.0.0" }
 clap = { version = "4.0.29", features = ["derive"] }
 csv = "1.1.6"
+array2d = "0.2.1"
