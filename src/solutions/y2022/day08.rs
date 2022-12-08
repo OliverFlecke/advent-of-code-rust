@@ -1,4 +1,4 @@
-use std::ops::AddAssign;
+use std::collections::HashSet;
 
 use array2d::Array2D;
 
@@ -7,13 +7,54 @@ use crate::{
     utils::take_until_inclusive::TakeUntilInclusiveExt,
 };
 
+use jemalloc_ctl::{epoch, stats};
+
 pub struct Day08;
+
+#[global_allocator]
+static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 impl Solution for Day08 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
         let trees = parse(input);
-        let mut visible: Array2D<bool> =
-            Array2D::filled_with(false, trees.num_rows(), trees.column_len());
+
+        println!("Number of trees: {}", trees.row_len() * trees.column_len());
+        epoch::advance().unwrap();
+        let allocated_before = stats::allocated::read().unwrap();
+        let resident_before = stats::resident::read().unwrap();
+        println!(
+            "Before: {} bytes allocated/{} bytes resident",
+            allocated_before, resident_before
+        );
+
+        // type Visible = Array2D<bool>;
+        // let mut visible: Visible =
+        //     Array2D::filled_with(false, trees.num_rows(), trees.column_len());
+        type Visible = HashSet<(usize, usize)>;
+        let mut visible: Visible = HashSet::with_capacity(trees.row_len() * trees.column_len());
+
+        fn check(
+            trees: &Array2D<u8>,
+            row: usize,
+            col: usize,
+            current: &u8,
+            tallest: &mut u8,
+            visible: &mut Visible,
+        ) {
+            if col == 0
+                || row == 0
+                || row == trees.row_len() - 1
+                || col == trees.column_len() - 1
+                || *current > *tallest
+            {
+                visible.insert((col, row));
+                // _ = visible.set(row, col, true);
+            }
+
+            if current > tallest {
+                *tallest = *current;
+            }
+        }
 
         for x in 0..trees.column_len() {
             let mut tallest = 0;
@@ -63,13 +104,27 @@ impl Solution for Day08 {
             }
         }
 
-        let mut sum: usize = 0;
-        visible
-            .elements_row_major_iter()
-            .filter(|x| **x)
-            .for_each(|_| sum.add_assign(1));
+        epoch::advance().unwrap();
+        let allocated_after = stats::allocated::read().unwrap();
+        let resident_after = stats::resident::read().unwrap();
+        println!(
+            "After:  {} bytes allocated/{} bytes resident",
+            allocated_after, resident_after
+        );
+        println!(
+            "Diff:   {} bytes allocated/{} bytes resident",
+            allocated_after - allocated_before,
+            resident_after - resident_before
+        );
 
-        Some(sum.into())
+        Some(visible.len().into())
+        // Some(
+        //     visible
+        //         .elements_row_major_iter()
+        //         .filter(|x| **x)
+        //         .count()
+        //         .into(),
+        // )
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
@@ -160,28 +215,6 @@ fn scenic_score(forest: &Array2D<u8>, height: &u8, col: usize, row: usize) -> us
     );
 
     left * right * above * below
-}
-
-fn check(
-    trees: &Array2D<u8>,
-    y: usize,
-    x: usize,
-    current: &u8,
-    tallest: &mut u8,
-    visible: &mut Array2D<bool>,
-) {
-    if x == 0
-        || y == 0
-        || y == trees.row_len() - 1
-        || x == trees.column_len() - 1
-        || *current > *tallest
-    {
-        visible.set(y, x, true).unwrap();
-    }
-
-    if current > tallest {
-        *tallest = *current;
-    }
 }
 
 type Forest = Vec<Vec<u8>>;
