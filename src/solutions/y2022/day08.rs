@@ -1,5 +1,3 @@
-use std::ops::AddAssign;
-
 use array2d::Array2D;
 
 use crate::{
@@ -14,6 +12,28 @@ impl Solution for Day08 {
         let trees = parse(input);
         let mut visible: Array2D<bool> =
             Array2D::filled_with(false, trees.num_rows(), trees.column_len());
+
+        fn check(
+            trees: &Array2D<u8>,
+            y: usize,
+            x: usize,
+            current: &u8,
+            tallest: &mut u8,
+            visible: &mut Array2D<bool>,
+        ) {
+            if x == 0
+                || y == 0
+                || y == trees.row_len() - 1
+                || x == trees.column_len() - 1
+                || *current > *tallest
+            {
+                visible.set(y, x, true).unwrap();
+            }
+
+            if current > tallest {
+                *tallest = *current;
+            }
+        }
 
         for x in 0..trees.column_len() {
             let mut tallest = 0;
@@ -63,13 +83,13 @@ impl Solution for Day08 {
             }
         }
 
-        let mut sum: usize = 0;
-        visible
-            .elements_row_major_iter()
-            .filter(|x| **x)
-            .for_each(|_| sum.add_assign(1));
-
-        Some(sum.into())
+        Some(
+            visible
+                .elements_row_major_iter()
+                .filter(|x| **x)
+                .count()
+                .into(),
+        )
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
@@ -160,28 +180,6 @@ fn scenic_score(forest: &Array2D<u8>, height: &u8, col: usize, row: usize) -> us
     );
 
     left * right * above * below
-}
-
-fn check(
-    trees: &Array2D<u8>,
-    y: usize,
-    x: usize,
-    current: &u8,
-    tallest: &mut u8,
-    visible: &mut Array2D<bool>,
-) {
-    if x == 0
-        || y == 0
-        || y == trees.row_len() - 1
-        || x == trees.column_len() - 1
-        || *current > *tallest
-    {
-        visible.set(y, x, true).unwrap();
-    }
-
-    if current > tallest {
-        *tallest = *current;
-    }
 }
 
 type Forest = Vec<Vec<u8>>;
