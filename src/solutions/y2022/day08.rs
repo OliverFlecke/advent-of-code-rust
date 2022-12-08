@@ -2,7 +2,10 @@ use std::ops::AddAssign;
 
 use array2d::Array2D;
 
-use crate::solutions::{answer::Answer, Solution};
+use crate::{
+    solutions::{answer::Answer, Solution},
+    utils::take_until_inclusive::TakeUntilInclusiveExt,
+};
 
 pub struct Day08;
 
@@ -12,7 +15,6 @@ impl Solution for Day08 {
         let mut visible: Array2D<bool> =
             Array2D::filled_with(false, trees.num_rows(), trees.column_len());
 
-        // println!("Down");
         for x in 0..trees.column_len() {
             let mut tallest = 0;
             for y in 0..trees.row_len() {
@@ -25,7 +27,6 @@ impl Solution for Day08 {
             }
         }
 
-        // println!("Up");
         for x in 0..trees.column_len() {
             let mut tallest = 0;
             for y in (0..trees.row_len()).rev() {
@@ -38,7 +39,6 @@ impl Solution for Day08 {
             }
         }
 
-        // println!("Left");
         for y in 0..trees.row_len() {
             let mut tallest = 0;
             for x in (0..trees.column_len()).rev() {
@@ -51,7 +51,6 @@ impl Solution for Day08 {
             }
         }
 
-        // println!("Right");
         for y in (0..trees.row_len()).rev() {
             let mut tallest = 0;
             for x in 0..trees.column_len() {
@@ -63,11 +62,6 @@ impl Solution for Day08 {
                 }
             }
         }
-
-        // visible.rows_iter().for_each(|r| {
-        //     r.for_each(|x| print!("{}", if *x { 'T' } else { 'F' }));
-        //     print!("\n");
-        // });
 
         let mut sum: usize = 0;
         visible
@@ -88,6 +82,7 @@ impl Solution for Day08 {
                 .map(|(row, x)| {
                     x.enumerate()
                         .map(|(col, height)| scenic_score(&forest, height, col, row))
+                        // .map(|(col, height)| scenic_score_loop(&forest, height, col, row))
                         .max()
                         .unwrap()
                 })
@@ -98,39 +93,68 @@ impl Solution for Day08 {
     }
 }
 
-fn scenic_score(forest: &Array2D<u8>, height: &u8, col: usize, row: usize) -> usize {
-    let (mut up, mut dn, mut lt, mut rt) = (0, 0, 0, 0);
+#[allow(dead_code)]
+fn scenic_score_loop(forest: &Array2D<u8>, height: &u8, col: usize, row: usize) -> usize {
+    let (mut above, mut below, mut left, mut right) = (0, 0, 0, 0);
 
     // Count left
     for x in (0..col).rev() {
-        lt += 1;
+        left += 1;
         if forest.get(row, x).unwrap() >= height {
             break;
         }
     }
     // Count right
     for x in (col + 1)..forest.column_len() {
-        rt += 1;
+        right += 1;
         if forest.get(row, x).unwrap() >= height {
             break;
         }
     }
     // Count above
     for y in (0..row).rev() {
-        up += 1;
+        above += 1;
         if forest.get(y, col).unwrap() >= height {
             break;
         }
     }
     // Count below
     for y in (row + 1)..forest.row_len() {
-        dn += 1;
+        below += 1;
         if forest.get(y, col).unwrap() >= height {
             break;
         }
     }
 
-    up * dn * lt * rt
+    above * below * left * right
+}
+
+#[allow(dead_code)]
+/// Compute the scenic score with iterators. Not sure if I actually think this is cleaner,
+/// and it takes roughly 10µs longer (230µs with this solution vs 220µs with loops).
+fn scenic_score(forest: &Array2D<u8>, height: &u8, col: usize, row: usize) -> usize {
+    fn check_direction<F, I>(it: I, mapper: F, height: &u8) -> usize
+    where
+        F: Fn(usize) -> u8,
+        I: Iterator<Item = usize>,
+    {
+        it.map(mapper).take_until_inclusive(|x| x >= height).count()
+    }
+
+    let left = check_direction((0..col).rev(), |col| *forest.get(row, col).unwrap(), height);
+    let right = check_direction(
+        (col + 1)..forest.column_len(),
+        |col| *forest.get(row, col).unwrap(),
+        height,
+    );
+    let above = check_direction((0..row).rev(), |row| *forest.get(row, col).unwrap(), height);
+    let below = check_direction(
+        (row + 1)..forest.row_len(),
+        |row| *forest.get(row, col).unwrap(),
+        height,
+    );
+
+    left * right * above * below
 }
 
 fn check(
@@ -141,18 +165,12 @@ fn check(
     tallest: &mut u8,
     visible: &mut Array2D<bool>,
 ) {
-    let is_visible = x == 0
+    if x == 0
         || y == 0
         || y == trees.row_len() - 1
         || x == trees.column_len() - 1
-        || *current > *tallest;
-    // println!(
-    //     "Looking at {:?} -> {}. Visible: {}",
-    //     (x, y),
-    //     *current,
-    //     is_visible
-    // );
-    if is_visible {
+        || *current > *tallest
+    {
         visible.set(y, x, true).unwrap();
     }
 
