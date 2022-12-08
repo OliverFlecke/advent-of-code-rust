@@ -78,9 +78,59 @@ impl Solution for Day08 {
         Some(sum.into())
     }
 
-    fn solve_b(&self, _input: &str) -> Option<Answer> {
-        None
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        let forest = parse(input);
+
+        Some(
+            forest
+                .rows_iter()
+                .enumerate()
+                .map(|(row, x)| {
+                    x.enumerate()
+                        .map(|(col, height)| scenic_score(&forest, height, col, row))
+                        .max()
+                        .unwrap()
+                })
+                .max()
+                .unwrap()
+                .into(),
+        )
     }
+}
+
+fn scenic_score(forest: &Array2D<u8>, height: &u8, col: usize, row: usize) -> usize {
+    let (mut up, mut dn, mut lt, mut rt) = (0, 0, 0, 0);
+
+    // Count left
+    for x in (0..col).rev() {
+        lt += 1;
+        if forest.get(row, x).unwrap() >= height {
+            break;
+        }
+    }
+    // Count right
+    for x in (col + 1)..forest.column_len() {
+        rt += 1;
+        if forest.get(row, x).unwrap() >= height {
+            break;
+        }
+    }
+    // Count above
+    for y in (0..row).rev() {
+        up += 1;
+        if forest.get(y, col).unwrap() >= height {
+            break;
+        }
+    }
+    // Count below
+    for y in (row + 1)..forest.row_len() {
+        dn += 1;
+        if forest.get(y, col).unwrap() >= height {
+            break;
+        }
+    }
+
+    up * dn * lt * rt
 }
 
 fn check(
@@ -136,5 +186,10 @@ mod test {
     #[test]
     fn test_a() {
         assert_eq!(Day08.solve_a(SAMPLE_INPUT), Some(Answer::UInt(21)))
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(Day08.solve_b(SAMPLE_INPUT), Some(Answer::UInt(8)))
     }
 }
