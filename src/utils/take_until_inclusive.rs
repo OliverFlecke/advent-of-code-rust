@@ -52,11 +52,11 @@ where
         if self.flag {
             None
         } else {
-            self.iter.next().and_then(|x| {
+            self.iter.next().map(|x| {
                 if (self.predicate)(&x) {
                     self.flag = true;
                 }
-                Some(x)
+                x
             })
         }
     }
@@ -89,10 +89,4 @@ mod tests {
         iter.next();
         assert_eq!((0, Some(0)), iter.size_hint());
     }
-
-    // #[test]
-    // fn test_size_hint() {
-    //     let iter = (0..10);
-
-    // }
 }
