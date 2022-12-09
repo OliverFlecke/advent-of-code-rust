@@ -103,24 +103,14 @@ impl Location {
     }
 
     fn follow(self, pos: &Self) -> Self {
-        if pos.x == self.x && pos.y > self.y + 1 {
-            self.down()
-        } else if pos.x == self.x && pos.y < self.y - 1 {
-            self.up()
-        } else if pos.x > self.x + 1 && pos.y == self.y {
-            self.right()
-        } else if pos.x < self.x - 1 && pos.y == self.y {
-            self.left()
-        } else if (pos.x - self.x).abs() == 1 && (pos.y - self.y).abs() == 1 {
-            self.clone()
-        } else if pos.x < self.x && pos.y < self.y {
-            self.left().up()
-        } else if pos.x > self.x && pos.y < self.y {
-            self.right().up()
-        } else if pos.x > self.x && pos.y > self.y {
-            self.right().down()
-        } else if pos.x < self.x && pos.y > self.y {
-            self.left().down()
+        let dx = pos.x - self.x;
+        let dy = pos.y - self.y;
+
+        if (dx.abs() + dy.abs() > 1) && (dx.abs() > 1 || dy.abs() > 1) {
+            Self {
+                x: self.x + dx.signum(),
+                y: self.y + dy.signum(),
+            }
         } else {
             self.clone()
         }
