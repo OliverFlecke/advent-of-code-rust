@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::collections::HashSet;
 
 use crate::solutions::{answer::Answer, Solution};
@@ -8,12 +10,18 @@ impl Solution for Day09 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
         let moves = parse(input);
         let mut visited: Visited = HashSet::new();
-        visited.insert((0, 0));
+        visited.insert(Location::default());
 
-        let mut head = (0, 0);
-        let mut tail = (0, 0);
+        let mut head = Location::default();
+        let mut tail = Location::default();
         moves.iter().for_each(|m| {
-            m.perform(&mut head, &mut tail, &mut visited);
+            match m {
+                Move::Up(_) => head = head.up(),
+                Move::Down(_) => head = head.down(),
+                Move::Left(_) => head = head.left(),
+                Move::Right(_) => head = head.right(),
+            };
+            // m.perform(&mut head, &mut tail, &mut visited);
             // println!("{m:?}  \tHead: {:?}. Tail: {:?}", head, tail);
         });
 
@@ -31,8 +39,32 @@ impl Solution for Day09 {
         Some(visited.len().into())
     }
 
-    fn solve_b(&self, _input: &str) -> Option<Answer> {
-        None
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        let moves = parse(input);
+        let mut visited: Visited = HashSet::new();
+        visited.insert(Location::default());
+
+        const KNOTS_COUNT: usize = 10;
+        let mut knots = [Location::default(); KNOTS_COUNT];
+        moves.iter().for_each(|m| {
+            for _ in 0..m.get_amount() {
+                match m {
+                    Move::Up(_) => knots[0] = knots[0].up(),
+                    Move::Down(_) => knots[0] = knots[0].down(),
+                    Move::Left(_) => knots[0] = knots[0].left(),
+                    Move::Right(_) => knots[0] = knots[0].right(),
+                };
+
+                for i in 1..KNOTS_COUNT {
+                    knots[i] = knots[i].follow(&knots[i - 1]);
+                }
+                visited.insert(knots[9]);
+            }
+
+            // println!("{m:?}  \tHead: {:?}. Tail: {:?}", knots[0], knots[9]);
+        });
+
+        Some(visited.len().into())
     }
 }
 
@@ -46,14 +78,69 @@ fn parse(input: &str) -> Vec<Move> {
 
 type Visited = HashSet<Location>;
 
-type Location = (isize, isize);
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+struct Location {
+    x: isize,
+    y: isize,
+}
+
+impl Location {
+    fn right(&self) -> Self {
+        Self {
+            x: self.x + 1,
+            y: self.y,
+        }
+    }
+    fn left(&self) -> Self {
+        Self {
+            x: self.x - 1,
+            y: self.y,
+        }
+    }
+    fn up(&self) -> Self {
+        Self {
+            x: self.x,
+            y: self.y - 1,
+        }
+    }
+    fn down(&self) -> Self {
+        Self {
+            x: self.x,
+            y: self.y + 1,
+        }
+    }
+
+    fn follow(self, pos: &Self) -> Self {
+        if pos.x == self.x && pos.y > self.y + 1 {
+            self.down()
+        } else if pos.x == self.x && pos.y < self.y - 1 {
+            self.up()
+        } else if pos.x > self.x + 1 && pos.y == self.y {
+            self.right()
+        } else if pos.x < self.x - 1 && pos.y == self.y {
+            self.left()
+        } else if (pos.x - self.x).abs() == 1 && (pos.y - self.y).abs() == 1 {
+            self.clone()
+        } else if pos.x < self.x && pos.y < self.y {
+            self.left().up()
+        } else if pos.x > self.x && pos.y < self.y {
+            self.right().up()
+        } else if pos.x > self.x && pos.y > self.y {
+            self.right().down()
+        } else if pos.x < self.x && pos.y > self.y {
+            self.left().down()
+        } else {
+            self.clone()
+        }
+    }
+}
 
 // fn manhattan_distance(a: &Location, b: &Location) -> usize {
-//     a.0.abs_diff(b.0) + a.1.abs_diff(b.1)
+//     a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
 // }
 
 fn close_enough(a: &Location, b: &Location) -> bool {
-    a.0.abs_diff(b.0) <= 1 && a.1.abs_diff(b.1) <= 1
+    a.x.abs_diff(b.x) <= 1 && a.y.abs_diff(b.y) <= 1
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -65,40 +152,58 @@ enum Move {
 }
 
 impl Move {
+    fn get_amount(&self) -> usize {
+        match self {
+            Move::Up(x) => *x,
+            Move::Down(x) => *x,
+            Move::Left(x) => *x,
+            Move::Right(x) => *x,
+        }
+    }
+
+    fn do_move(&self, head: &mut Location) {
+        match self {
+            Move::Up(_) => head.y += 1,
+            Move::Down(_) => head.y -= 1,
+            Move::Left(_) => head.x -= 1,
+            Move::Right(_) => head.x += 1,
+        }
+    }
+
     fn perform(&self, head: &mut Location, tail: &mut Location, visited: &mut Visited) {
         match self {
             Move::Up(times) => {
                 for _ in 0..*times {
-                    head.1 += 1;
+                    head.y += 1;
                     if !close_enough(head, tail) {
-                        *tail = (head.0, head.1 - 1);
+                        tail.y -= 1;
                         visited.insert(*tail);
                     }
                 }
             }
             Move::Down(times) => {
                 for _ in 0..*times {
-                    head.1 -= 1;
+                    head.y -= 1;
                     if !close_enough(head, tail) {
-                        *tail = (head.0, head.1 + 1);
+                        tail.y += 1;
                         visited.insert(*tail);
                     }
                 }
             }
             Move::Left(times) => {
                 for _ in 0..*times {
-                    head.0 -= 1;
+                    head.x -= 1;
                     if !close_enough(head, tail) {
-                        *tail = (head.0 + 1, head.1);
+                        tail.x += 1;
                         visited.insert(*tail);
                     }
                 }
             }
             Move::Right(times) => {
                 for _ in 0..*times {
-                    head.0 += 1;
+                    head.x += 1;
                     if !close_enough(head, tail) {
-                        *tail = (head.0 - 1, head.1);
+                        tail.x -= 1;
                         visited.insert(*tail);
                     }
                 }
@@ -143,8 +248,26 @@ D 1
 L 5
 R 2";
 
+    // #[test]
+    // fn test_a() {
+    //     assert_eq!(Day09.solve_a(SAMPLE_INPUT), Some(Answer::UInt(13)))
+    // }
+
     #[test]
-    fn test() {
-        assert_eq!(Day09.solve_a(SAMPLE_INPUT), Some(Answer::UInt(13)))
+    fn test_b() {
+        assert_eq!(Day09.solve_b(SAMPLE_INPUT), Some(Answer::UInt(1)));
+        assert_eq!(
+            Day09.solve_b(
+                "R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20"
+            ),
+            Some(Answer::UInt(36))
+        );
     }
 }
