@@ -7,52 +7,78 @@ pub struct Day09;
 impl Solution for Day09 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
         let moves = parse(input);
-        let mut visited: Visited = HashSet::new();
+        // let mut visited: Visited = HashSet::new(); //::with_capacity(10000);
 
-        let mut head = Location::default();
-        let mut tail = Location::default();
-        visited.insert(tail);
+        // let mut head = Location::default();
+        // let mut tail = Location::default();
+        // visited.insert(tail);
 
-        moves.iter().for_each(|(m, amount)| {
-            for _ in 0..*amount {
-                match m {
-                    Move::Up => head = head.up(),
-                    Move::Down => head = head.down(),
-                    Move::Left => head = head.left(),
-                    Move::Right => head = head.right(),
-                };
-                tail = tail.follow(&head);
-                visited.insert(tail);
-            }
-        });
+        // moves.iter().for_each(|(m, amount)| {
+        //     for _ in 0..*amount {
+        //         match m {
+        //             Move::Up => head = head.up(),
+        //             Move::Down => head = head.down(),
+        //             Move::Left => head = head.left(),
+        //             Move::Right => head = head.right(),
+        //         };
+        //         tail = tail.follow(&head);
+        //         visited.insert(tail);
+        //     }
+        // });
 
-        Some(visited.len().into())
+        Some(
+            moves
+                .iter()
+                .fold(
+                    (
+                        HashSet::<Location>::with_capacity(10_000),
+                        Location::default(),
+                        Location::default(),
+                    ),
+                    |(mut visited, mut head, mut tail), (m, amount)| {
+                        for _ in 0..*amount {
+                            head = head.perform(m);
+                            tail = tail.follow(&head);
+                            visited.insert(tail);
+                        }
+                        (visited, head, tail)
+                    },
+                )
+                .0
+                .len()
+                .into(),
+        )
+
+        // Some(visited.len().into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
         let moves = parse(input);
-        let mut visited: Visited = HashSet::new();
-        visited.insert(Location::default());
-
         const KNOTS_COUNT: usize = 10;
-        let mut knots = [Location::default(); KNOTS_COUNT];
-        moves.iter().for_each(|(m, amount)| {
-            for _ in 0..*amount {
-                match m {
-                    Move::Up => knots[0] = knots[0].up(),
-                    Move::Down => knots[0] = knots[0].down(),
-                    Move::Left => knots[0] = knots[0].left(),
-                    Move::Right => knots[0] = knots[0].right(),
-                };
 
-                for i in 1..KNOTS_COUNT {
-                    knots[i] = knots[i].follow(&knots[i - 1]);
-                }
-                visited.insert(knots[9]);
-            }
-        });
-
-        Some(visited.len().into())
+        Some(
+            moves
+                .iter()
+                .fold(
+                    (
+                        HashSet::<Location>::with_capacity(10_000),
+                        vec![Location::default(); 10],
+                    ),
+                    |(mut visited, mut knots), (m, amount)| {
+                        for _ in 0..*amount {
+                            knots.first_mut().unwrap().perform_mut(m);
+                            for i in 1..KNOTS_COUNT {
+                                knots[i] = knots[i].follow(&knots[i - 1]);
+                            }
+                            visited.insert(*knots.last().unwrap());
+                        }
+                        (visited, knots)
+                    },
+                )
+                .0
+                .len()
+                .into(),
+        )
     }
 }
 
@@ -75,8 +101,6 @@ fn parse(input: &str) -> Vec<(Move, u32)> {
         })
         .collect()
 }
-
-type Visited = HashSet<Location>;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 struct Location {
@@ -108,6 +132,19 @@ impl Location {
             x: self.x,
             y: self.y + 1,
         }
+    }
+
+    fn perform(&self, m: &Move) -> Self {
+        match m {
+            Move::Up => self.up(),
+            Move::Down => self.down(),
+            Move::Left => self.left(),
+            Move::Right => self.right(),
+        }
+    }
+
+    fn perform_mut(&mut self, m: &Move) {
+        *self = self.perform(m);
     }
 
     fn follow(self, pos: &Self) -> Self {
