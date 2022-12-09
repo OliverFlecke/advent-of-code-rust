@@ -23,13 +23,13 @@ fn simulate(moves: Vec<(Move, u32)>, number_of_knots: usize) -> usize {
                 vec![Location::default(); number_of_knots],
             ),
             |(mut visited, mut knots), (m, amount)| {
-                for _ in 0..*amount {
+                (0..*amount).for_each(|_| {
                     knots.first_mut().unwrap().perform_mut(m);
-                    for i in 1..number_of_knots {
+                    (1..number_of_knots).for_each(|i| {
                         knots[i] = knots[i].follow(&knots[i - 1]);
-                    }
+                    });
                     visited.insert(*knots.last().unwrap());
-                }
+                });
                 (visited, knots)
             },
         )
