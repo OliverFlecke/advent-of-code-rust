@@ -10,17 +10,22 @@ impl Solution for Day09 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
         let moves = parse(input);
         let mut visited: Visited = HashSet::new();
-        visited.insert(Location::default());
 
         let mut head = Location::default();
         let mut tail = Location::default();
+        visited.insert(tail);
+
         moves.iter().for_each(|m| {
-            match m {
-                Move::Up(_) => head = head.up(),
-                Move::Down(_) => head = head.down(),
-                Move::Left(_) => head = head.left(),
-                Move::Right(_) => head = head.right(),
-            };
+            for _ in 0..m.get_amount() {
+                match m {
+                    Move::Up(_) => head = head.up(),
+                    Move::Down(_) => head = head.down(),
+                    Move::Left(_) => head = head.left(),
+                    Move::Right(_) => head = head.right(),
+                };
+                tail = tail.follow(&head);
+                visited.insert(tail);
+            }
             // m.perform(&mut head, &mut tail, &mut visited);
             // println!("{m:?}  \tHead: {:?}. Tail: {:?}", head, tail);
         });
@@ -248,10 +253,10 @@ D 1
 L 5
 R 2";
 
-    // #[test]
-    // fn test_a() {
-    //     assert_eq!(Day09.solve_a(SAMPLE_INPUT), Some(Answer::UInt(13)))
-    // }
+    #[test]
+    fn test_a() {
+        assert_eq!(Day09.solve_a(SAMPLE_INPUT), Some(Answer::UInt(13)))
+    }
 
     #[test]
     fn test_b() {
