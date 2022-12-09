@@ -64,42 +64,13 @@ struct Location {
 }
 
 impl Location {
-    fn right(&self) -> Self {
-        Self {
-            x: self.x + 1,
-            y: self.y,
-        }
-    }
-    fn left(&self) -> Self {
-        Self {
-            x: self.x - 1,
-            y: self.y,
-        }
-    }
-    fn up(&self) -> Self {
-        Self {
-            x: self.x,
-            y: self.y - 1,
-        }
-    }
-    fn down(&self) -> Self {
-        Self {
-            x: self.x,
-            y: self.y + 1,
-        }
-    }
-
-    fn perform(&self, m: &Move) -> Self {
-        match m {
-            Move::Up => self.up(),
-            Move::Down => self.down(),
-            Move::Left => self.left(),
-            Move::Right => self.right(),
-        }
-    }
-
     fn perform_mut(&mut self, m: &Move) {
-        *self = self.perform(m);
+        match m {
+            Move::Up => self.y += 1,
+            Move::Down => self.y -= 1,
+            Move::Left => self.x -= 1,
+            Move::Right => self.x += 1,
+        }
     }
 
     fn follow(self, pos: &Self) -> Self {
