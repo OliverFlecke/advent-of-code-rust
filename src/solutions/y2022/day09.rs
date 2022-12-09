@@ -6,80 +6,35 @@ pub struct Day09;
 
 impl Solution for Day09 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
-        let moves = parse(input);
-        // let mut visited: Visited = HashSet::new(); //::with_capacity(10000);
-
-        // let mut head = Location::default();
-        // let mut tail = Location::default();
-        // visited.insert(tail);
-
-        // moves.iter().for_each(|(m, amount)| {
-        //     for _ in 0..*amount {
-        //         match m {
-        //             Move::Up => head = head.up(),
-        //             Move::Down => head = head.down(),
-        //             Move::Left => head = head.left(),
-        //             Move::Right => head = head.right(),
-        //         };
-        //         tail = tail.follow(&head);
-        //         visited.insert(tail);
-        //     }
-        // });
-
-        Some(
-            moves
-                .iter()
-                .fold(
-                    (
-                        HashSet::<Location>::with_capacity(10_000),
-                        Location::default(),
-                        Location::default(),
-                    ),
-                    |(mut visited, mut head, mut tail), (m, amount)| {
-                        for _ in 0..*amount {
-                            head = head.perform(m);
-                            tail = tail.follow(&head);
-                            visited.insert(tail);
-                        }
-                        (visited, head, tail)
-                    },
-                )
-                .0
-                .len()
-                .into(),
-        )
-
-        // Some(visited.len().into())
+        Some(simulate(parse(input), 2).into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        let moves = parse(input);
-        const KNOTS_COUNT: usize = 10;
-
-        Some(
-            moves
-                .iter()
-                .fold(
-                    (
-                        HashSet::<Location>::with_capacity(10_000),
-                        vec![Location::default(); 10],
-                    ),
-                    |(mut visited, mut knots), (m, amount)| {
-                        for _ in 0..*amount {
-                            knots.first_mut().unwrap().perform_mut(m);
-                            for i in 1..KNOTS_COUNT {
-                                knots[i] = knots[i].follow(&knots[i - 1]);
-                            }
-                            visited.insert(*knots.last().unwrap());
-                        }
-                        (visited, knots)
-                    },
-                )
-                .0
-                .len()
-                .into(),
-        )
+        Some(simulate(parse(input), 10).into())
     }
+}
+
+fn simulate(moves: Vec<(Move, u32)>, number_of_knots: usize) -> usize {
+    moves
+        .iter()
+        .fold(
+            (
+                HashSet::<Location>::with_capacity(10_000),
+                vec![Location::default(); number_of_knots],
+            ),
+            |(mut visited, mut knots), (m, amount)| {
+                for _ in 0..*amount {
+                    knots.first_mut().unwrap().perform_mut(m);
+                    for i in 1..number_of_knots {
+                        knots[i] = knots[i].follow(&knots[i - 1]);
+                    }
+                    visited.insert(*knots.last().unwrap());
+                }
+                (visited, knots)
+            },
+        )
+        .0
+        .len()
 }
 
 fn parse(input: &str) -> Vec<(Move, u32)> {
