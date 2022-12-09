@@ -19,7 +19,7 @@ fn simulate(moves: Vec<(Move, u32)>, number_of_knots: usize) -> usize {
         .iter()
         .fold(
             (
-                HashSet::<Location>::with_capacity(10_000),
+                HashSet::<Location>::with_capacity(6_500),
                 vec![Location::default(); number_of_knots],
             ),
             |(mut visited, mut knots), (m, amount)| {
