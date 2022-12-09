@@ -50,6 +50,7 @@ pub fn get_solver(year: Year, day: Day) -> Option<Box<dyn Solution>> {
             6 => Some(Box::new(y2022::day06::Day06 {})),
             7 => Some(Box::new(y2022::day07::Day07 {})),
             8 => Some(Box::new(y2022::day08::Day08 {})),
+            9 => Some(Box::new(y2022::day09::Day09 {})),
             _ => None,
         },
         _ => None,
