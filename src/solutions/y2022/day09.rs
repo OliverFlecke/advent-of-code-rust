@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use std::collections::HashSet;
 
 use crate::solutions::{answer::Answer, Solution};
@@ -15,31 +13,18 @@ impl Solution for Day09 {
         let mut tail = Location::default();
         visited.insert(tail);
 
-        moves.iter().for_each(|m| {
-            for _ in 0..m.get_amount() {
+        moves.iter().for_each(|(m, amount)| {
+            for _ in 0..*amount {
                 match m {
-                    Move::Up(_) => head = head.up(),
-                    Move::Down(_) => head = head.down(),
-                    Move::Left(_) => head = head.left(),
-                    Move::Right(_) => head = head.right(),
+                    Move::Up => head = head.up(),
+                    Move::Down => head = head.down(),
+                    Move::Left => head = head.left(),
+                    Move::Right => head = head.right(),
                 };
                 tail = tail.follow(&head);
                 visited.insert(tail);
             }
-            // m.perform(&mut head, &mut tail, &mut visited);
-            // println!("{m:?}  \tHead: {:?}. Tail: {:?}", head, tail);
         });
-
-        // for row in (0..5).rev() {
-        //     for col in 0..5 {
-        //         if visited.contains(&(col, row)) {
-        //             print!("#");
-        //         } else {
-        //             print!(".");
-        //         }
-        //     }
-        //     println!();
-        // }
 
         Some(visited.len().into())
     }
@@ -51,13 +36,13 @@ impl Solution for Day09 {
 
         const KNOTS_COUNT: usize = 10;
         let mut knots = [Location::default(); KNOTS_COUNT];
-        moves.iter().for_each(|m| {
-            for _ in 0..m.get_amount() {
+        moves.iter().for_each(|(m, amount)| {
+            for _ in 0..*amount {
                 match m {
-                    Move::Up(_) => knots[0] = knots[0].up(),
-                    Move::Down(_) => knots[0] = knots[0].down(),
-                    Move::Left(_) => knots[0] = knots[0].left(),
-                    Move::Right(_) => knots[0] = knots[0].right(),
+                    Move::Up => knots[0] = knots[0].up(),
+                    Move::Down => knots[0] = knots[0].down(),
+                    Move::Left => knots[0] = knots[0].left(),
+                    Move::Right => knots[0] = knots[0].right(),
                 };
 
                 for i in 1..KNOTS_COUNT {
@@ -65,19 +50,29 @@ impl Solution for Day09 {
                 }
                 visited.insert(knots[9]);
             }
-
-            // println!("{m:?}  \tHead: {:?}. Tail: {:?}", knots[0], knots[9]);
         });
 
         Some(visited.len().into())
     }
 }
 
-fn parse(input: &str) -> Vec<Move> {
+fn parse(input: &str) -> Vec<(Move, u32)> {
     input
         .trim_end()
         .lines()
-        .map(|l| Move::try_from(l).expect("line to be move"))
+        .map(|l| {
+            let mut split = l.split(' ');
+
+            let m = split
+                .next()
+                .and_then(|x| Move::try_from(x.chars().next().unwrap()).ok())
+                .expect("line to be move");
+            let amount = split
+                .next()
+                .and_then(|x| x.parse::<u32>().ok())
+                .expect("to be number");
+            (m, amount)
+        })
         .collect()
 }
 
@@ -140,101 +135,23 @@ impl Location {
     }
 }
 
-// fn manhattan_distance(a: &Location, b: &Location) -> usize {
-//     a.x.abs_diff(b.x) + a.y.abs_diff(b.y)
-// }
-
-fn close_enough(a: &Location, b: &Location) -> bool {
-    a.x.abs_diff(b.x) <= 1 && a.y.abs_diff(b.y) <= 1
-}
-
 #[derive(Debug, Clone, Copy)]
 enum Move {
-    Up(usize),
-    Down(usize),
-    Left(usize),
-    Right(usize),
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
-impl Move {
-    fn get_amount(&self) -> usize {
-        match self {
-            Move::Up(x) => *x,
-            Move::Down(x) => *x,
-            Move::Left(x) => *x,
-            Move::Right(x) => *x,
-        }
-    }
-
-    fn do_move(&self, head: &mut Location) {
-        match self {
-            Move::Up(_) => head.y += 1,
-            Move::Down(_) => head.y -= 1,
-            Move::Left(_) => head.x -= 1,
-            Move::Right(_) => head.x += 1,
-        }
-    }
-
-    fn perform(&self, head: &mut Location, tail: &mut Location, visited: &mut Visited) {
-        match self {
-            Move::Up(times) => {
-                for _ in 0..*times {
-                    head.y += 1;
-                    if !close_enough(head, tail) {
-                        tail.y -= 1;
-                        visited.insert(*tail);
-                    }
-                }
-            }
-            Move::Down(times) => {
-                for _ in 0..*times {
-                    head.y -= 1;
-                    if !close_enough(head, tail) {
-                        tail.y += 1;
-                        visited.insert(*tail);
-                    }
-                }
-            }
-            Move::Left(times) => {
-                for _ in 0..*times {
-                    head.x -= 1;
-                    if !close_enough(head, tail) {
-                        tail.x += 1;
-                        visited.insert(*tail);
-                    }
-                }
-            }
-            Move::Right(times) => {
-                for _ in 0..*times {
-                    head.x += 1;
-                    if !close_enough(head, tail) {
-                        tail.x -= 1;
-                        visited.insert(*tail);
-                    }
-                }
-            }
-        }
-    }
-}
-
-impl TryFrom<&str> for Move {
+impl TryFrom<char> for Move {
     type Error = ();
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let mut split = value.split(' ');
-        match split.next().unwrap().chars().next() {
-            Some('R') => Ok(Move::Right(
-                split.next().and_then(|x| x.parse::<usize>().ok()).unwrap(),
-            )),
-            Some('L') => Ok(Move::Left(
-                split.next().and_then(|x| x.parse::<usize>().ok()).unwrap(),
-            )),
-            Some('D') => Ok(Move::Down(
-                split.next().and_then(|x| x.parse::<usize>().ok()).unwrap(),
-            )),
-            Some('U') => Ok(Move::Up(
-                split.next().and_then(|x| x.parse::<usize>().ok()).unwrap(),
-            )),
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        match value {
+            'R' => Ok(Move::Right),
+            'L' => Ok(Move::Left),
+            'U' => Ok(Move::Up),
+            'D' => Ok(Move::Down),
             _ => Err(()),
         }
     }
