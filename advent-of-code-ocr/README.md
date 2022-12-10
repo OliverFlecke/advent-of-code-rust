@@ -13,6 +13,8 @@ cargo install advent-of-code-ocr
 
 ## Usage
 
+The main function to parse a screen from AoC is the `parse_string_to_letters`.
+
 ```rust
 use advent_of_code_ocr::parse_string_to_letters;
 
@@ -27,3 +29,8 @@ let input = "####.###....##.###..###..#..#..##..#..#.\n#....#..#....#.#..#.#..#.
 
 assert_eq!(parse_string_to_letters(input), "EPJBRKAH");
 ```
+
+Two other functions are exposed by this crate:
+
+- `parse_letter` which tries to convert a single AoC character to a `Option<char>`
+- `split_screen` which splits a full AoC screen to individual AoC characters.

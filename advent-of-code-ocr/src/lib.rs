@@ -59,6 +59,37 @@ pub fn parse_letter(letter: &str) -> Option<char> {
 /// assert_eq!(parse_string_to_letters(input), "EPJBRKAH");
 /// ```
 pub fn parse_string_to_letters(s: &str) -> String {
+    split_screen(s)
+        .iter()
+        .filter_map(|x| parse_letter(x.as_str()))
+        .collect()
+}
+
+/// Split a string representing a AoC screen into the section strings for the
+/// individual characters. This assumes every character is 4 characters wide and a
+/// single column is used to split the individual letters.
+///
+/// This will split the string:
+/// ```text
+/// ####.###....##.###..###..#..#..##..#..#.
+/// #....#..#....#.#..#.#..#.#.#..#..#.#..#.
+/// ###..#..#....#.###..#..#.##...#..#.####.
+/// #....###.....#.#..#.###..#.#..####.#..#.
+/// #....#....#..#.#..#.#.#..#.#..#..#.#..#.
+/// ####.#.....##..###..#..#.#..#.#..#.#..#.
+/// ```
+///
+/// into the vector of
+///
+/// ```text
+/// ####    ###.    ..##    ###.    ###.    #..#    .##.    #..#
+/// #...    #..#    ...#    #..#    #..#    #.#.    #..#    #..#
+/// ###.    #..#    ...#    ###.    #..#    ##..    #..#    ####
+/// #...    ###.    ...#    #..#    ###.    #.#.    ####    #..#
+/// #...    #...    #..#    #..#    #.#.    #.#.    #..#    #..#
+/// ####    #...    .##.    ###.    #..#    #..#    #..#    #..#
+/// ```
+pub fn split_screen(s: &str) -> Vec<String> {
     let mut letters: HashMap<usize, Vec<char>> = HashMap::new();
     for l in s.lines() {
         for (n, chunk) in l.chars().chunks(5).into_iter().enumerate() {
@@ -76,7 +107,6 @@ pub fn parse_string_to_letters(s: &str) -> String {
         .sorted_by_key(|(n, _)| **n)
         .map(|(_, v)| v)
         .map(|x| x.iter().collect::<String>())
-        .filter_map(|x| parse_letter(x.as_str()))
         .collect()
 }
 
@@ -94,5 +124,46 @@ mod test {
 #..#";
 
         assert_eq!(parse_letter(a), Some('A'));
+    }
+
+    #[test]
+    fn split_screen_to_sections() {
+        let screen = "####.###....##.###..###..#..#..##..#..#.\n#....#..#....#.#..#.#..#.#.#..#..#.#..#.\n###..#..#....#.###..#..#.##...#..#.####.\n#....###.....#.#..#.###..#.#..####.#..#.\n#....#....#..#.#..#.#.#..#.#..#..#.#..#.\n####.#.....##..###..#..#.#..#.#..#.#..#.";
+
+        let binding = split_screen(screen);
+        let mut it = binding.iter();
+        assert_eq!(
+            it.next(),
+            Some(&"####\n#...\n###.\n#...\n#...\n####".to_string())
+        );
+        assert_eq!(
+            it.next(),
+            Some(&"###.\n#..#\n#..#\n###.\n#...\n#...".to_string())
+        );
+        assert_eq!(
+            it.next(),
+            Some(&"..##\n...#\n...#\n...#\n#..#\n.##.".to_string())
+        );
+        assert_eq!(
+            it.next(),
+            Some(&"###.\n#..#\n###.\n#..#\n#..#\n###.".to_string())
+        );
+        assert_eq!(
+            it.next(),
+            Some(&"###.\n#..#\n#..#\n###.\n#.#.\n#..#".to_string())
+        );
+        assert_eq!(
+            it.next(),
+            Some(&"#..#\n#.#.\n##..\n#.#.\n#.#.\n#..#".to_string())
+        );
+        assert_eq!(
+            it.next(),
+            Some(&".##.\n#..#\n#..#\n####\n#..#\n#..#".to_string())
+        );
+        assert_eq!(
+            it.next(),
+            Some(&"#..#\n#..#\n####\n#..#\n#..#\n#..#".to_string())
+        );
+        assert_eq!(it.next(), None);
     }
 }
