@@ -1,0 +1,9 @@
+[package]
+name = "advent-of-code-ocr"
+authors = ["Oliver Fleckenstein <oliverfl@live.dk>"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+itertools = "0.10.5"
+phf = { version = "0.11.1", features = ["macros"], default-features = false }

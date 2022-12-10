@@ -1,6 +1,10 @@
+use advent_of_code_ocr::parse_string_to_letters;
 use array2d::Array2D;
 
-use crate::solutions::{answer::Answer, Solution};
+use crate::{
+    solutions::{answer::Answer, Solution},
+    utils::ocr::screen_to_string,
+};
 
 pub struct Day10;
 
@@ -30,10 +34,7 @@ impl Solution for Day10 {
             }
         });
 
-        // print_screen(&screen);
-
-        // This answer is manually extracted from the image generated above
-        Some("EPJBRKAH".into())
+        Some(parse_string_to_letters(screen_to_string(&screen).as_str()).into())
     }
 }
 

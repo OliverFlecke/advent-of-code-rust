@@ -5,6 +5,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+advent-of-code-ocr = { path = "./advent-of-code-ocr" }
 reqwest = { version = "0.11.11", features = ["blocking"] }
 itertools = { version = "0.10.3" }
 serde = { version = "1.0.144", features = ["derive"] }
@@ -15,3 +16,4 @@ colored = { version = "2.0.0" }
 clap = { version = "4.0.29", features = ["derive"] }
 csv = "1.1.6"
 array2d = "0.2.1"
+string-builder = "0.2.0"
