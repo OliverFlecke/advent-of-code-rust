@@ -97,7 +97,7 @@ pub fn split_screen(s: &str) -> Vec<String> {
                 letters.get_mut(&n).unwrap().push('\n');
                 letters.get_mut(&n).unwrap().extend(chunk.take(4));
             } else {
-                letters.entry(n).or_insert(chunk.take(4).collect());
+                letters.entry(n).or_insert_with(|| chunk.take(4).collect());
             }
         }
     }
