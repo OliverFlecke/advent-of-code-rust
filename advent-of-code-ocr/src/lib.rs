@@ -90,19 +90,21 @@ pub fn parse_string_to_letters(s: &str) -> String {
 /// ####    #...    .##.    ###.    #..#    #..#    #..#    #..#
 /// ```
 pub fn split_screen(s: &str) -> Vec<String> {
-    let mut letters: HashMap<usize, Vec<char>> = HashMap::new();
-    for l in s.lines() {
-        for (n, chunk) in l.chars().chunks(5).into_iter().enumerate() {
-            if letters.contains_key(&n) {
-                letters.get_mut(&n).unwrap().push('\n');
-                letters.get_mut(&n).unwrap().extend(chunk.take(4));
-            } else {
-                letters.entry(n).or_insert_with(|| chunk.take(4).collect());
-            }
-        }
-    }
-
-    letters
+    s.lines()
+        .fold(HashMap::<usize, Vec<char>>::new(), |letters, line| {
+            line.chars().chunks(5).into_iter().enumerate().fold(
+                letters,
+                |mut letters, (n, chunk)| {
+                    if letters.contains_key(&n) {
+                        letters.get_mut(&n).unwrap().push('\n');
+                        letters.get_mut(&n).unwrap().extend(chunk.take(4));
+                    } else {
+                        letters.entry(n).or_insert_with(|| chunk.take(4).collect());
+                    }
+                    letters
+                },
+            )
+        })
         .iter()
         .sorted_by_key(|(n, _)| **n)
         .map(|(_, v)| v)
