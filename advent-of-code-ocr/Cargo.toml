@@ -1,12 +1,13 @@
 [package]
 name = "advent-of-code-ocr"
+description = "Small crate to help convert AoC text screens to strings"
 authors = ["Oliver Fleckenstein <oliverfl@live.dk>"]
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/OliverFlecke/advent-of-code-rust/tree/main/advent-of-code-ocr"
 readme = "README.md"
-keywords = ["advent of code", "aoc"]
+keywords = ["advent-of-code", "aoc"]
 
 [dependencies]
 itertools = "0.10.5"
