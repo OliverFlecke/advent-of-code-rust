@@ -83,7 +83,7 @@ impl Location {
                 y: self.y + dy.signum(),
             }
         } else {
-            self.clone()
+            self
         }
     }
 }
