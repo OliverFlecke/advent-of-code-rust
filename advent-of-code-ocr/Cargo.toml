@@ -3,6 +3,10 @@ name = "advent-of-code-ocr"
 authors = ["Oliver Fleckenstein <oliverfl@live.dk>"]
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/OliverFlecke/advent-of-code-rust/tree/main/advent-of-code-ocr"
+readme = "README.md"
+keywords = ["advent of code", "aoc"]
 
 [dependencies]
 itertools = "0.10.5"

@@ -24,10 +24,40 @@ static CHARACTER_MAP: phf::Map<&'static str, char> = phf_map! {
     "####\n...#\n..#.\n.#..\n#...\n####" => 'Z',
 };
 
+/// Parse a letter represented in the AoC format.
+///
+/// Example:
+/// ```
+/// # use advent_of_code_ocr::parse_letter;
+/// let letter = "#..#\n#..#\n####\n#..#\n#..#\n#..#";
+///
+/// assert_eq!(parse_letter(letter), Some('H'));
+/// ```
 pub fn parse_letter(letter: &str) -> Option<char> {
     CHARACTER_MAP.get(letter).copied()
 }
 
+/// Parse a string representing a full screen from a AoC puzzle.
+///
+/// Note: The current version will return all the characters it can parse,
+/// and ignore everyone that it cannot. To check individual characters, use the
+/// `parse_letter` function to parse them and get an `Option<char>`.
+///
+/// Example:
+/// ```
+/// # use advent_of_code_ocr::parse_string_to_letters;
+///
+/// // Input is:
+/// // ####.###....##.###..###..#..#..##..#..#.
+/// // #....#..#....#.#..#.#..#.#.#..#..#.#..#.
+/// // ###..#..#....#.###..#..#.##...#..#.####.
+/// // #....###.....#.#..#.###..#.#..####.#..#.
+/// // #....#....#..#.#..#.#.#..#.#..#..#.#..#.
+/// // ####.#.....##..###..#..#.#..#.#..#.#..#.
+/// let input = "####.###....##.###..###..#..#..##..#..#.\n#....#..#....#.#..#.#..#.#.#..#..#.#..#.\n###..#..#....#.###..#..#.##...#..#.####.\n#....###.....#.#..#.###..#.#..####.#..#.\n#....#....#..#.#..#.#.#..#.#..#..#.#..#.\n####.#.....##..###..#..#.#..#.#..#.#..#.";
+///
+/// assert_eq!(parse_string_to_letters(input), "EPJBRKAH");
+/// ```
 pub fn parse_string_to_letters(s: &str) -> String {
     let mut letters: HashMap<usize, Vec<char>> = HashMap::new();
     for l in s.lines() {
