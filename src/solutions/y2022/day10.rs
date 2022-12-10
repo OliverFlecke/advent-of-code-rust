@@ -9,59 +9,60 @@ impl Solution for Day10 {
         let commands = parse(input);
 
         let mut sum = 0;
-        let mut cycle = 0;
-        let mut x = 1;
-        for cmd in commands {
-            for _ in 0..cmd.cycle_time() {
-                cycle += 1;
-                if cycle % 40 == 20 {
-                    sum += x * cycle;
-                }
+        simulate(commands, CycleOrder::Before, |cycle, x| {
+            if cycle % 40 == 20 {
+                sum += x * cycle;
             }
-            match cmd {
-                Inst::Addx(v) => x += v,
-                Inst::Noop => {}
-            }
-        }
+        });
 
         Some(sum.into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        const SCREEN_ROWS: usize = 6;
-        const SCREEN_COLS: usize = 40;
-        // const SPIRTE_WIDTH: i32 = 3;
-
+        let mut screen = Array2D::filled_with(false, 6, 40);
         let commands = parse(input);
-        let mut screen = Array2D::filled_with(false, SCREEN_ROWS, SCREEN_COLS);
 
-        let mut cycle = 0;
-        let mut x = 1;
-        for cmd in commands {
-            for _ in 0..cmd.cycle_time() {
-                if let Ok(current) = usize::try_from(x) {
-                    let col = cycle % 40;
-                    if current.abs_diff(col) <= 1 {
-                        let row = cycle / 40;
-                        // println!("Setting {col}/{row}");
-                        screen.set(row, col, true).unwrap();
-                    }
-                }
-                cycle += 1;
+        simulate(commands, CycleOrder::After, |cycle, x| {
+            let col = cycle % 40;
+            if x.abs_diff(col) <= 1 {
+                let row = cycle / 40;
+                screen.set(row as usize, col as usize, true).unwrap();
             }
-            match cmd {
-                Inst::Addx(v) => x += v,
-                Inst::Noop => {}
-            }
-        }
-
-        screen.rows_iter().for_each(|col| {
-            col.for_each(|lit| if *lit { print!("#") } else { print!(" ") });
-            println!();
         });
+
+        // print_screen(&screen);
 
         // This answer is manually extracted from the image generated above
         Some("EPJBRKAH".into())
+    }
+}
+
+#[derive(PartialEq)]
+enum CycleOrder {
+    Before,
+    After,
+}
+
+fn simulate<F>(commands: Vec<Inst>, order: CycleOrder, mut fun: F)
+where
+    F: FnMut(i32, i32),
+{
+    let mut cycle = 0;
+    let mut x = 1;
+    for cmd in commands {
+        for _ in 0..cmd.cycle_time() {
+            if order == CycleOrder::Before {
+                cycle += 1;
+            }
+            fun(cycle, x);
+            if order == CycleOrder::After {
+                cycle += 1;
+            }
+        }
+        match cmd {
+            Inst::Addx(v) => x += v,
+            Inst::Noop => {}
+        }
     }
 }
 
@@ -71,6 +72,14 @@ fn parse(input: &str) -> Vec<Inst> {
         .lines()
         .map(|x| Inst::try_from(x).unwrap())
         .collect()
+}
+
+#[allow(dead_code)]
+fn print_screen(screen: &Array2D<bool>) {
+    screen.rows_iter().for_each(|col| {
+        col.for_each(|lit| if *lit { print!("#") } else { print!(" ") });
+        println!();
+    });
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -113,10 +122,6 @@ mod test {
 
     use super::*;
 
-    //     const SAMPLE_INPUT: &str = "noop
-    // addx 3
-    // addx -5";
-
     #[test]
     fn test_a() {
         let path = env::var("CARGO_MANIFEST_DIR").unwrap() + "/samples/2022/10.0.txt";
@@ -124,10 +129,12 @@ mod test {
         assert_eq!(Day10.solve_a(input.as_str()), Some(Answer::Int(13140)));
     }
 
-    #[test]
-    fn test_b() {
-        let path = env::var("CARGO_MANIFEST_DIR").unwrap() + "/samples/2022/10.0.txt";
-        let input = fs::read_to_string(path).unwrap();
-        assert_eq!(Day10.solve_b(input.as_str()), Some(Answer::Int(13140)));
-    }
+    // Used to validate that the test input draws the screen as expected.
+    // It doesn't really make sense to test the answer.
+    // #[test]
+    // fn test_b() {
+    //     let path = env::var("CARGO_MANIFEST_DIR").unwrap() + "/samples/2022/10.0.txt";
+    //     let input = fs::read_to_string(path).unwrap();
+    //     assert_eq!(Day10.solve_b(input.as_str()), Some(Answer::Int(13140)));
+    // }
 }
