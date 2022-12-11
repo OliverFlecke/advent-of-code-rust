@@ -23,7 +23,7 @@ fn simulate((monkeys, mut items): MonkeysWithItems, rounds: usize, divisor: u64)
             let (a, b) = items[i]
                 .iter()
                 .fold((Vec::new(), Vec::new()), |(mut a, mut b), item| {
-                    let worry = monkey.operation.eval(&monkey.parameters, *item);
+                    let worry = monkey.operation.eval(*item);
                     let worry = worry / divisor;
                     let worry = worry % common;
 
@@ -67,12 +67,8 @@ fn parse(input: &str) -> MonkeysWithItems {
 
 fn parse_items(input: &str) -> Vec<u64> {
     input
-        .split(':')
+        .split([':', ','])
         .skip(1)
-        .next()
-        .unwrap()
-        .trim()
-        .split(',')
         .map(|x| x.trim().parse::<u64>().expect("to be number"))
         .collect::<Vec<u64>>()
 }
@@ -87,7 +83,6 @@ fn print_items(monkeys: &Vec<Vec<u64>>) {
 #[derive(Debug, Clone, PartialEq)]
 struct Monkey {
     operation: Operation,
-    parameters: Parameters,
     divisor: u64,
     true_index: u64,
     false_index: u64,
@@ -98,29 +93,17 @@ impl TryFrom<&str> for Monkey {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let mut lines = value.lines();
-        let op_pattern = Regex::new(r"(?P<first>\w+) (?P<op>\+|\*) (?P<second>\w+)").unwrap();
-        let (operation, parameters) = lines
+        let operation = lines
             .next()
             .map(|x| {
-                let text = x.split('=').skip(1).next().unwrap();
+                let parts: Vec<&str> = x.split_whitespace().collect();
 
-                let caps = op_pattern.captures(text).unwrap();
-                let op = if caps["op"] == *"+" {
-                    Operation::Add
-                } else {
-                    Operation::Mul
-                };
-
-                let params = match (
-                    caps["first"].to_string().as_str(),
-                    caps["second"].to_string().as_str(),
-                ) {
-                    ("old", "old") => Parameters::ZeroConst,
-                    ("old", x) | (x, "old") => Parameters::OneConst(x.parse().unwrap()),
-                    _ => panic!("unable to parse parameters"),
-                };
-
-                (op, params)
+                match parts[..] {
+                    [.., "*", "old"] => Operation::Square,
+                    [.., "+", v] => Operation::Add(v.parse().unwrap()),
+                    [.., "*", v] => Operation::Mul(v.parse().unwrap()),
+                    _ => panic!("Unknown operation"),
+                }
             })
             .unwrap();
 
@@ -150,7 +133,6 @@ impl TryFrom<&str> for Monkey {
 
         Ok(Self {
             operation,
-            parameters,
             divisor,
             true_index,
             false_index,
@@ -160,29 +142,19 @@ impl TryFrom<&str> for Monkey {
 
 #[derive(Debug, Clone, PartialEq)]
 enum Operation {
-    Add,
-    Mul,
+    Add(u64),
+    Mul(u64),
+    Square,
 }
 
 impl Operation {
-    fn eval(&self, param: &Parameters, old: u64) -> u64 {
+    fn eval(&self, old: u64) -> u64 {
         match self {
-            Operation::Add => match param {
-                Parameters::OneConst(v) => old + v,
-                Parameters::ZeroConst => old + old,
-            },
-            Operation::Mul => match param {
-                Parameters::OneConst(v) => old * v,
-                Parameters::ZeroConst => old * old,
-            },
+            Operation::Add(v) => old + v,
+            Operation::Mul(v) => old * v,
+            Operation::Square => old * old,
         }
     }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-enum Parameters {
-    OneConst(u64),
-    ZeroConst,
 }
 
 #[cfg(test)]
@@ -202,8 +174,8 @@ Test: divisible by 23
         assert_eq!(
             monkey,
             Ok(Monkey {
-                operation: Operation::Mul,
-                parameters: Parameters::OneConst(19),
+                operation: Operation::Mul(19),
+                // parameters: Parameters::OneConst(19),
                 divisor: 23,
                 true_index: 2,
                 false_index: 3
