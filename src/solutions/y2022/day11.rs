@@ -18,31 +18,24 @@ fn simulate((monkeys, mut items): MonkeysWithItems, rounds: usize, divisor: u64)
 
     for _ in 0..rounds {
         for (i, monkey) in monkeys.iter().enumerate() {
-            let (a, b) = items[i]
-                .iter()
-                .fold((Vec::new(), Vec::new()), |(mut a, mut b), item| {
-                    let worry = monkey.operation.eval(*item);
-                    let worry = worry / divisor;
-                    let worry = worry % common;
+            for item in items[i].clone() {
+                let worry = monkey.operation.eval(item);
+                let worry = worry / divisor;
+                let worry = worry % common;
 
-                    if worry % monkey.divisor == 0 {
-                        a.push(worry);
-                    } else {
-                        b.push(worry);
-                    }
+                if worry % monkey.divisor == 0 {
+                    items[monkey.true_index as usize].push(worry);
+                } else {
+                    items[monkey.false_index as usize].push(worry);
+                }
+            }
 
-                    (a, b)
-                });
-
-            items[monkey.true_index as usize].extend(a);
-            items[monkey.false_index as usize].extend(b);
             counts[i] += items[i].len();
             items[i].clear();
         }
     }
 
     counts.sort();
-
     counts.iter().rev().take(2).product()
 }
 
@@ -160,7 +153,6 @@ Test: divisible by 23
             monkey,
             Ok(Monkey {
                 operation: Operation::Mul(19),
-                // parameters: Parameters::OneConst(19),
                 divisor: 23,
                 true_index: 2,
                 false_index: 3
