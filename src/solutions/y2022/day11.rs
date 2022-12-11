@@ -11,9 +11,9 @@ impl Solution for Day11 {
 
         // print_items(&items);
 
-        for round in 0..20 {
+        for _ in 0..20 {
             for (i, monkey) in monkies.iter().enumerate() {
-                // let clone = items.iter().cloned().collect::<Vec<u32>>();
+                // let clone = items.iter().cloned().collect::<Vec<u64>>();
                 let (a, b) =
                     items[i]
                         .iter()
@@ -43,17 +43,55 @@ impl Solution for Day11 {
         // });
         counts.sort();
 
-        let monkey_business = counts[counts.len() - 1] * counts[counts.len() - 2];
-
-        Some(monkey_business.into())
+        Some(counts.iter().rev().take(2).product::<usize>().into())
     }
 
-    fn solve_b(&self, _input: &str) -> Option<Answer> {
-        None
+    fn solve_b(&self, input: &str) -> Option<Answer> {
+        let (mut items, monkies) = parse(input);
+        let mut counts = vec![0; monkies.len()];
+        let rounds = 10_000;
+
+        let common: u64 = monkies.iter().map(|m| m.divisor).product();
+        // println!("Common: {common}");
+
+        for round in 0..rounds {
+            println!("Round: {round}");
+            for (i, monkey) in monkies.iter().enumerate() {
+                // let clone = items.iter().cloned().collect::<Vec<u64>>();
+                let (a, b) =
+                    items[i]
+                        .iter()
+                        .fold((Vec::new(), Vec::new()), |(mut a, mut b), item| {
+                            let worry = monkey.operation.eval(&monkey.parameters, *item);
+                            // println!("Before: {worry:<20} After: {:<20}", worry % common);
+                            let worry = worry % common;
+
+                            if worry % monkey.divisor == 0 {
+                                a.push(worry);
+                            } else {
+                                b.push(worry);
+                            }
+
+                            (a, b)
+                        });
+
+                items[monkey.true_index as usize].extend(a);
+                items[monkey.false_index as usize].extend(b);
+                counts[i] += items[i].len();
+                items[i].clear();
+            }
+
+            // println!("\nRound: {round}");
+            // print_items(&items);
+        }
+
+        counts.sort();
+
+        Some(counts.iter().rev().take(2).product::<usize>().into())
     }
 }
 
-fn parse(input: &str) -> (Vec<Vec<u32>>, Vec<Monkey>) {
+fn parse(input: &str) -> (Vec<Vec<u64>>, Vec<Monkey>) {
     input
         .trim_end()
         .split("\n\n")
@@ -68,7 +106,7 @@ fn parse(input: &str) -> (Vec<Vec<u32>>, Vec<Monkey>) {
         .unzip()
 }
 
-fn parse_items(input: &str) -> Vec<u32> {
+fn parse_items(input: &str) -> Vec<u64> {
     input
         .split(':')
         .skip(1)
@@ -76,11 +114,12 @@ fn parse_items(input: &str) -> Vec<u32> {
         .unwrap()
         .trim()
         .split(',')
-        .map(|x| x.trim().parse::<u32>().expect("to be number"))
-        .collect::<Vec<u32>>()
+        .map(|x| x.trim().parse::<u64>().expect("to be number"))
+        .collect::<Vec<u64>>()
 }
 
-fn print_items(monkies: &Vec<Vec<u32>>) {
+#[allow(dead_code)]
+fn print_items(monkies: &Vec<Vec<u64>>) {
     monkies.iter().enumerate().for_each(|(i, m)| {
         println!("Monkey {i}: {:?}", m);
     });
@@ -90,9 +129,9 @@ fn print_items(monkies: &Vec<Vec<u32>>) {
 struct Monkey {
     operation: Operation,
     parameters: Parameters,
-    divisor: u32,
-    true_index: u32,
-    false_index: u32,
+    divisor: u64,
+    true_index: u64,
+    false_index: u64,
 }
 
 impl TryFrom<&str> for Monkey {
@@ -132,7 +171,7 @@ impl TryFrom<&str> for Monkey {
             .unwrap()
             .captures(lines.next().unwrap())
             .unwrap()["divisor"]
-            .parse::<u32>()
+            .parse::<u64>()
             .unwrap();
 
         let true_index = lines
@@ -142,7 +181,7 @@ impl TryFrom<&str> for Monkey {
             .last()
             .unwrap()
             .to_digit(10)
-            .unwrap();
+            .unwrap() as u64;
         let false_index = lines
             .next()
             .unwrap()
@@ -150,7 +189,7 @@ impl TryFrom<&str> for Monkey {
             .last()
             .unwrap()
             .to_digit(10)
-            .unwrap();
+            .unwrap() as u64;
 
         Ok(Self {
             operation,
@@ -169,7 +208,7 @@ enum Operation {
 }
 
 impl Operation {
-    fn eval(&self, param: &Parameters, old: u32) -> u32 {
+    fn eval(&self, param: &Parameters, old: u64) -> u64 {
         match self {
             Operation::Add => match param {
                 Parameters::OneConst(v) => old + v,
@@ -185,7 +224,7 @@ impl Operation {
 
 #[derive(Debug, Clone, PartialEq)]
 enum Parameters {
-    OneConst(u32),
+    OneConst(u64),
     ZeroConst,
 }
 
@@ -220,6 +259,13 @@ Test: divisible by 23
         assert_eq!(
             Day11.solve_a(load_sample(Year::Y2022, "11.txt").unwrap().as_str()),
             Some(Answer::UInt(10605))
+        )
+    }
+    #[test]
+    fn test_b() {
+        assert_eq!(
+            Day11.solve_b(load_sample(Year::Y2022, "11.txt").unwrap().as_str()),
+            Some(Answer::UInt(2713310158))
         )
     }
 }
