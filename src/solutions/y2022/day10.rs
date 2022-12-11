@@ -125,7 +125,7 @@ mod test {
 
     #[test]
     fn test_a() {
-        let path = env::var("CARGO_MANIFEST_DIR").unwrap() + "/samples/2022/10.0.txt";
+        let path = env::var("CARGO_MANIFEST_DIR").unwrap() + "/samples/2022/10.txt";
         let input = fs::read_to_string(path).unwrap();
         assert_eq!(Day10.solve_a(input.as_str()), Some(Answer::Int(13140)));
     }
@@ -134,7 +134,7 @@ mod test {
     // It doesn't really make sense to test the answer.
     // #[test]
     // fn test_b() {
-    //     let path = env::var("CARGO_MANIFEST_DIR").unwrap() + "/samples/2022/10.0.txt";
+    //     let path = env::var("CARGO_MANIFEST_DIR").unwrap() + "/samples/2022/10.txt";
     //     let input = fs::read_to_string(path).unwrap();
     //     assert_eq!(Day10.solve_b(input.as_str()), Some(Answer::Int(13140)));
     // }
