@@ -119,15 +119,14 @@ impl TryFrom<&str> for Inst {
 
 #[cfg(test)]
 mod test {
-    use std::{env, fs};
+    use crate::{utils::load_sample, Year};
 
     use super::*;
 
     #[test]
     fn test_a() {
-        let path = env::var("CARGO_MANIFEST_DIR").unwrap() + "/samples/2022/10.txt";
-        let input = fs::read_to_string(path).unwrap();
-        assert_eq!(Day10.solve_a(input.as_str()), Some(Answer::Int(13140)));
+        let sample = load_sample(Year::Y2022, "10.txt").unwrap();
+        assert_eq!(Day10.solve_a(sample.as_str()), Some(Answer::Int(13140)));
     }
 
     // Used to validate that the test input draws the screen as expected.
