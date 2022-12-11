@@ -1,5 +1,3 @@
-use regex::Regex;
-
 use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day11;
@@ -107,35 +105,22 @@ impl TryFrom<&str> for Monkey {
             })
             .unwrap();
 
-        let divisor = Regex::new(r"(?P<divisor>\d+)$")
+        let divisor = lines
+            .next()
             .unwrap()
-            .captures(lines.next().unwrap())
-            .unwrap()["divisor"]
-            .parse::<u64>()
+            .split(" by ")
+            .nth(1)
+            .unwrap()
+            .parse()
             .unwrap();
 
-        let true_index = lines
-            .next()
-            .unwrap()
-            .chars()
-            .last()
-            .unwrap()
-            .to_digit(10)
-            .unwrap() as u64;
-        let false_index = lines
-            .next()
-            .unwrap()
-            .chars()
-            .last()
-            .unwrap()
-            .to_digit(10)
-            .unwrap() as u64;
+        let mut indexes = lines.map(|l| l.chars().last().unwrap().to_digit(10).unwrap() as u64);
 
         Ok(Self {
             operation,
             divisor,
-            true_index,
-            false_index,
+            true_index: indexes.next().unwrap(),
+            false_index: indexes.next().unwrap(),
         })
     }
 }
