@@ -6,92 +6,51 @@ pub struct Day11;
 
 impl Solution for Day11 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
-        let (mut items, monkies) = parse(input);
-        let mut counts = vec![0; monkies.len()];
-
-        // print_items(&items);
-
-        for _ in 0..20 {
-            for (i, monkey) in monkies.iter().enumerate() {
-                // let clone = items.iter().cloned().collect::<Vec<u64>>();
-                let (a, b) =
-                    items[i]
-                        .iter()
-                        .fold((Vec::new(), Vec::new()), |(mut a, mut b), item| {
-                            let worry = monkey.operation.eval(&monkey.parameters, *item) / 3;
-                            if worry % monkey.divisor == 0 {
-                                a.push(worry);
-                            } else {
-                                b.push(worry);
-                            }
-
-                            (a, b)
-                        });
-
-                items[monkey.true_index as usize].extend(a);
-                items[monkey.false_index as usize].extend(b);
-                counts[i] += items[i].len();
-                items[i].clear();
-            }
-
-            // println!("\nRound: {round}");
-            // print_items(&items);
-        }
-
-        // counts.iter().enumerate().for_each(|(i, count)| {
-        //     println!("Monkey {i} inspected items {count} times");
-        // });
-        counts.sort();
-
-        Some(counts.iter().rev().take(2).product::<usize>().into())
+        Some(simulate(parse(input), 20, 3).into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        let (mut items, monkies) = parse(input);
-        let mut counts = vec![0; monkies.len()];
-        let rounds = 10_000;
-
-        let common: u64 = monkies.iter().map(|m| m.divisor).product();
-        // println!("Common: {common}");
-
-        for round in 0..rounds {
-            println!("Round: {round}");
-            for (i, monkey) in monkies.iter().enumerate() {
-                // let clone = items.iter().cloned().collect::<Vec<u64>>();
-                let (a, b) =
-                    items[i]
-                        .iter()
-                        .fold((Vec::new(), Vec::new()), |(mut a, mut b), item| {
-                            let worry = monkey.operation.eval(&monkey.parameters, *item);
-                            // println!("Before: {worry:<20} After: {:<20}", worry % common);
-                            let worry = worry % common;
-
-                            if worry % monkey.divisor == 0 {
-                                a.push(worry);
-                            } else {
-                                b.push(worry);
-                            }
-
-                            (a, b)
-                        });
-
-                items[monkey.true_index as usize].extend(a);
-                items[monkey.false_index as usize].extend(b);
-                counts[i] += items[i].len();
-                items[i].clear();
-            }
-
-            // println!("\nRound: {round}");
-            // print_items(&items);
-        }
-
-        counts.sort();
-
-        Some(counts.iter().rev().take(2).product::<usize>().into())
+        Some(simulate(parse(input), 10_000, 1).into())
     }
 }
 
-fn parse(input: &str) -> (Vec<Vec<u64>>, Vec<Monkey>) {
+fn simulate((monkeys, mut items): MonkeysWithItems, rounds: usize, divisor: u64) -> usize {
+    let mut counts = vec![0; monkeys.len()];
+    let common: u64 = monkeys.iter().map(|m| m.divisor).product();
+
+    for _ in 0..rounds {
+        for (i, monkey) in monkeys.iter().enumerate() {
+            let (a, b) = items[i]
+                .iter()
+                .fold((Vec::new(), Vec::new()), |(mut a, mut b), item| {
+                    let worry = monkey.operation.eval(&monkey.parameters, *item);
+                    let worry = worry / divisor;
+                    let worry = worry % common;
+
+                    if worry % monkey.divisor == 0 {
+                        a.push(worry);
+                    } else {
+                        b.push(worry);
+                    }
+
+                    (a, b)
+                });
+
+            items[monkey.true_index as usize].extend(a);
+            items[monkey.false_index as usize].extend(b);
+            counts[i] += items[i].len();
+            items[i].clear();
+        }
+    }
+
+    counts.sort();
+
+    counts.iter().rev().take(2).product()
+}
+
+type MonkeysWithItems = (Vec<Monkey>, Vec<Vec<u64>>);
+
+fn parse(input: &str) -> MonkeysWithItems {
     input
         .trim_end()
         .split("\n\n")
@@ -101,7 +60,7 @@ fn parse(input: &str) -> (Vec<Vec<u64>>, Vec<Monkey>) {
             let items = parse_items(lines.next().unwrap());
             let monkey = Monkey::try_from(second).unwrap();
 
-            (items, monkey)
+            (monkey, items)
         })
         .unzip()
 }
@@ -119,8 +78,8 @@ fn parse_items(input: &str) -> Vec<u64> {
 }
 
 #[allow(dead_code)]
-fn print_items(monkies: &Vec<Vec<u64>>) {
-    monkies.iter().enumerate().for_each(|(i, m)| {
+fn print_items(monkeys: &Vec<Vec<u64>>) {
+    monkeys.iter().enumerate().for_each(|(i, m)| {
         println!("Monkey {i}: {:?}", m);
     });
 }
@@ -138,8 +97,6 @@ impl TryFrom<&str> for Monkey {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        // println!("Parsing: {value}");
-
         let mut lines = value.lines();
         let op_pattern = Regex::new(r"(?P<first>\w+) (?P<op>\+|\*) (?P<second>\w+)").unwrap();
         let (operation, parameters) = lines
