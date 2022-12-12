@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display};
+use std::{cmp::Reverse, collections::HashSet, fmt::Display};
 
 use array2d::Array2D;
 use priority_queue::PriorityQueue;
@@ -10,13 +10,6 @@ pub struct Day12;
 impl Solution for Day12 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
         let (map, start, end, _) = parse(input);
-
-        println!("Searching from {start} to {end}");
-        println!(
-            "Cost of z: {}. End: {}",
-            map.get(2, 4).unwrap(),
-            map.get(2, 5).unwrap()
-        );
 
         search_distance(start, end, &map).map(|x| x.into())
     }
@@ -37,12 +30,13 @@ impl Solution for Day12 {
 
 fn search_distance(start: Location, end: Location, map: &Array2D<u8>) -> Option<usize> {
     let mut visited = HashSet::new();
-    let mut queue: PriorityQueue<Location, isize> = PriorityQueue::new();
-    queue.push(start, 0);
+    let mut queue: PriorityQueue<Location, Reverse<usize>> = PriorityQueue::new();
+    queue.push(start, Reverse(0));
     let directions = vec![(1, 0), (-1, 0), (0, 1), (0, -1)];
+
     while let Some((current, cost)) = queue.pop() {
         if current == end {
-            return Some(cost.abs() as usize);
+            return Some(cost.0);
         }
 
         for (col, row) in directions.iter() {
@@ -56,11 +50,12 @@ fn search_distance(start: Location, end: Location, map: &Array2D<u8>) -> Option<
                         <= *map.get(current.row, current.col).unwrap() + 1
                 {
                     visited.insert(neighbor);
-                    queue.push(neighbor, cost - 1);
+                    queue.push(neighbor, Reverse(cost.0 + 1));
                 }
             }
         }
     }
+
     None
 }
 
@@ -81,17 +76,17 @@ fn parse(input: &str) -> (Array2D<u8>, Location, Location, Vec<Location>) {
 
     input.lines().enumerate().for_each(|(row, l)| {
         l.char_indices().for_each(|(col, c)| {
+            if c == 'a' || c == 'S' {
+                lowest_locations.push(Location::new(col, row));
+            }
+
             if c == 'S' {
                 start = Location::new(col, row);
-                lowest_locations.push(start);
             } else if c == 'E' {
                 end = Location::new(col, row);
                 map.set(row, col, 25).unwrap();
             } else {
                 map.set(row, col, (c as u8) - b'a').unwrap();
-                if c == 'a' {
-                    lowest_locations.push(Location::new(col, row));
-                }
             }
         })
     });
