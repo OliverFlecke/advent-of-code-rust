@@ -41,10 +41,7 @@ fn search_distance(starts: Vec<Location>, end: Location, map: &Array2D<u8>) -> O
 
             if is_in_map(x, y, &map) {
                 let neighbor = Location::new(x as usize, y as usize);
-                if !visited.contains(&neighbor)
-                    && *map.get(neighbor.row, neighbor.col).unwrap()
-                        <= *map.get(current.row, current.col).unwrap() + 1
-                {
+                if !visited.contains(&neighbor) && is_move_allowed(&current, &neighbor, &map) {
                     visited.insert(neighbor);
                     queue.push(neighbor, Reverse(cost.0 + 1));
                 }
@@ -53,6 +50,10 @@ fn search_distance(starts: Vec<Location>, end: Location, map: &Array2D<u8>) -> O
     }
 
     None
+}
+
+fn is_move_allowed(current: &Location, neighbor: &Location, map: &Array2D<u8>) -> bool {
+    *map.get(neighbor.row, neighbor.col).unwrap() <= *map.get(current.row, current.col).unwrap() + 1
 }
 
 fn is_in_map(col: isize, row: isize, map: &Array2D<u8>) -> bool {
