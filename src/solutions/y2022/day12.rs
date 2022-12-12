@@ -11,27 +11,23 @@ impl Solution for Day12 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
         let (map, start, end, _) = parse(input);
 
-        search_distance(start, end, &map).map(|x| x.into())
+        search_distance(vec![start], end, &map).map(|x| x.into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
         let (map, _, end, locs) = parse(input);
 
-        Some(
-            locs.iter()
-                .map(|start| search_distance(*start, end, &map))
-                .filter_map(|x| x)
-                .min()
-                .unwrap()
-                .into(),
-        )
+        search_distance(locs, end, &map).map(|x| x.into())
     }
 }
 
-fn search_distance(start: Location, end: Location, map: &Array2D<u8>) -> Option<usize> {
+fn search_distance(starts: Vec<Location>, end: Location, map: &Array2D<u8>) -> Option<usize> {
     let mut visited = HashSet::new();
+    visited.extend(&starts);
+
     let mut queue: PriorityQueue<Location, Reverse<usize>> = PriorityQueue::new();
-    queue.push(start, Reverse(0));
+    queue.extend(starts.iter().map(|x| (*x, Reverse(0))));
+
     let directions = vec![(1, 0), (-1, 0), (0, 1), (0, -1)];
 
     while let Some((current, cost)) = queue.pop() {
