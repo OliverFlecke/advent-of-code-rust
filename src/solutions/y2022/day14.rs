@@ -10,18 +10,15 @@ pub struct Day14;
 
 impl Solution for Day14 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
-        let lines = parse(input);
-        let (mut map, x_bounds, y_bounds) = create_map(lines);
+        let (mut map, x_bounds, y_bounds) = create_map(parse(input));
 
         Some(simulate(&mut map, x_bounds, y_bounds, Level::A).into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        let lines = parse(input);
-        let (mut map, x_bounds, y_bounds) = create_map(lines);
+        let (mut map, x_bounds, y_bounds) = create_map(parse(input));
 
-        let answer = simulate(&mut map, x_bounds, y_bounds, Level::B);
-        Some(answer.into())
+        Some(simulate(&mut map, x_bounds, y_bounds, Level::B).into())
     }
 }
 
@@ -73,6 +70,8 @@ fn simulate(
                 None => return sand,
             };
 
+            // Manually check for underflow.
+            // Doesn't actually matter in release mode, as the subtraction will be allowed and `map.get` will just return `None`
             if col == 0 {
                 return sand;
             }
@@ -96,7 +95,7 @@ fn simulate(
             };
         }
 
-        map.set(row, col, Block::Sand).unwrap();
+        map.set(row, col, Sand).unwrap();
         sand += 1;
     }
 }
@@ -121,12 +120,13 @@ fn create_map(lines: Vec<Vec<Point>>) -> (Array2D<Block>, Point, Point) {
 
     let cols = x_max.abs_diff(x_min) + 1;
     let rows = y_max + 2;
-    let mut map = Array2D::filled_with(Block::Air, rows, cols);
+
+    let mut map = Array2D::filled_with(Air, rows, cols);
     lines.iter().for_each(|line| {
         line.iter().tuple_windows().for_each(|(a, b)| {
             for col in (a.0.min(b.0) - x_min)..=(a.0.max(b.0) - x_min) {
                 for row in a.1.min(b.1)..=a.1.max(b.1) {
-                    map.set(row, col, Block::Rock).unwrap();
+                    map.set(row, col, Rock).unwrap();
                 }
             }
         })
