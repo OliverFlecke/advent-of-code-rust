@@ -34,6 +34,12 @@ impl From<i32> for Answer {
         Answer::Int(value as i64)
     }
 }
+impl From<isize> for Answer {
+    fn from(value: isize) -> Self {
+        Answer::Int(value as i64)
+    }
+}
+
 impl From<&str> for Answer {
     fn from(input: &str) -> Self {
         Answer::String(input.to_string())
