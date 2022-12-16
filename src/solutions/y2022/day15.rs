@@ -44,7 +44,7 @@ fn part_b(sensors: &[Sensor], max: isize) -> Option<isize> {
                 sensors
                     .iter()
                     .all(|s| !s.is_inside_range(p))
-                    .then(|| p.x * PART_B_MAX + p.y)
+                    .then_some(p.x * PART_B_MAX + p.y)
             })
     })
 }

@@ -101,7 +101,7 @@ fn simulate(
 }
 
 fn create_map(lines: Vec<Vec<Point>>) -> (Array2D<Block>, Point, Point) {
-    let (x_min, x_max) = match lines.iter().flat_map(|l| l).map(|e| e.0).minmax() {
+    let (x_min, x_max) = match lines.iter().flatten().map(|e| e.0).minmax() {
         MinMaxResult::NoElements | MinMaxResult::OneElement(_) => unreachable!(),
         MinMaxResult::MinMax(min, max) => (min, max),
     };
@@ -109,7 +109,7 @@ fn create_map(lines: Vec<Vec<Point>>) -> (Array2D<Block>, Point, Point) {
     // Choosing buffer based on what works for my input. To save space
     const BUFFER: usize = 150;
     let (x_min, x_max) = (x_min - BUFFER, x_max + BUFFER);
-    let (_, y_max) = match lines.iter().flat_map(|l| l).map(|e| e.1).minmax() {
+    let (_, y_max) = match lines.iter().flatten().map(|e| e.1).minmax() {
         MinMaxResult::NoElements | MinMaxResult::OneElement(_) => unreachable!(),
         MinMaxResult::MinMax(min, max) => (min, max),
     };

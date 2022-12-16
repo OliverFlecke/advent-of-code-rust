@@ -39,9 +39,9 @@ fn search_distance(starts: Vec<Location>, end: Location, map: &Array2D<u8>) -> O
             let x = current.col as isize + col;
             let y = current.row as isize + row;
 
-            if is_in_map(x, y, &map) {
+            if is_in_map(x, y, map) {
                 let neighbor = Location::new(x as usize, y as usize);
-                if !visited.contains(&neighbor) && is_move_allowed(&current, &neighbor, &map) {
+                if !visited.contains(&neighbor) && is_move_allowed(&current, &neighbor, map) {
                     visited.insert(neighbor);
                     queue.push(neighbor, Reverse(cost.0 + 1));
                 }

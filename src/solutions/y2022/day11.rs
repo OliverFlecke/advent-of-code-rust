@@ -65,7 +65,7 @@ fn parse_items(input: &str) -> Vec<u64> {
 }
 
 #[allow(dead_code)]
-fn print_items(monkeys: &Vec<Vec<u64>>) {
+fn print_items(monkeys: &[Vec<u64>]) {
     monkeys.iter().enumerate().for_each(|(i, m)| {
         println!("Monkey {i}: {:?}", m);
     });
