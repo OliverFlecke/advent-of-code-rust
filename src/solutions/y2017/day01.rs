@@ -17,7 +17,6 @@ impl Solution for Day01 {
         let (mut first, mut last) = (None::<u32>, None::<u32>);
         let sum = input
             .chars()
-            .into_iter()
             .filter_map(|c| c.to_digit(10))
             .tuple_windows()
             .fold(0, |sum, (a, b)| {
@@ -34,11 +33,7 @@ impl Solution for Day01 {
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        let digits = input
-            .chars()
-            .into_iter()
-            .filter_map(|c| c.to_digit(10))
-            .collect_vec();
+        let digits = input.chars().filter_map(|c| c.to_digit(10)).collect_vec();
 
         let mut sum = 0;
         for i in 0..digits.len() {

@@ -50,7 +50,7 @@ impl KnotHash {
         let mut i: usize = 0;
         while i < lengths.len() {
             let length = lengths[i];
-            for x in (0..length / 2).map(|x| x as usize) {
+            for x in 0..length / 2 {
                 array.swap(
                     get_index(*position + x),
                     get_index(*position + length - x - 1),

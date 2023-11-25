@@ -28,7 +28,7 @@ fn search_distance(starts: Vec<Location>, end: Location, map: &Array2D<u8>) -> O
     let mut queue: PriorityQueue<Location, Reverse<usize>> = PriorityQueue::new();
     queue.extend(starts.iter().map(|x| (*x, Reverse(0))));
 
-    let directions = vec![(1, 0), (-1, 0), (0, 1), (0, -1)];
+    let directions = [(1, 0), (-1, 0), (0, 1), (0, -1)];
 
     while let Some((current, cost)) = queue.pop() {
         if current == end {

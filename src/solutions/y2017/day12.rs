@@ -22,8 +22,8 @@ impl Day12 {
             })
             .fold(HashMap::new(), |mut map, (from, to)| {
                 for n in to {
-                    map.entry(from).or_insert_with(HashSet::new).insert(n);
-                    map.entry(n).or_insert_with(HashSet::new).insert(from);
+                    map.entry(from).or_default().insert(n);
+                    map.entry(n).or_default().insert(from);
                 }
                 map
             })

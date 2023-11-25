@@ -63,7 +63,7 @@ impl Day15 {
     }
 
     fn generate_seq(initial_state: Pair, size: u32) -> GeneratorSequence {
-        (0..size).into_iter().scan(initial_state, |state, _| {
+        (0..size).scan(initial_state, |state, _| {
             *state = (
                 Self::generate_next(state.0, Self::A_FACTOR),
                 Self::generate_next(state.1, Self::B_FACTOR),
@@ -94,7 +94,7 @@ impl Day15 {
     }
 
     fn generate_seq_b(initial_state: Pair, size: u32) -> GeneratorSequence {
-        (0..size).into_iter().scan(initial_state, |state, _| {
+        (0..size).scan(initial_state, |state, _| {
             *state = (
                 Self::generate_next_b(state.0, Self::A_FACTOR, 4),
                 Self::generate_next_b(state.1, Self::B_FACTOR, 8),
@@ -130,7 +130,6 @@ impl Day15 {
         next_b: fn(u32) -> u32,
     ) -> usize {
         (0..size)
-            .into_iter()
             .scan(initial_state, |state, _| {
                 *state = (next_a(state.0), next_b(state.1));
 
