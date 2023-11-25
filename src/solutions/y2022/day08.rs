@@ -192,6 +192,7 @@ fn parse(input: &str) -> Array2D<u8> {
             .map(|l| l.chars().map(|c| c.to_digit(10).unwrap() as u8).collect())
             .collect::<Forest>(),
     )
+    .expect("this should always be valid")
 }
 
 #[cfg(test)]
