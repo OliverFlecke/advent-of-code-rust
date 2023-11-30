@@ -1,3 +1,5 @@
+use self::score::ScoreMap;
+use super::{Day, Level, Year};
 use colored::Colorize;
 use reqwest::{
     blocking::{Client, Response},
@@ -10,14 +12,13 @@ use std::{
     path::{Path, PathBuf},
     process::exit,
 };
+
 pub mod score;
-
-use self::score::ScoreMap;
-
-use super::{Day, Level, Year};
 
 const TOKEN_NAME: &str = "AOC_TOKEN";
 
+/// Read the token required to authenticate against the Advent of Code server.
+/// Panics if it cannot be found.
 pub fn get_token() -> String {
     match env::var(TOKEN_NAME) {
         Ok(token) => token,
@@ -40,6 +41,7 @@ fn get_headers() -> HeaderMap {
     headers
 }
 
+/// Result of a submission of an answer to a problem.
 pub enum SubmissionResult {
     Correct,
     AlreadyCompleted,
@@ -65,6 +67,7 @@ fn parse_submission_response_text(response: Response) -> SubmissionResult {
     }
 }
 
+/// Submit an answer for a problem on a given year, day, and level.
 pub fn submit(year: Year, day: Day, level: Level, answer: &String) {
     let mut scores = ScoreMap::load(year);
     let value = scores.get_score_for_day(day);
@@ -110,6 +113,8 @@ pub fn submit(year: Year, day: Day, level: Level, answer: &String) {
     };
 }
 
+/// Send a HTTP POST request with the answer for the problem at a given year,
+/// day, and level. The answer must always be provided as a string.
 fn post_answer(
     year: Year,
     day: Day,
@@ -125,6 +130,7 @@ fn post_answer(
         .send()
 }
 
+/// Get the personal input for a user for a given problem.
 pub fn get_input(year: Year, day: u8) -> Result<String, Box<dyn Error>> {
     match fs::read_to_string(get_input_cache_full_filename(year, day)) {
         Ok(content) => Ok(content),

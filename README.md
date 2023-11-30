@@ -34,7 +34,7 @@ To use the helper functions to retreive input and submit answers, the library wi
 - You should see a session variable - this is the token we need.
 - Add this to your environment with `export AOC_TOKEN=<your token>`
 
-(I usually put it in a `.token` file to easily load the variable in later sessions)
+I usually put it in a `.envrc` file and use [direnv](https://direnv.net/) to automatically load it for each shell session.
 
 ## Features
 
