@@ -1,0 +1,18 @@
+use crate::solutions::{Solution, answer::Answer};
+
+pub struct DayX;
+
+impl Solution for DayX {
+    fn solve_a(&self, _input: &str) -> Option<Answer> {
+        None
+    }
+
+    fn solve_b(&self, _input: &str) -> Option<Answer> {
+        None
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+}

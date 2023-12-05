@@ -5,6 +5,7 @@ use self::answer::Answer;
 pub mod answer;
 pub mod y2017;
 pub mod y2022;
+pub mod y2023;
 
 pub trait Solution {
     fn solve_a(&self, input: &str) -> Option<Answer>;
@@ -58,6 +59,11 @@ pub fn get_solver(year: Year, day: Day) -> Option<Box<dyn Solution>> {
             14 => Some(Box::new(y2022::day14::Day14 {})),
             15 => Some(Box::new(y2022::day15::Day15 {})),
             16 => Some(Box::new(y2022::day16::Day16 {})),
+            _ => None,
+        },
+        Year::Y2023 => match day {
+            3 => Some(Box::new(y2023::day03::Day03)),
+            4 => Some(Box::new(y2023::day04::Day04)),
             _ => None,
         },
         _ => None,

@@ -50,7 +50,7 @@ pub enum SubmissionResult {
 }
 
 fn parse_submission_response_text(response: Response) -> SubmissionResult {
-    let body = response.text().unwrap();
+    let body = get_main_part_from_html_response(response);
 
     if body.contains("That's the right answer") {
         SubmissionResult::Correct
@@ -65,6 +65,16 @@ fn parse_submission_response_text(response: Response) -> SubmissionResult {
     } else {
         panic!("Unknown response:\n\n{}", body);
     }
+}
+
+fn get_main_part_from_html_response(response: Response) -> String {
+    let pattern = regex::RegexBuilder::new(r"<main>[\s\S]*</main>")
+        .multi_line(true)
+        .build()
+        .unwrap();
+    let body = response.text().unwrap();
+    let m = pattern.find(body.as_str()).unwrap();
+    m.as_str().to_string()
 }
 
 /// Submit an answer for a problem on a given year, day, and level.
