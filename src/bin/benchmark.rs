@@ -19,7 +19,7 @@ struct Args {
     #[arg(
         short = 'i',
         long,
-        default_value_t = 1_000,
+        default_value_t = 1_0,
         help = "Number of iteration to run each solution for"
     )]
     iterations: u32,
@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     for day in 1..=25 {
         let solver = match get_solver(year, day) {
             Some(solver) => solver,
-            None => break,
+            None => continue,
         };
         let problem_input = get_input(year, day)
             .unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
