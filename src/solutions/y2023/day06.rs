@@ -110,6 +110,7 @@ mod test {
     use crate::{client::get_input, Year};
 
     use super::*;
+
     const INPUT: &str = r#"Time:      7  15   30
 Distance:  9  40  200"#;
 

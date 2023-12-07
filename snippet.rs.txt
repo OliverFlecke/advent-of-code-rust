@@ -14,5 +14,30 @@ impl Solution for DayX {
 
 #[cfg(test)]
 mod test {
+    use crate::{client::get_input, Year};
     use super::*;
+
+    const INPUT: &str = r#""#;
+
+    #[test]
+    fn test_a() {
+        assert_eq!(DayX {}.solve_a(INPUT), Some(Answer::UInt(todo!())));
+    }
+
+    #[test]
+    fn solve_a() {
+        let input = get_input(Year::Y2023, X).unwrap();
+        assert_eq!(DayX {}.solve_a(&input), Some(Answer::UInt(todo!())));
+    }
+
+    #[test]
+    fn test_b() {
+        assert_eq!(DayX {}.solve_b(INPUT), Some(Answer::UInt(todo!())));
+    }
+
+    #[test]
+    fn solve_b() {
+        let input = get_input(Year::Y2023, X).unwrap();
+        assert_eq!(DayX {}.solve_b(&input), Some(Answer::UInt(todo!())));
+    }
 }
