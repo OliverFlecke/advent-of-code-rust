@@ -6,9 +6,10 @@ use reqwest::{
     header::{HeaderMap, HeaderValue, COOKIE},
     Url,
 };
-use std::{env, error::Error, fs, process::exit};
+use std::{env, fs};
 
-pub mod score;
+mod cache;
+mod score;
 
 const TOKEN_NAME: &str = "AOC_TOKEN";
 
@@ -29,7 +30,7 @@ impl Default for AocClient {
 impl AocClient {
     /// Create a new client to interact with Advent of Code.
     pub fn new(base_url: Url, aoc_token: String) -> Self {
-        let http_client = build_client(&aoc_token);
+        let http_client = Self::build_client(&aoc_token);
 
         AocClient {
             base_url,
@@ -38,7 +39,7 @@ impl AocClient {
     }
 
     /// Get the personal input for a user for a given problem.
-    pub fn get_input(&self, year: Year, day: u8) -> Result<String, Box<dyn Error>> {
+    pub fn get_input(&self, year: Year, day: u8) -> anyhow::Result<String> {
         match fs::read_to_string(cache::get_input_cache_full_filename(year, day)) {
             Ok(content) => Ok(content),
             Err(_) => {
@@ -66,7 +67,7 @@ impl AocClient {
         println!("Submitting answer for {year:?}/{day}/{level:?} is: {answer}",);
 
         match self.post_answer(year, day, level, answer) {
-            Ok(res) => match parse_submission_response_text(res) {
+            Ok(res) => match res.try_into().unwrap() {
                 SubmissionResult::Correct => {
                     println!("{}", "Answer is correct".green());
                     scores.set_score_for_day(day, &level);
@@ -99,10 +100,11 @@ impl AocClient {
         answer: &String,
     ) -> Result<Response, reqwest::Error> {
         self.http_client
-            .post(format!(
-                "{base}/answer",
-                base = self.get_base_url(year, day)
-            ))
+            .post(
+                self.get_base_url_for_problem(year, day)
+                    .join("answer")
+                    .expect("Failed to create `answer` URL"),
+            )
             .form(&[
                 ("level", level.as_int().to_string()),
                 ("answer", answer.to_string()),
@@ -112,36 +114,48 @@ impl AocClient {
 
     /// Download the input for a given problem.
     fn download_input(&self, year: Year, day: Day) -> String {
-        let url = format!("{base}/input", base = self.get_base_url(year, day));
+        let url = self
+            .get_base_url_for_problem(year, day)
+            .join("input")
+            .expect("Failed to create download URL for `input`");
 
         match self.http_client.get(url).send() {
             Ok(response) if response.status().is_success() => {
                 response.text().expect("input to be valid")
             }
             Ok(response) => {
-                print!(
+                panic!(
                     "Invalid status code: {}. Message from server:\n{}",
                     response.status(),
                     response.text().unwrap()
                 );
-                exit(1);
             }
             Err(e) => panic!("Failed to download input {e:?}"),
         }
     }
 
     /// Get the base url for a problem.
-    fn get_base_url(&self, year: Year, day: u8) -> String {
+    fn get_base_url_for_problem(&self, year: Year, day: u8) -> Url {
         self.base_url
-            .join(&format!("{year}/day/{day}", year = year.as_int()))
-            .unwrap()
-            .as_str()
-            .to_string()
-        // format!(
-        //     "{base}/{year}/day/{day}",
-        //     base = self.base_url,
-        //     year = year.as_int(),
-        // )
+            .join(&format!("{year}/day/{day}/", year = year.as_int()))
+            .expect("Failed to create URL for problem")
+    }
+
+    /// Build a HTTP client to send request to Advent of Code.
+    fn build_client(token: &str) -> Client {
+        reqwest::blocking::Client::builder()
+            .default_headers({
+                let mut headers = HeaderMap::new();
+                headers.insert(
+                    COOKIE,
+                    HeaderValue::from_str(&format!("session={token}"))
+                        .expect("Failed to make header value with token"),
+                );
+                headers
+            })
+            .user_agent("github.com/OliverFlecke/advent-of-code-rust by oliverfl@live.dk")
+            .build()
+            .expect("Failed to create reqwest client")
     }
 }
 
@@ -155,6 +169,7 @@ fn get_token() -> String {
 }
 
 /// Result of a submission of an answer to a problem.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SubmissionResult {
     Correct,
     AlreadyCompleted,
@@ -162,25 +177,32 @@ pub enum SubmissionResult {
     TooRecent(u32),
 }
 
-fn parse_submission_response_text(response: Response) -> SubmissionResult {
-    let body = get_main_part_from_html_response(response);
+impl TryFrom<Response> for SubmissionResult {
+    type Error = anyhow::Error;
 
-    if body.contains("That's the right answer") {
-        SubmissionResult::Correct
-    } else if body.contains("already complete it") {
-        SubmissionResult::AlreadyCompleted
-    } else if body.contains("answer too recently") {
-        // TODO: Output how much time to wait for
-        println!("Body: {}", body);
-        SubmissionResult::TooRecent(0)
-    } else if body.contains("not the right answer") {
-        println!("Body: {}", body);
-        SubmissionResult::Incorrect
-    } else {
-        panic!("Unknown response:\n\n{}", body);
+    fn try_from(response: Response) -> Result<Self, Self::Error> {
+        let body = get_main_part_from_html_response(response);
+
+        if body.contains("That's the right answer") {
+            Ok(SubmissionResult::Correct)
+        } else if body.contains("already complete it") {
+            Ok(SubmissionResult::AlreadyCompleted)
+        } else if body.contains("answer too recently") {
+            // TODO: Output how much time to wait for
+            println!("Body: {}", body);
+            Ok(SubmissionResult::TooRecent(0))
+        } else if body.contains("not the right answer") {
+            println!("Body: {}", body);
+            Ok(SubmissionResult::Incorrect)
+        } else {
+            Err(anyhow::anyhow!("Unknown response:\n\n{}", body))
+        }
     }
 }
 
+/// This extracts the part of the submission response within the `<main>` tags.
+/// As this contains the primary message from AoC, the rest can be thrown away
+/// when you just want to know whether your answer was right or not.
 fn get_main_part_from_html_response(response: Response) -> String {
     let pattern = regex::RegexBuilder::new(r"<main>[\s\S]*</main>")
         .multi_line(true)
@@ -189,46 +211,6 @@ fn get_main_part_from_html_response(response: Response) -> String {
     let body = response.text().unwrap();
     let m = pattern.find(body.as_str()).unwrap();
     m.as_str().to_string()
-}
-
-/// Build a HTTP client to send request to Advent of Code.
-fn build_client(token: &str) -> Client {
-    reqwest::blocking::Client::builder()
-        .default_headers({
-            let mut headers = HeaderMap::new();
-            headers.insert(
-                COOKIE,
-                HeaderValue::from_str(&format!("session={token}"))
-                    .expect("Failed to make header value with token"),
-            );
-            headers
-        })
-        .user_agent("github.com/OliverFlecke/advent-of-code-rust by oliverfl@live.dk")
-        .build()
-        .expect("Failed to create reqwest client")
-}
-
-/// Functions to cache input locally in files.
-mod cache {
-    use crate::{Day, Year};
-    use std::{
-        fs,
-        path::{Path, PathBuf},
-    };
-
-    pub fn store_input_in_cache(year: Year, day: Day, input: &String) -> std::io::Result<()> {
-        fs::create_dir_all(get_input_cache_directory(year))?;
-        fs::write(get_input_cache_full_filename(year, day), input)
-    }
-
-    pub fn get_input_cache_full_filename(year: Year, day: Day) -> PathBuf {
-        Path::new(&get_input_cache_directory(year)).join(format!("{day}.txt", day = day))
-    }
-
-    /// Directory where input is cached at.
-    fn get_input_cache_directory(year: Year) -> String {
-        format!(".input/{year}/", year = year.as_int())
-    }
 }
 
 #[cfg(test)]
@@ -252,8 +234,10 @@ mod test {
     #[test]
     fn get_base_url_test() {
         assert_eq!(
-            "https://adventofcode.com/2016/day/17",
-            AocClient::default().get_base_url(Year::Y2016, 17)
+            "https://adventofcode.com/2016/day/17/"
+                .parse::<Url>()
+                .unwrap(),
+            AocClient::default().get_base_url_for_problem(Year::Y2016, 17)
         );
     }
 
@@ -276,6 +260,8 @@ mod test {
         let answer: String = Faker.fake();
         let client = AocClient::new(Url::parse(&mock_server.uri()).unwrap(), Faker.fake());
 
-        client.submit(Year::Y2017, 1, Level::A, &answer);
+        assert!(client
+            .post_answer(Year::Y2017, 1, Level::A, &answer)
+            .is_ok());
     }
 }

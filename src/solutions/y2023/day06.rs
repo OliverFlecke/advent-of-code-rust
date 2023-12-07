@@ -8,7 +8,7 @@ impl Solution for Day06 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
         let races = parse(input);
 
-        let answer = races.iter().map(|x| x.wins_compute()).product::<usize>();
+        let answer = races.iter().map(|x| x.wins()).product::<usize>();
 
         Some(answer.into())
     }

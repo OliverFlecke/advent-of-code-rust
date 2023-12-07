@@ -8,6 +8,7 @@ impl Solution for Day04 {
         let answer = input
             .lines()
             .map(play_round)
+            .filter(|count| *count > 0)
             .map(|count| 2_usize.pow((count - 1) as u32))
             .sum::<usize>();
 
