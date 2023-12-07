@@ -33,6 +33,8 @@ impl Solution for Day07 {
             .map(|(hand, bid)| Card {
                 hand: hand
                     .chars()
+                    // Bit of a hack. To reuse the same `Ord` implementation below,
+                    // we will just convert J into a different symbol.
                     .map(|c| if c == 'J' { 'X' } else { c })
                     .collect(),
                 kind: from_str_with_joker(hand),
@@ -140,25 +142,16 @@ impl From<&str> for CardType {
 
         let max = *map.values().max().unwrap_or(&0);
 
+        use CardType::*;
         match max {
-            5 => CardType::FiveOfAKind,
-            4 => CardType::FourOfAKind,
-            3 => {
-                if map.values().any(|x| *x == 2) {
-                    CardType::FullHouse
-                } else {
-                    CardType::ThreeOfAKind
-                }
-            }
-            2 => {
-                if map.values().filter(|x| **x == 2).count() == 2 {
-                    CardType::TwoPair
-                } else {
-                    CardType::OnePair
-                }
-            }
+            5 => FiveOfAKind,
+            4 => FourOfAKind,
+            3 if map.values().any(|x| *x == 2) => FullHouse,
+            3 => ThreeOfAKind,
+            2 if map.values().filter(|x| **x == 2).count() == 2 => TwoPair,
+            2 => OnePair,
+            1 => HighCard,
 
-            1 => CardType::HighCard,
             _ => unreachable!(),
         }
     }
@@ -226,9 +219,9 @@ QQQJA 483
         assert_eq!(Day07 {}.solve_b(INPUT), Some(Answer::UInt(5905)));
     }
 
-    // #[test]
-    // fn solve_b() {
-    //     let input = get_input(Year::Y2023, 7).unwrap();
-    //     assert_eq!(Day07 {}.solve_b(&input), Some(Answer::UInt(todo!())));
-    // }
+    #[test]
+    fn solve_b() {
+        let input = get_input(Year::Y2023, 7).unwrap();
+        assert_eq!(Day07 {}.solve_b(&input), Some(Answer::UInt(248029057)));
+    }
 }
