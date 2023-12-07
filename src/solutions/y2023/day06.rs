@@ -107,7 +107,7 @@ fn parse(input: &str) -> Vec<Race> {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::get_input, Year};
+    use crate::{client::AocClient, Year};
 
     use super::*;
 
@@ -121,7 +121,7 @@ Distance:  9  40  200"#;
 
     #[test]
     fn solve_a() {
-        let input = get_input(Year::Y2023, 6).unwrap();
+        let input = AocClient::default().get_input(Year::Y2023, 6).unwrap();
         assert_eq!(Day06 {}.solve_a(&input), Some(Answer::UInt(220320)));
     }
 
@@ -132,7 +132,7 @@ Distance:  9  40  200"#;
 
     #[test]
     fn solve_b() {
-        let input = get_input(Year::Y2023, 6).unwrap();
+        let input = AocClient::default().get_input(Year::Y2023, 6).unwrap();
         assert_eq!(Day06 {}.solve_b(&input), Some(Answer::UInt(34454850)));
     }
 }

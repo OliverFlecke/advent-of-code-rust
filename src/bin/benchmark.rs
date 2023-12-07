@@ -4,7 +4,7 @@ use std::{
 };
 
 use advent_of_code::{
-    client::get_input,
+    client::AocClient,
     solutions::{answer::Answer, get_solver},
     Year,
 };
@@ -54,12 +54,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         .clone()
         .map(|out| csv::WriterBuilder::new().from_path(out).unwrap());
 
+    let client = AocClient::default();
+
     for day in 1..=25 {
         let solver = match get_solver(year, day) {
             Some(solver) => solver,
             None => continue,
         };
-        let problem_input = get_input(year, day)
+        let problem_input = client
+            .get_input(year, day)
             .unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
 
         let (answer_a, elapsed_a) =

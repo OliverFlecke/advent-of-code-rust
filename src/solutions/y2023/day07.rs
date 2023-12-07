@@ -168,7 +168,7 @@ impl From<&str> for CardType {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::get_input, Year};
+    use crate::{client::AocClient, Year};
 
     use super::*;
 
@@ -186,7 +186,7 @@ QQQJA 483
 
     #[test]
     fn solve_a() {
-        let input = get_input(Year::Y2023, 7).unwrap();
+        let input = AocClient::default().get_input(Year::Y2023, 7).unwrap();
         assert_eq!(Day07 {}.solve_a(&input), Some(Answer::UInt(249748283)));
     }
 
@@ -197,7 +197,7 @@ QQQJA 483
 
     #[test]
     fn solve_b() {
-        let input = get_input(Year::Y2023, 7).unwrap();
+        let input = AocClient::default().get_input(Year::Y2023, 7).unwrap();
         assert_eq!(Day07 {}.solve_b(&input), Some(Answer::UInt(248029057)));
     }
 }

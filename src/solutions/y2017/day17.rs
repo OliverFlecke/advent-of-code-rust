@@ -36,9 +36,8 @@ impl Solution for Day17 {
 
 #[cfg(test)]
 mod test {
-    use crate::client::get_input;
-
     use super::*;
+    use crate::{client::AocClient, Year};
 
     #[test]
     fn test_a() {
@@ -47,9 +46,7 @@ mod test {
 
     #[test]
     fn test_b() {
-        assert_eq!(
-            Day17 {}.solve_b(get_input(crate::Year::Y2017, 17).unwrap().as_str()),
-            Some(Answer::UInt(41797835))
-        );
+        let input = AocClient::default().get_input(Year::Y2017, 17).unwrap();
+        assert_eq!(Day17 {}.solve_b(&input), Some(Answer::UInt(41797835)));
     }
 }

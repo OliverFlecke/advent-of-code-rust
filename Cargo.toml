@@ -21,3 +21,8 @@ priority-queue = "1.3.2"
 lazy_static = "1.4.0"
 pathfinding = "4.4.0"
 rangemap = "1.4.0"
+
+[dev-dependencies]
+async-std = { version = "1.12.0", features = ["attributes"] }
+fake = "2.9.1"
+wiremock = "0.5.22"

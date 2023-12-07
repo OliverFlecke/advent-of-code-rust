@@ -182,7 +182,7 @@ impl Mapping {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::get_input, Year};
+    use crate::{client::AocClient, Year};
 
     use super::*;
 
@@ -233,7 +233,7 @@ humidity-to-location map:
 
     #[test]
     fn answer_b() {
-        let input = get_input(Year::Y2023, 5).unwrap();
+        let input = AocClient::default().get_input(Year::Y2023, 5).unwrap();
         assert_eq!(
             Day05 {}.solve_b(input.as_str()),
             Some(Answer::Int(41222968))

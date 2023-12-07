@@ -76,7 +76,7 @@ impl Solution for Day01 {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::get_input, Year};
+    use crate::{client::AocClient, Year};
 
     use super::*;
 
@@ -91,7 +91,7 @@ treb7uchet"#;
 
     #[test]
     fn solve_a() {
-        let input = get_input(Year::Y2023, 1).unwrap();
+        let input = AocClient::default().get_input(Year::Y2023, 1).unwrap();
         assert_eq!(Day01 {}.solve_a(&input), Some(Answer::UInt(54916)));
     }
 
@@ -109,7 +109,7 @@ zoneight234
 
     #[test]
     fn solve_b() {
-        let input = get_input(Year::Y2023, 1).unwrap();
+        let input = AocClient::default().get_input(Year::Y2023, 1).unwrap();
         assert_eq!(Day01 {}.solve_b(&input), Some(Answer::UInt(54728)));
     }
 }

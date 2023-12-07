@@ -21,12 +21,14 @@ fn main() {
     let args = Args::parse();
     let year = args.year;
     let day = args.day;
+    let client = AocClient::default();
 
     let solver =
         get_solver(year, day).unwrap_or_else(|| panic!("no solver found for {year:?}/{day}"));
 
-    let problem_input =
-        get_input(year, day).unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
+    let problem_input = client
+        .get_input(year, day)
+        .unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
 
     let start_a = Instant::now();
     if let Some(answer_a) = solver.solve_a(&problem_input) {
@@ -36,7 +38,7 @@ fn main() {
             start_a.elapsed()
         );
         if args.submit_a {
-            submit(year, day, Level::A, &answer_a.to_string());
+            client.submit(year, day, Level::A, &answer_a.to_string());
         }
     }
 
@@ -48,7 +50,7 @@ fn main() {
             start_b.elapsed()
         );
         if args.submit_b {
-            submit(year, day, Level::B, &answer_b.to_string());
+            client.submit(year, day, Level::B, &answer_b.to_string());
         }
     }
 }
