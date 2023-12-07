@@ -182,10 +182,14 @@ impl Mapping {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::AocClient, Year};
+    use crate::{
+        client::{AocClient, Problem},
+        Year,
+    };
 
     use super::*;
 
+    const PROBLEM: Problem = Problem::new(Year::Y2023, 5);
     const INPUT: &str = r#"seeds: 79 14 55 13
 
 seed-to-soil map:
@@ -233,7 +237,7 @@ humidity-to-location map:
 
     #[test]
     fn answer_b() {
-        let input = AocClient::default().get_input(Year::Y2023, 5).unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(
             Day05 {}.solve_b(input.as_str()),
             Some(Answer::Int(41222968))

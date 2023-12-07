@@ -91,7 +91,9 @@ treb7uchet"#;
 
     #[test]
     fn solve_a() {
-        let input = AocClient::default().get_input(Year::Y2023, 1).unwrap();
+        let input = AocClient::default()
+            .get_input((Year::Y2023, 1).into())
+            .unwrap();
         assert_eq!(Day01 {}.solve_a(&input), Some(Answer::UInt(54916)));
     }
 
@@ -109,7 +111,9 @@ zoneight234
 
     #[test]
     fn solve_b() {
-        let input = AocClient::default().get_input(Year::Y2023, 1).unwrap();
+        let input = AocClient::default()
+            .get_input((Year::Y2023, 1).into())
+            .unwrap();
         assert_eq!(Day01 {}.solve_b(&input), Some(Answer::UInt(54728)));
     }
 }

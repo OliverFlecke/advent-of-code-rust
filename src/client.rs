@@ -1,5 +1,5 @@
 use self::score::ScoreMap;
-use super::{Day, Level, Year};
+use super::Level;
 use colored::Colorize;
 use reqwest::{
     blocking::{Client, Response},
@@ -9,10 +9,14 @@ use reqwest::{
 use std::{env, fs};
 
 mod cache;
+mod problem;
 mod score;
+
+pub use problem::Problem;
 
 const TOKEN_NAME: &str = "AOC_TOKEN";
 
+/// Client for interacting with `https://adventofcode.com`.
 #[derive(Debug)]
 pub struct AocClient {
     base_url: Url,
@@ -21,15 +25,13 @@ pub struct AocClient {
 
 impl Default for AocClient {
     fn default() -> Self {
-        let url = Url::parse("https://adventofcode.com/").expect("Failed to create URL for AoC");
-
-        Self::new(url, get_token())
+        Self::new(default_url_for_advent_of_code(), get_token())
     }
 }
 
 impl AocClient {
     /// Create a new client to interact with Advent of Code.
-    pub fn new(base_url: Url, aoc_token: String) -> Self {
+    fn new(base_url: Url, aoc_token: String) -> Self {
         let http_client = Self::build_client(&aoc_token);
 
         AocClient {
@@ -38,22 +40,30 @@ impl AocClient {
         }
     }
 
+    /// Create a new client from a AoC session token.
+    pub fn from_token(aoc_token: String) -> Self {
+        Self {
+            base_url: default_url_for_advent_of_code(),
+            http_client: Self::build_client(&aoc_token),
+        }
+    }
+
     /// Get the personal input for a user for a given problem.
-    pub fn get_input(&self, year: Year, day: u8) -> anyhow::Result<String> {
-        match fs::read_to_string(cache::get_input_cache_full_filename(year, day)) {
+    pub fn get_input(&self, problem: Problem) -> anyhow::Result<String> {
+        match fs::read_to_string(cache::get_input_cache_full_filename(problem)) {
             Ok(content) => Ok(content),
             Err(_) => {
-                let input = self.download_input(year, day);
-                cache::store_input_in_cache(year, day, &input)?;
+                let input = self.download_input(problem);
+                cache::store_input_in_cache(problem, &input)?;
                 Ok(input)
             }
         }
     }
 
     /// Submit an answer for a problem on a given year, day, and level.
-    pub fn submit(&self, year: Year, day: Day, level: Level, answer: &String) {
-        let mut scores = ScoreMap::load(year);
-        let value = scores.get_score_for_day(day);
+    pub fn submit(&self, problem: Problem, level: Level, answer: &String) {
+        let mut scores = ScoreMap::load(*problem.year());
+        let value = scores.get_score_for_day(*problem.day());
 
         if value.map(|x| x >= level).unwrap_or_default() {
             println!(
@@ -64,20 +74,20 @@ impl AocClient {
             return;
         }
 
-        println!("Submitting answer for {year:?}/{day}/{level:?} is: {answer}",);
+        println!("Submitting answer for {problem}/{level:?} is: {answer}",);
 
-        match self.post_answer(year, day, level, answer) {
+        match self.post_answer(problem, level, answer) {
             Ok(res) => match res.try_into().unwrap() {
                 SubmissionResult::Correct => {
                     println!("{}", "Answer is correct".green());
-                    scores.set_score_for_day(day, &level);
+                    scores.set_score_for_day(*problem.day(), &level);
                 }
                 SubmissionResult::AlreadyCompleted => {
                     println!(
                         "{}",
                         "Problem already solved, but answer was correct".green()
                     );
-                    scores.set_score_for_day(day, &level);
+                    scores.set_score_for_day(*problem.day(), &level);
                 }
                 SubmissionResult::Incorrect => {
                     println!("{}", "You answered incorrectly!".red());
@@ -94,14 +104,13 @@ impl AocClient {
     /// day, and level. The answer must always be provided as a string.
     fn post_answer(
         &self,
-        year: Year,
-        day: Day,
+        problem: Problem,
         level: Level,
         answer: &String,
     ) -> Result<Response, reqwest::Error> {
         self.http_client
             .post(
-                self.get_base_url_for_problem(year, day)
+                self.get_base_url_for_problem(problem)
                     .join("answer")
                     .expect("Failed to create `answer` URL"),
             )
@@ -113,9 +122,9 @@ impl AocClient {
     }
 
     /// Download the input for a given problem.
-    fn download_input(&self, year: Year, day: Day) -> String {
+    fn download_input(&self, problem: Problem) -> String {
         let url = self
-            .get_base_url_for_problem(year, day)
+            .get_base_url_for_problem(problem)
             .join("input")
             .expect("Failed to create download URL for `input`");
 
@@ -135,9 +144,13 @@ impl AocClient {
     }
 
     /// Get the base url for a problem.
-    fn get_base_url_for_problem(&self, year: Year, day: u8) -> Url {
+    fn get_base_url_for_problem(&self, problem: Problem) -> Url {
         self.base_url
-            .join(&format!("{year}/day/{day}/", year = year.as_int()))
+            .join(&format!(
+                "{year}/day/{day}/",
+                year = problem.year().as_int(),
+                day = problem.day()
+            ))
             .expect("Failed to create URL for problem")
     }
 
@@ -157,6 +170,10 @@ impl AocClient {
             .build()
             .expect("Failed to create reqwest client")
     }
+}
+
+fn default_url_for_advent_of_code() -> Url {
+    Url::parse("https://adventofcode.com/").expect("Failed to create URL for AoC")
 }
 
 /// Read the token required to authenticate against the Advent of Code server.
@@ -221,6 +238,8 @@ mod test {
         Mock, MockServer, ResponseTemplate,
     };
 
+    use crate::Year;
+
     use super::*;
 
     #[test]
@@ -237,13 +256,15 @@ mod test {
             "https://adventofcode.com/2016/day/17/"
                 .parse::<Url>()
                 .unwrap(),
-            AocClient::default().get_base_url_for_problem(Year::Y2016, 17)
+            AocClient::default().get_base_url_for_problem((Year::Y2016, 17).into())
         );
     }
 
     #[test]
     fn get_input_test() {
-        let input = AocClient::default().get_input(Year::Y2017, 1).unwrap();
+        let input = AocClient::default()
+            .get_input((Year::Y2017, 1).into())
+            .unwrap();
         assert_ne!("", input);
     }
 
@@ -261,7 +282,7 @@ mod test {
         let client = AocClient::new(Url::parse(&mock_server.uri()).unwrap(), Faker.fake());
 
         assert!(client
-            .post_answer(Year::Y2017, 1, Level::A, &answer)
+            .post_answer((Year::Y2017, 1).into(), Level::A, &answer)
             .is_ok());
     }
 }

@@ -168,10 +168,14 @@ impl From<&str> for CardType {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::AocClient, Year};
+    use crate::{
+        client::{AocClient, Problem},
+        Year,
+    };
 
     use super::*;
 
+    const PROBLEM: Problem = Problem::new(Year::Y2023, 7);
     const INPUT: &str = r#"32T3K 765
 T55J5 684
 KK677 28
@@ -186,7 +190,7 @@ QQQJA 483
 
     #[test]
     fn solve_a() {
-        let input = AocClient::default().get_input(Year::Y2023, 7).unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(Day07 {}.solve_a(&input), Some(Answer::UInt(249748283)));
     }
 
@@ -197,7 +201,7 @@ QQQJA 483
 
     #[test]
     fn solve_b() {
-        let input = AocClient::default().get_input(Year::Y2023, 7).unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(Day07 {}.solve_b(&input), Some(Answer::UInt(248029057)));
     }
 }

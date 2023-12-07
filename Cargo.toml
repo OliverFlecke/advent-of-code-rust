@@ -22,8 +22,10 @@ lazy_static = "1.4.0"
 pathfinding = "4.4.0"
 rangemap = "1.4.0"
 anyhow = "1.0.75"
+derive-getters = "0.3.0"
 
 [dev-dependencies]
 async-std = { version = "1.12.0", features = ["attributes"] }
-fake = "2.9.1"
+fake = { version = "2.9.1", features = ["derive"] }
+rstest = "0.18.2"
 wiremock = "0.5.22"

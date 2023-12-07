@@ -94,9 +94,13 @@ fn adjencent(number: &Number) -> Vec<(usize, usize)> {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::AocClient, Year};
+    use crate::{
+        client::{AocClient, Problem},
+        Year,
+    };
 
     use super::*;
+    const PROBLEM: Problem = Problem::new(Year::Y2023, 3);
     const INPUT: &str = r#"467..114..
 ...*......
 ..35..633.
@@ -120,13 +124,13 @@ mod test {
 
     #[test]
     fn answer_a() {
-        let input = AocClient::default().get_input(Year::Y2023, 3).unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(Day03 {}.solve_a(input.as_str()), Some(Answer::UInt(509115)));
     }
 
     #[test]
     fn answer_b() {
-        let input = AocClient::default().get_input(Year::Y2023, 3).unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(
             Day03 {}.solve_b(input.as_str()),
             Some(Answer::UInt(75220503))

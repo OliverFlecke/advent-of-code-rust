@@ -1,4 +1,4 @@
-use crate::{Day, Year};
+use crate::{client::Problem, Year};
 
 use self::answer::Answer;
 
@@ -12,9 +12,9 @@ pub trait Solution {
     fn solve_b(&self, input: &str) -> Option<Answer>;
 }
 
-pub fn get_solver(year: Year, day: Day) -> Option<Box<dyn Solution>> {
-    match year {
-        Year::Y2017 => match day {
+pub fn get_solver(problem: Problem) -> Option<Box<dyn Solution>> {
+    match problem.year() {
+        Year::Y2017 => match problem.day() {
             1 => Some(Box::new(y2017::day01::Day01 {})),
             2 => Some(Box::new(y2017::day02::Day02 {})),
             3 => Some(Box::new(y2017::day03::Day03 {})),
@@ -42,7 +42,7 @@ pub fn get_solver(year: Year, day: Day) -> Option<Box<dyn Solution>> {
             25 => Some(Box::new(y2017::day25::Day25 {})),
             _ => None,
         },
-        Year::Y2022 => match day {
+        Year::Y2022 => match problem.day() {
             1 => Some(Box::new(y2022::day01::Day01 {})),
             2 => Some(Box::new(y2022::day02::Day02 {})),
             3 => Some(Box::new(y2022::day03::Day03 {})),
@@ -61,7 +61,7 @@ pub fn get_solver(year: Year, day: Day) -> Option<Box<dyn Solution>> {
             16 => Some(Box::new(y2022::day16::Day16 {})),
             _ => None,
         },
-        Year::Y2023 => match day {
+        Year::Y2023 => match problem.day() {
             1 => Some(Box::new(y2023::day01::Day01)),
             2 => Some(Box::new(y2023::day02::Day02)),
             3 => Some(Box::new(y2023::day03::Day03)),

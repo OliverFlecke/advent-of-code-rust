@@ -57,12 +57,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let client = AocClient::default();
 
     for day in 1..=25 {
-        let solver = match get_solver(year, day) {
+        let solver = match get_solver((year, day).into()) {
             Some(solver) => solver,
             None => continue,
         };
         let problem_input = client
-            .get_input(year, day)
+            .get_input((year, day).into())
             .unwrap_or_else(|_| panic!("no input for {year:?}/{day} was found"));
 
         let (answer_a, elapsed_a) =

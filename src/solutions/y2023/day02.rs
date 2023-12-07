@@ -120,7 +120,9 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"#;
 
     #[test]
     fn solve_a() {
-        let input = AocClient::default().get_input(Year::Y2023, 2).unwrap();
+        let input = AocClient::default()
+            .get_input((Year::Y2023, 2).into())
+            .unwrap();
         assert_eq!(Day02 {}.solve_a(&input), Some(Answer::UInt(2795)));
     }
 
@@ -131,7 +133,9 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"#;
 
     #[test]
     fn solve_b() {
-        let input = AocClient::default().get_input(Year::Y2023, 2).unwrap();
+        let input = AocClient::default()
+            .get_input((Year::Y2023, 2).into())
+            .unwrap();
         assert_eq!(Day02 {}.solve_b(&input), Some(Answer::UInt(75561)));
     }
 }

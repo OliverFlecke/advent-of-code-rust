@@ -46,7 +46,9 @@ mod test {
 
     #[test]
     fn test_b() {
-        let input = AocClient::default().get_input(Year::Y2017, 17).unwrap();
+        let input = AocClient::default()
+            .get_input((Year::Y2017, 17).into())
+            .unwrap();
         assert_eq!(Day17 {}.solve_b(&input), Some(Answer::UInt(41797835)));
     }
 }

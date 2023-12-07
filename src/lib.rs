@@ -2,7 +2,8 @@ pub mod client;
 pub mod solutions;
 pub mod utils;
 
-#[derive(Copy, Clone, Debug, clap::ValueEnum)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, clap::ValueEnum)]
+#[cfg_attr(test, derive(fake::Dummy))]
 pub enum Year {
     Y2016 = 2016,
     Y2017 = 2017,
