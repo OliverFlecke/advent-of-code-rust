@@ -119,9 +119,10 @@ impl TryFrom<&str> for Inst {
 
 #[cfg(test)]
 mod test {
-    use crate::{utils::load_sample, Year};
+    use advent_of_code_client::Year;
 
     use super::*;
+    use crate::utils::load_sample;
 
     #[test]
     fn test_a() {

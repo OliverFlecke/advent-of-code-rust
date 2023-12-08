@@ -94,12 +94,10 @@ fn adjencent(number: &Number) -> Vec<(usize, usize)> {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        client::{AocClient, Problem},
-        Year,
-    };
+    use advent_of_code_client::{AocClient, Problem, Year};
 
     use super::*;
+
     const PROBLEM: Problem = Problem::new(Year::Y2023, 3);
     const INPUT: &str = r#"467..114..
 ...*......

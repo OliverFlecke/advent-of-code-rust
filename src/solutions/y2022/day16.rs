@@ -3,14 +3,14 @@ use std::{
     hash::Hash,
 };
 
+use lazy_static::lazy_static;
+use pathfinding::prelude::{astar, dijkstra_all};
+use regex::Regex;
+
 use crate::{
     solutions::{answer::Answer, Solution},
     utils::bit_set::BitSet,
 };
-use pathfinding::prelude::{astar, dijkstra_all};
-
-use lazy_static::lazy_static;
-use regex::Regex;
 
 pub struct Day16;
 
@@ -378,9 +378,9 @@ fn one_actor_cost(
 
 #[cfg(test)]
 mod tests {
-    use crate::{utils::load_sample, Year};
-
     use super::*;
+    use crate::utils::load_sample;
+    use advent_of_code_client::Year;
 
     lazy_static! {
         static ref SAMPLE_INPUT: String = load_sample(Year::Y2022, "16.txt").unwrap();

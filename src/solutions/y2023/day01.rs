@@ -76,7 +76,7 @@ impl Solution for Day01 {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::AocClient, Year};
+    use advent_of_code_client::{AocClient, Year};
 
     use super::*;
 

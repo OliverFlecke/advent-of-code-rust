@@ -1,4 +1,4 @@
-use crate::{client::Problem, Year};
+use advent_of_code_client::{Problem, Year};
 
 use self::answer::Answer;
 

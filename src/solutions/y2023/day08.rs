@@ -1,9 +1,10 @@
+use regex::Regex;
+use rustc_hash::FxHashMap;
+
 use crate::{
     solutions::{answer::Answer, Solution},
     utils::math,
 };
-use regex::Regex;
-use rustc_hash::FxHashMap;
 
 pub struct Day08;
 
@@ -75,11 +76,9 @@ fn parse(input: &str) -> (&str, FxHashMap<String, (String, String)>) {
 
 #[cfg(test)]
 mod test {
+    use advent_of_code_client::{AocClient, Problem, Year};
+
     use super::*;
-    use crate::{
-        client::{AocClient, Problem},
-        Year,
-    };
 
     const PROBLEM: Problem = Problem::new(Year::Y2023, 8);
     const INPUT: &str = r#"LLR

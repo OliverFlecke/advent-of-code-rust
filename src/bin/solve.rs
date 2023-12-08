@@ -1,7 +1,9 @@
-use advent_of_code::{client::*, solutions::get_solver, Level, Year};
+use std::time::Instant;
+
+use advent_of_code::solutions::get_solver;
+use advent_of_code_client::{AocClient, Level, Problem, Year};
 use clap::Parser;
 use colored::Colorize;
-use std::time::Instant;
 
 #[derive(Debug, Parser)]
 #[command(author, version, about)]

@@ -36,8 +36,9 @@ impl Solution for Day17 {
 
 #[cfg(test)]
 mod test {
+    use advent_of_code_client::{AocClient, Year};
+
     use super::*;
-    use crate::{client::AocClient, Year};
 
     #[test]
     fn test_a() {

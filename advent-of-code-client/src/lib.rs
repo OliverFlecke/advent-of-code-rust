@@ -1,5 +1,4 @@
 use self::score::ScoreMap;
-use super::Level;
 use colored::Colorize;
 use reqwest::{
     blocking::{Client, Response},
@@ -12,7 +11,7 @@ mod cache;
 mod problem;
 mod score;
 
-pub use problem::Problem;
+pub use problem::{Day, Level, Problem, Year};
 
 const TOKEN_NAME: &str = "AOC_TOKEN";
 

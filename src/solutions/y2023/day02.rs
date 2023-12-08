@@ -103,10 +103,11 @@ impl Set {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::AocClient, Year};
+    use advent_of_code_client::{AocClient, Problem, Year};
 
     use super::*;
 
+    const PROBLEM: Problem = Problem::new(Year::Y2023, 2);
     const INPUT: &str = r#"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
@@ -120,9 +121,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"#;
 
     #[test]
     fn solve_a() {
-        let input = AocClient::default()
-            .get_input((Year::Y2023, 2).into())
-            .unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(Day02 {}.solve_a(&input), Some(Answer::UInt(2795)));
     }
 
@@ -133,9 +132,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"#;
 
     #[test]
     fn solve_b() {
-        let input = AocClient::default()
-            .get_input((Year::Y2023, 2).into())
-            .unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(Day02 {}.solve_b(&input), Some(Answer::UInt(75561)));
     }
 }

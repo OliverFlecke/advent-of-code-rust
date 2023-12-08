@@ -1,6 +1,7 @@
+use std::{collections::HashMap, ops::Range};
+
 use rangemap::RangeMap;
 use regex::Regex;
-use std::{collections::HashMap, ops::Range};
 
 use crate::solutions::{answer::Answer, Solution};
 
@@ -182,10 +183,7 @@ impl Mapping {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        client::{AocClient, Problem},
-        Year,
-    };
+    use advent_of_code_client::{AocClient, Problem, Year};
 
     use super::*;
 

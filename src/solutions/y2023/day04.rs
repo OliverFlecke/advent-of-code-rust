@@ -1,5 +1,6 @@
-use crate::solutions::{answer::Answer, Solution};
 use std::collections::HashSet;
+
+use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day04;
 

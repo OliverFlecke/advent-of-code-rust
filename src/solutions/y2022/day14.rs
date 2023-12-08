@@ -1,10 +1,7 @@
+use crate::solutions::{answer::Answer, Solution};
+use advent_of_code_client::Level;
 use array2d::Array2D;
 use itertools::{Itertools, MinMaxResult};
-
-use crate::{
-    solutions::{answer::Answer, Solution},
-    Level,
-};
 
 pub struct Day14;
 

@@ -109,9 +109,9 @@ impl From<(isize, isize)> for Point {
 
 #[cfg(test)]
 mod test {
-    use crate::{utils::load_sample, Year};
-
     use super::*;
+    use crate::utils::load_sample;
+    use advent_of_code_client::Year;
 
     #[test]
     fn test_a() {

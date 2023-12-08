@@ -88,9 +88,7 @@ impl Solution for Day03 {
 
 #[cfg(test)]
 mod test {
-    use super::*;
-
-    use super::Day03;
+    use super::{Day03, *};
 
     #[test]
     fn test_a() {

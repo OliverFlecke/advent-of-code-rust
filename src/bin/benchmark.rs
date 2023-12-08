@@ -3,11 +3,8 @@ use std::{
     time::{Duration, Instant},
 };
 
-use advent_of_code::{
-    client::AocClient,
-    solutions::{answer::Answer, get_solver},
-    Year,
-};
+use advent_of_code::solutions::{answer::Answer, get_solver};
+use advent_of_code_client::{AocClient, Year};
 use clap::Parser;
 use colored::Colorize;
 use serde::Serialize;

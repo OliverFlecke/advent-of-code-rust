@@ -3,9 +3,8 @@ use std::{
     fmt::{Display, Formatter, Result},
 };
 
-use crate::solutions::{answer::Answer, Solution};
-
 use super::day10::KnotHash;
+use crate::solutions::{answer::Answer, Solution};
 
 pub struct Day14 {}
 

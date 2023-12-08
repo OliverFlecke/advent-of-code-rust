@@ -107,10 +107,7 @@ fn parse(input: &str) -> Vec<Race> {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        client::{AocClient, Problem},
-        Year,
-    };
+    use advent_of_code_client::{AocClient, Problem, Year};
 
     use super::*;
 

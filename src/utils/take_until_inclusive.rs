@@ -1,5 +1,4 @@
-use core::fmt;
-use core::iter::FusedIterator;
+use core::{fmt, iter::FusedIterator};
 
 /// TakeUntilExt is an extension trait for iterators.
 /// It adds the `take_until_inclusive` method.

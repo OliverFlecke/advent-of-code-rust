@@ -1,6 +1,6 @@
 use std::{env, fs, io::Error, string::String};
 
-use crate::Year;
+use advent_of_code_client::Year;
 
 pub mod bit_set;
 pub mod math;
