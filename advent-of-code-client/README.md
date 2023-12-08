@@ -1,7 +1,21 @@
-# advent-of-code-client
+# 🎅🎄 Client for Advent of Code 🎄🎅
+
+![Crates.io](https://img.shields.io/crates/l/advent-of-code-client)
+[![crates.io](https://img.shields.io/crates/v/advent-of-code-client.svg)](https://crates.io/crates/advent-of-code-client)
+[![Documentation](https://docs.rs/advent-of-code-client/badge.svg)](https://docs.rs/advent-of-code-client)
 
 Crate to interact with the yearly challenges at [Advent of Code](https://adventofcode.com).
 It functions as both a Rust library and an standalone CLI client.
+
+## Installation
+
+Install with:
+
+```sh
+cargo install advent-of-code-client
+```
+
+It should now be accessable as `aoc`.
 
 ## Authentication
 

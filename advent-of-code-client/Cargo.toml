@@ -2,7 +2,7 @@
 name = "advent-of-code-client"
 description = "CLI and crate library to interact with Advent of Code"
 authors = ["Oliver Fleckenstein <oliverfl@live.dk>"]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/OliverFlecke/advent-of-code-rust/tree/main/advent-of-code-client"
