@@ -32,7 +32,7 @@ impl Solution for Day08 {
 
 fn find_distances_to_end<F: Fn(&str) -> bool>(
     path: &str,
-    network: &FxHashMap<String, Node>,
+    network: &FxHashMap<String, (String, String)>,
     is_end: F,
     start: &String,
 ) -> usize {
@@ -40,12 +40,8 @@ fn find_distances_to_end<F: Fn(&str) -> bool>(
     let mut steps: usize = 0;
     for choice in path.chars().cycle() {
         steps += 1;
-        let node = network.get(current).unwrap();
-        current = if choice == 'R' {
-            &node.right
-        } else {
-            &node.left
-        };
+        let (left, right) = network.get(current).unwrap();
+        current = if choice == 'R' { &right } else { &left };
 
         if is_end(current) {
             break;
@@ -55,7 +51,7 @@ fn find_distances_to_end<F: Fn(&str) -> bool>(
     steps
 }
 
-fn parse(input: &str) -> (&str, FxHashMap<String, Node>) {
+fn parse(input: &str) -> (&str, FxHashMap<String, (String, String)>) {
     let re = Regex::new(r#"(?<from>[\dA-Z]{3}) = \((?<left>[\dA-Z]{3}), (?<right>[\dA-Z]{3})\)"#)
         .unwrap();
     let (path, network) = input.split_once("\n\n").unwrap();
@@ -67,10 +63,7 @@ fn parse(input: &str) -> (&str, FxHashMap<String, Node>) {
                 .map(|caps| {
                     (
                         caps["from"].to_string(),
-                        Node {
-                            left: caps["left"].to_string(),
-                            right: caps["right"].to_string(),
-                        },
+                        (caps["left"].to_string(), caps["right"].to_string()),
                     )
                 })
                 .unwrap()
@@ -78,12 +71,6 @@ fn parse(input: &str) -> (&str, FxHashMap<String, Node>) {
         .collect();
 
     (path, network)
-}
-
-#[derive(Debug)]
-struct Node {
-    left: String,
-    right: String,
 }
 
 #[cfg(test)]
