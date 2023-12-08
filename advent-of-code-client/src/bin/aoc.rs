@@ -59,11 +59,13 @@ fn main() -> anyhow::Result<()> {
     let client = args.token.map(AocClient::from_token).unwrap_or_default();
 
     if let Some(answer) = args.answer_a {
-        client.submit(problem, Level::A, &answer);
+        let result = client.submit(problem, Level::A, &answer)?;
+        println!("{result}");
     }
 
     if let Some(answer) = args.answer_b {
-        client.submit(problem, Level::B, &answer);
+        let result = client.submit(problem, Level::B, &answer)?;
+        println!("{result}");
     }
 
     Ok(())

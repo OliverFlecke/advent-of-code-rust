@@ -15,7 +15,7 @@
 //! See [crate README](https://github.com/OliverFlecke/advent-of-code-rust/tree/main/advent-of-code-client/README.md#authentication)
 //! for details on getting your personal token.
 //!
-use std::{env, fs};
+use std::{env, fmt::Display, fs, time::Duration};
 
 use anyhow::Context;
 use colored::Colorize;
@@ -95,44 +95,38 @@ impl AocClient {
 
     /// Submit an answer for a problem on a given year, day, and level.
     ///
-    /// This will **not** resubmit the answer if the problem has already been solved
-    /// from this machine. To track this, the status for each puzzle is tracked in
-    /// `./stars` directory.
-    pub fn submit(&self, problem: Problem, level: Level, answer: &String) {
+    /// This will **not** resubmit the answer if the problem has already been
+    /// solved from this machine. To track this, the status for each puzzle is
+    /// tracked in `./stars` directory. In this case a
+    /// [SubmissionResult::SkippingAlreadyCompleted] is returned.
+    pub fn submit(
+        &self,
+        problem: Problem,
+        level: Level,
+        answer: &String,
+    ) -> anyhow::Result<SubmissionResult> {
         let mut scores = ScoreMap::load(*problem.year());
-        let value = scores.get_score_for_day(*problem.day());
 
-        if value.map(|x| x >= level).unwrap_or_default() {
-            println!(
-                "{} {}",
-                "Skipping submission - problem is already solved. Answer given:".green(),
-                answer.bold().green()
-            );
-            return;
+        // Check if problem is already solved.
+        if scores
+            .get_score_for_day(*problem.day())
+            .map(|x| x >= level)
+            .unwrap_or_default()
+        {
+            return Ok(SubmissionResult::SkippingAlreadyCompleted);
         }
 
-        match self.post_answer(problem, level, answer) {
-            Ok(res) => match res.try_into().unwrap() {
-                SubmissionResult::Correct => {
-                    println!("{}", "Answer is correct".green());
-                    scores.set_score_for_day(*problem.day(), &level);
-                }
-                SubmissionResult::AlreadyCompleted => {
-                    println!(
-                        "{}",
-                        "Problem already solved, but answer was correct".green()
-                    );
-                    scores.set_score_for_day(*problem.day(), &level);
-                }
-                SubmissionResult::Incorrect => {
-                    println!("{}", "You answered incorrectly!".red());
-                }
-                SubmissionResult::TooRecent(_) => {
-                    println!("You have submitted an answer too recently. Wait a bit and try again")
-                }
-            },
-            Err(err) => panic!("Error: {}", err),
-        };
+        let response = self.post_answer(problem, level, answer);
+        let result = response.map(|x| x.try_into())??;
+
+        match result {
+            SubmissionResult::Correct | SubmissionResult::AlreadyCompleted => {
+                scores.set_score_for_day(*problem.day(), &level);
+            }
+            _ => {}
+        }
+
+        Ok(result)
     }
 
     /// Send a HTTP POST request with the answer for the problem at a given year,
@@ -224,9 +218,40 @@ fn get_token() -> String {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SubmissionResult {
     Correct,
-    AlreadyCompleted,
     Incorrect,
-    TooRecent(u32),
+    AlreadyCompleted,
+    SkippingAlreadyCompleted,
+    TooRecent(Duration),
+}
+
+impl Display for SubmissionResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use SubmissionResult::*;
+        match self {
+            Correct => {
+                write!(f, "{}", "Answer is correct".green())
+            }
+            Incorrect => {
+                write!(f, "{}", "You answered incorrectly!".red())
+            }
+            AlreadyCompleted => {
+                write!(
+                    f,
+                    "{}",
+                    "Problem already solved, but answer was correct".green()
+                )
+            }
+            SkippingAlreadyCompleted => {
+                write!(f, "Problem already solved. Skipping submission")
+            }
+            TooRecent(duration) => {
+                write!(
+                    f,
+                    "You have submitted an answer too recently. Wait a {duration:?} and try again"
+                )
+            }
+        }
+    }
 }
 
 impl TryFrom<Response> for SubmissionResult {
@@ -235,20 +260,39 @@ impl TryFrom<Response> for SubmissionResult {
     fn try_from(response: Response) -> Result<Self, Self::Error> {
         let body = get_main_part_from_html_response(response);
 
-        if body.contains("That's the right answer") {
-            Ok(SubmissionResult::Correct)
-        } else if body.contains("already complete it") {
-            Ok(SubmissionResult::AlreadyCompleted)
-        } else if body.contains("answer too recently") {
-            // TODO: Output how much time to wait for
-            println!("Body: {}", body);
-            Ok(SubmissionResult::TooRecent(0))
-        } else if body.contains("not the right answer") {
-            println!("Body: {}", body);
-            Ok(SubmissionResult::Incorrect)
-        } else {
-            Err(anyhow::anyhow!("Unknown response:\n\n{}", body))
-        }
+        response_body_to_submission_result(&body)
+    }
+}
+
+fn response_body_to_submission_result(body: &str) -> anyhow::Result<SubmissionResult> {
+    if body.contains("That's the right answer") {
+        Ok(SubmissionResult::Correct)
+    } else if body.contains("already complete it") {
+        Ok(SubmissionResult::AlreadyCompleted)
+    } else if body.contains("answer too recently") {
+        use duration_string::DurationString;
+
+        let re = regex::RegexBuilder::new(r#"You have (?<time>[\d\w ]+) left to wait"#)
+            .build()
+            .expect("Invaild regex for too recent input");
+        let time: Duration = re
+            .captures(body)
+            .and_then(|caps| {
+                println!("Time: {}", &caps["time"]);
+                caps["time"].parse::<DurationString>().ok()
+            })
+            .map(|x| x.into())
+            // Default retry time is 5 minutes if too many answers has been provided.
+            // Otherwise we should be able to correctly parse it with the regex above.
+            .unwrap_or(Duration::from_secs(300));
+
+        println!("Body: {}", body);
+        Ok(SubmissionResult::TooRecent(time))
+    } else if body.contains("not the right answer") {
+        println!("Body: {}", body);
+        Ok(SubmissionResult::Incorrect)
+    } else {
+        Err(anyhow::anyhow!("Unknown response:\n\n{}", body))
     }
 }
 
@@ -353,5 +397,20 @@ mod test {
 
         // Assert
         assert!(response.is_ok());
+    }
+
+    #[test]
+    fn parse_to_recent_response() {
+        // Arrange
+        let body = include_str!("../data/too_recent.html");
+
+        // Act
+        let result = response_body_to_submission_result(body).unwrap();
+
+        // Assert
+        assert_eq!(
+            result,
+            SubmissionResult::TooRecent(Duration::from_secs(4 * 60 + 36))
+        );
     }
 }

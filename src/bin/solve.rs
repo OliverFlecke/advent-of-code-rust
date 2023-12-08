@@ -25,7 +25,7 @@ impl Args {
     }
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let problem = args.problem();
     let client = AocClient::default();
@@ -44,7 +44,8 @@ fn main() {
             start_a.elapsed()
         );
         if args.submit_a {
-            client.submit(problem, Level::A, &answer_a.to_string());
+            let result = client.submit(problem, Level::A, &answer_a.to_string())?;
+            println!("{result}");
         }
     }
 
@@ -56,7 +57,10 @@ fn main() {
             start_b.elapsed()
         );
         if args.submit_b {
-            client.submit(problem, Level::B, &answer_b.to_string());
+            let result = client.submit(problem, Level::B, &answer_b.to_string())?;
+            println!("{result}");
         }
     }
+
+    Ok(())
 }

@@ -8,6 +8,7 @@ license = "MIT"
 repository = "https://github.com/OliverFlecke/advent-of-code-rust/tree/main/advent-of-code-client"
 readme = "README.md"
 keywords = ["advent-of-code", "aoc"]
+exclude = ["data/*"]
 
 [[bin]]
 name = "aoc"
@@ -25,6 +26,7 @@ anyhow = "1.0.75"
 regex = "1.10.2"
 serde_json = "1.0.108"
 strum = { version = "0.25.0", features = ["derive"] }
+duration-string = "0.3.0"
 
 [dev-dependencies]
 wiremock = "0.5.22"
