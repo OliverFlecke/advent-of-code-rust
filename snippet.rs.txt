@@ -14,9 +14,13 @@ impl Solution for DayX {
 
 #[cfg(test)]
 mod test {
-    use crate::{client::get_input, Year};
     use super::*;
+    use crate::{
+        client::{AocClient, Problem},
+        Year,
+    };
 
+    const PROBLEM: Problem = Problem::new(Year::Y2023, X);
     const INPUT: &str = r#""#;
 
     #[test]
@@ -26,7 +30,7 @@ mod test {
 
     #[test]
     fn solve_a() {
-        let input = get_input(Year::Y2023, X).unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(DayX {}.solve_a(&input), Some(Answer::UInt(todo!())));
     }
 
@@ -37,7 +41,7 @@ mod test {
 
     #[test]
     fn solve_b() {
-        let input = get_input(Year::Y2023, X).unwrap();
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
         assert_eq!(DayX {}.solve_b(&input), Some(Answer::UInt(todo!())));
     }
 }
