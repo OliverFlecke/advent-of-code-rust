@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
-use regex::Regex;
-
 use crate::{
     solutions::{answer::Answer, Solution},
     utils::math,
 };
+use regex::Regex;
+use rustc_hash::FxHashMap;
 
 pub struct Day08;
 
@@ -34,7 +32,7 @@ impl Solution for Day08 {
 
 fn find_distances_to_end<F: Fn(&str) -> bool>(
     path: &str,
-    network: &HashMap<String, Node>,
+    network: &FxHashMap<String, Node>,
     is_end: F,
     start: &String,
 ) -> usize {
@@ -57,7 +55,7 @@ fn find_distances_to_end<F: Fn(&str) -> bool>(
     steps
 }
 
-fn parse(input: &str) -> (&str, HashMap<String, Node>) {
+fn parse(input: &str) -> (&str, FxHashMap<String, Node>) {
     let re = Regex::new(r#"(?<from>[\dA-Z]{3}) = \((?<left>[\dA-Z]{3}), (?<right>[\dA-Z]{3})\)"#)
         .unwrap();
     let (path, network) = input.split_once("\n\n").unwrap();
@@ -77,7 +75,7 @@ fn parse(input: &str) -> (&str, HashMap<String, Node>) {
                 })
                 .unwrap()
         })
-        .collect::<HashMap<_, _>>();
+        .collect();
 
     (path, network)
 }
