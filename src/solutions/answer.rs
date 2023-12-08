@@ -1,7 +1,9 @@
 use std::fmt::Display;
 
+use duplicate::duplicate_item;
 use serde::{Deserialize, Serialize};
 
+/// An answer that can be submitted to a AoC problem.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Answer {
     Int(i64),
@@ -9,33 +11,33 @@ pub enum Answer {
     String(String),
 }
 
-impl From<u64> for Answer {
-    fn from(value: u64) -> Self {
-        Answer::UInt(value)
-    }
-}
-impl From<u32> for Answer {
-    fn from(value: u32) -> Self {
+#[duplicate_item(
+    int_type;
+    [ usize ];
+    [ u64 ];
+    [ u32 ];
+    [ u16 ];
+    [ u8 ];
+)]
+impl From<int_type> for Answer {
+    fn from(value: int_type) -> Self {
+        #[allow(clippy::unnecessary_cast)]
         Answer::UInt(value as u64)
     }
 }
-impl From<usize> for Answer {
-    fn from(value: usize) -> Self {
-        Answer::UInt(value as u64)
-    }
-}
-impl From<i64> for Answer {
-    fn from(value: i64) -> Self {
-        Answer::Int(value)
-    }
-}
-impl From<i32> for Answer {
-    fn from(value: i32) -> Self {
-        Answer::Int(value as i64)
-    }
-}
-impl From<isize> for Answer {
-    fn from(value: isize) -> Self {
+
+#[duplicate_item(
+    int_type;
+    [ isize ];
+    [ i64 ];
+    [ i32 ];
+    [ i16 ];
+    [ i8 ];
+
+)]
+impl From<int_type> for Answer {
+    fn from(value: int_type) -> Self {
+        #[allow(clippy::unnecessary_cast)]
         Answer::Int(value as i64)
     }
 }

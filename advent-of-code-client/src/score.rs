@@ -1,13 +1,14 @@
-use crate::{Day, Level, Year};
 use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
 
+use crate::{Day, Level, Year};
+
 const STARS_DIRECTORY: &str = ".stars";
 
-pub struct ScoreMap {
+pub(crate) struct ScoreMap {
     year: Year,
     map: HashMap<String, u8>,
 }

@@ -26,14 +26,7 @@ See [here for installation instructions](https://www.rust-lang.org/learn/get-sta
 
 ## Authentication
 
-To use the helper functions to retreive input and submit answers, the library will look for a AOC_TOKEN environment variable with a valid cookie session.
-
-- Go to [adventofcode.com](https://adventofcode.com) and login
-- Open the developer settings in your browser (F12)
-- Go to `application` -> `Cookies`.
-- You should see a session variable - this is the token we need.
-- Add this to your environment with `export AOC_TOKEN=<your token>`
-
+See [client crate](./advent-of-code-client/README.md#authentication) for instructions on how to authorize against Advent of Code.
 I usually put it in a `.envrc` file and use [direnv](https://direnv.net/) to automatically load it for each shell session.
 
 ## Features
@@ -59,6 +52,7 @@ When adding a new solution struct, it should also be added to this method.
 
 Each year of solutions can be benchmarked together.
 This can be done by running the binary **without** the day parameter, e.g. to benchmark year 2017 use:
+
 ```sh
 cargo run -r -- y<year>
 ```

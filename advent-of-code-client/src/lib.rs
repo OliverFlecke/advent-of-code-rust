@@ -1,11 +1,31 @@
-use self::score::ScoreMap;
+//! # Advent of Code client
+//!
+//! A client for retreiving personalized inputs and submitting answers to the
+//! yearly [Advent of Code](https://adventofcode.com) puzzles.
+//!
+//! It can either be used as a CLI tool by installing it with `cargo install advent-of-code-client`.
+//! This will install the `aoc` client that can be used to submit answers.
+//!
+//! The main interface is through [AocClient], which provides a [AocClient::get_input]
+//! function to retreive your personalized input for a puzzle, and [AocClient::submit]
+//! to submit an answer for a given [Problem] and [Level].
+//!
+//! ## Authentication
+//!
+//! See [crate README](https://github.com/OliverFlecke/advent-of-code-rust/tree/main/advent-of-code-client/README.md#authentication)
+//! for details on getting your personal token.
+//!
+use std::{env, fs};
+
+use anyhow::Context;
 use colored::Colorize;
 use reqwest::{
     blocking::{Client, Response},
     header::{HeaderMap, HeaderValue, COOKIE},
     Url,
 };
-use std::{env, fs};
+
+use crate::score::ScoreMap;
 
 mod cache;
 mod problem;
@@ -16,6 +36,20 @@ pub use problem::{Day, Level, Problem, Year};
 const TOKEN_NAME: &str = "AOC_TOKEN";
 
 /// Client for interacting with `https://adventofcode.com`.
+///
+/// The simplest way to get started is to set `AOC_TOKEN` to your personal
+/// session token in your environment and use `AocClient::default()`.
+/// Alternatively, you can programatically provide your token with `from_token`.
+///
+/// See crate docs on how to optain your token.
+///
+/// ```rust
+/// # use advent_of_code_client::AocClient;
+/// // Note that the `default` implementation will panic if `AOC_TOKEN` is missing.
+/// AocClient::default();
+///
+/// AocClient::from_token("your personal session token".to_string());
+/// ````
 #[derive(Debug)]
 pub struct AocClient {
     base_url: Url,
@@ -52,7 +86,7 @@ impl AocClient {
         match fs::read_to_string(cache::get_input_cache_full_filename(problem)) {
             Ok(content) => Ok(content),
             Err(_) => {
-                let input = self.download_input(problem);
+                let input = self.download_input(problem)?;
                 cache::store_input_in_cache(problem, &input)?;
                 Ok(input)
             }
@@ -60,6 +94,10 @@ impl AocClient {
     }
 
     /// Submit an answer for a problem on a given year, day, and level.
+    ///
+    /// This will **not** resubmit the answer if the problem has already been solved
+    /// from this machine. To track this, the status for each puzzle is tracked in
+    /// `./stars` directory.
     pub fn submit(&self, problem: Problem, level: Level, answer: &String) {
         let mut scores = ScoreMap::load(*problem.year());
         let value = scores.get_score_for_day(*problem.day());
@@ -72,8 +110,6 @@ impl AocClient {
             );
             return;
         }
-
-        println!("Submitting answer for {problem}/{level:?} is: {answer}",);
 
         match self.post_answer(problem, level, answer) {
             Ok(res) => match res.try_into().unwrap() {
@@ -107,6 +143,8 @@ impl AocClient {
         level: Level,
         answer: &String,
     ) -> Result<Response, reqwest::Error> {
+        println!("Submitting answer for {problem}/{level:?} is: {answer}");
+
         self.http_client
             .post(
                 self.get_base_url_for_problem(problem)
@@ -121,7 +159,7 @@ impl AocClient {
     }
 
     /// Download the input for a given problem.
-    fn download_input(&self, problem: Problem) -> String {
+    fn download_input(&self, problem: Problem) -> anyhow::Result<String> {
         let url = self
             .get_base_url_for_problem(problem)
             .join("input")
@@ -129,16 +167,14 @@ impl AocClient {
 
         match self.http_client.get(url).send() {
             Ok(response) if response.status().is_success() => {
-                response.text().expect("input to be valid")
+                response.text().context("Failed to read response body")
             }
-            Ok(response) => {
-                panic!(
-                    "Invalid status code: {}. Message from server:\n{}",
-                    response.status(),
-                    response.text().unwrap()
-                );
-            }
-            Err(e) => panic!("Failed to download input {e:?}"),
+            Ok(response) => Err(anyhow::anyhow!(
+                "Invalid status code: {}. Message from server:\n{}",
+                response.status(),
+                response.text().unwrap()
+            )),
+            Err(e) => Err(anyhow::anyhow!("Request failed to download input: {e:?}")),
         }
     }
 
@@ -237,9 +273,8 @@ mod test {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::Year;
-
     use super::*;
+    use crate::Year;
 
     #[test]
     fn get_token_test() {
@@ -259,16 +294,49 @@ mod test {
         );
     }
 
-    #[test]
-    fn get_input_test() {
-        let input = AocClient::default()
-            .get_input((Year::Y2017, 1).into())
-            .unwrap();
-        assert_ne!("", input);
+    #[async_std::test]
+    async fn download_input() {
+        // Arrange
+        let body: String = Faker.fake();
+        let mock_server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/2017/day/1/input"))
+            .respond_with(ResponseTemplate::new(200).set_body_string(body.clone()))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+        let client = AocClient::new(Url::parse(&mock_server.uri()).unwrap(), Faker.fake());
+
+        // Act
+        let input = client.download_input((Year::Y2017, 1).into()).unwrap();
+
+        // Assert
+        assert_eq!(body, input);
+    }
+
+    #[async_std::test]
+    async fn download_input_with_incorrect_response() {
+        // Arrange
+        let body: String = Faker.fake();
+        let mock_server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/2017/day/1/input"))
+            .respond_with(ResponseTemplate::new(401).set_body_string(body.clone()))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+        let client = AocClient::new(Url::parse(&mock_server.uri()).unwrap(), Faker.fake());
+
+        // Act
+        let response = client.download_input((Year::Y2017, 1).into());
+
+        // Assert
+        assert!(response.is_err());
     }
 
     #[async_std::test]
     async fn submit_answer() {
+        // Arrange
         let mock_server = MockServer::start().await;
         Mock::given(method("POST"))
             .and(path("/2017/day/1/answer"))
@@ -280,8 +348,10 @@ mod test {
         let answer: String = Faker.fake();
         let client = AocClient::new(Url::parse(&mock_server.uri()).unwrap(), Faker.fake());
 
-        assert!(client
-            .post_answer((Year::Y2017, 1).into(), Level::A, &answer)
-            .is_ok());
+        // Act
+        let response = client.post_answer((Year::Y2017, 1).into(), Level::A, &answer);
+
+        // Assert
+        assert!(response.is_ok());
     }
 }

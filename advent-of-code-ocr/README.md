@@ -8,7 +8,7 @@ This has been made to help automate parsing of those puzzles for my own AoC solu
 ## Installation
 
 ```sh
-cargo install advent-of-code-ocr
+cargo add advent-of-code-ocr
 ```
 
 ## Usage
