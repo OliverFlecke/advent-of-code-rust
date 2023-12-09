@@ -6,3 +6,4 @@
 *.csv
 .envrc
 .vscode/
+dhat-heap.json

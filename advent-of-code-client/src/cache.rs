@@ -1,11 +1,11 @@
 //! Functions to cache input locally in files.
-use crate::Year;
 use std::{
     fs,
     path::{Path, PathBuf},
 };
 
 use super::Problem;
+use crate::Year;
 
 pub fn store_input_in_cache(problem: Problem, input: &String) -> std::io::Result<()> {
     fs::create_dir_all(get_input_cache_directory(problem.year()))?;
