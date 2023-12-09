@@ -27,7 +27,15 @@ dhat = { version = "0.3.2", optional = true }
 byte-unit = { version = "5.0.3", optional = true }
 
 [features]
-dhat-heap = ["dhat", "byte-unit"]
+memory-profile = ["dhat", "byte-unit"]
 
-[profile.release]
+# Memory profile that can be considered to increase runtime performance
+# [profile.release]
+# lto = "fat"
+# codegen-units = 1
+# panic = "abort"
+# strip = "debuginfo"
+
+[profile.release-memory-profile]
+inherits = "release"
 debug = 1

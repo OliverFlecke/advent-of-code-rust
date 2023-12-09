@@ -25,7 +25,7 @@ impl Args {
     }
 }
 
-#[cfg(feature = "dhat-heap")]
+#[cfg(feature = "memory-profile")]
 #[global_allocator]
 static ALLOC: dhat::Alloc = dhat::Alloc;
 
@@ -66,14 +66,14 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn run_solver<F: Fn(&str) -> Option<Answer>>(solve: F, input: &str) -> Option<Answer> {
-    #[cfg(feature = "dhat-heap")]
+    #[cfg(feature = "memory-profile")]
     let _profiler = dhat::Profiler::builder().testing().build();
 
     let start_a = Instant::now();
     let answer = solve(input);
     let elapsed = start_a.elapsed();
 
-    #[cfg(feature = "dhat-heap")]
+    #[cfg(feature = "memory-profile")]
     {
         use byte_unit::Byte;
 
