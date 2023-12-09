@@ -8,12 +8,9 @@ impl Solution for Day09 {
             .trim()
             .lines()
             .map(parse_line)
-            .map(|mut numbers| {
+            .map(|numbers| {
                 let mut sum: isize = 0;
-                while numbers.iter().any(|x| *x != 0) {
-                    numbers.last().inspect(|x| sum += *x);
-                    numbers = diff_numbers(numbers.into_iter()).collect();
-                }
+                solve(|ns| _ = ns.last().inspect(|x| sum += *x), numbers);
 
                 sum
             })
@@ -27,12 +24,9 @@ impl Solution for Day09 {
             .trim()
             .lines()
             .map(parse_line)
-            .map(|mut numbers| {
+            .map(|numbers| {
                 let mut diffs: Vec<isize> = Vec::new();
-                while numbers.iter().any(|x| *x != 0) {
-                    numbers.first().inspect(|x| diffs.push(**x));
-                    numbers = diff_numbers(numbers.into_iter()).collect();
-                }
+                solve(|ns| _ = ns.first().inspect(|x| diffs.push(**x)), numbers);
 
                 diffs.into_iter().rev().reduce(|a, b| b - a).unwrap_or(0)
             })
@@ -48,8 +42,11 @@ fn parse_line(line: &str) -> Vec<isize> {
         .collect::<Vec<_>>()
 }
 
-fn diff_numbers(numbers: impl Iterator<Item = isize>) -> impl Iterator<Item = isize> {
-    numbers.map_windows(|[a, b]| b - a)
+fn solve<F: FnMut(&Vec<isize>)>(mut aggregate: F, mut numbers: Vec<isize>) {
+    while numbers.iter().any(|x| *x != 0) {
+        aggregate(&numbers);
+        numbers = numbers.into_iter().map_windows(|[a, b]| b - a).collect();
+    }
 }
 
 #[cfg(test)]
