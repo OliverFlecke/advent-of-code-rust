@@ -3,22 +3,20 @@ use crate::solutions::{Solution, answer::Answer};
 pub struct DayX;
 
 impl Solution for DayX {
-    fn solve_a(&self, _input: &str) -> Option<Answer> {
+    fn solve_a(&self, input: &str) -> Option<Answer> {
         None
     }
 
-    fn solve_b(&self, _input: &str) -> Option<Answer> {
+    fn solve_b(&self, input: &str) -> Option<Answer> {
         None
     }
 }
 
 #[cfg(test)]
 mod test {
+    use advent_of_code_client::{AocClient, Problem, Year};
+
     use super::*;
-    use crate::{
-        client::{AocClient, Problem},
-        Year,
-    };
 
     const PROBLEM: Problem = Problem::new(Year::Y2023, X);
     const INPUT: &str = r#""#;
