@@ -11,6 +11,9 @@ use clap::Parser;
 use colored::Colorize;
 use serde::Serialize;
 
+#[cfg(all(feature = "memory-profile", feature = "time-profile"))]
+compile_error!("feature 'memory-profile' and 'time-profile' cannot be enabled at the same time");
+
 #[derive(Debug, Parser)]
 struct Args {
     #[arg(value_enum)]
@@ -203,6 +206,10 @@ struct BenchmarkStatistics {
     #[cfg(feature = "memory-profile")]
     memory_stats: dhat::HeapStats,
 }
+
+#[cfg(feature = "time-profile")]
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
 /// Please note, that when running with memory benchmarks, the solutions will
 /// run a lot slower, as the program has to keep track of all the allocations.

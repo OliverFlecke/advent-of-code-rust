@@ -25,9 +25,11 @@ duplicate = "1.0.0"
 anyhow = "1.0.75"
 dhat = { version = "0.3.2", optional = true }
 byte-unit = { version = "5.0.3", optional = true }
+tikv-jemallocator = { version = "0.5.4", default-features = false, optional = true }
 
 [features]
 memory-profile = ["dhat", "byte-unit"]
+time-profile = ["tikv-jemallocator"]
 
 # Memory profile that can be considered to increase runtime performance
 # [profile.release]
@@ -35,6 +37,7 @@ memory-profile = ["dhat", "byte-unit"]
 # codegen-units = 1
 # panic = "abort"
 # strip = "debuginfo"
+
 
 [profile.release-memory-profile]
 inherits = "release"

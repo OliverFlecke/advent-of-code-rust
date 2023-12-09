@@ -1,4 +1,5 @@
 [alias]
 solve = "run --bin solve -r --"
 benchmark = "run --bin benchmark -r --"
+benchmark-jemalloc = "run --features time-profile --bin benchmark -r --"
 benchmark-memory = "run --profile release-memory-profile --features memory-profile --bin benchmark -- -i 1"
