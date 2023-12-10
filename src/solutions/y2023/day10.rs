@@ -1,5 +1,6 @@
+use std::collections::HashSet;
+
 use array2d::Array2D;
-use rustc_hash::FxHashSet;
 
 use crate::solutions::{answer::Answer, Solution};
 
@@ -22,16 +23,10 @@ const NORTH_EAST: char = 'L';
 const NORTH_WEST: char = 'J';
 const SOUTH_WEST: char = '7';
 const SOUTH_EAST: char = 'F';
-const GROUND: char = '.';
+// const GROUND: char = '.';
 const START: char = 'S';
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Direction {
-    North,
-    East,
-    South,
-    West,
-}
+const PIPE: char = '#';
 
 impl Solution for Day10 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
@@ -41,105 +36,125 @@ impl Solution for Day10 {
             .map(|line| line.chars().collect())
             .collect();
         let map = Array2D::from_rows(&cells).unwrap();
-        let (row_0, col_0) = map
+        let start = map
             .enumerate_row_major()
             .find(|(_, c)| **c == START)
             .map(|(pos, _)| pos)
             .unwrap();
-        println!("Start: {}, {}: {:?}", row_0, col_0, map.get(row_0, col_0));
-
-        use Direction::*;
-        // Note (row, col) / (y, x) pairs
-        let neighbours = &[
-            (
-                (row_0 + 1, col_0),
-                North,
-                [NORTH_SOUTH, NORTH_EAST, NORTH_WEST],
-            ),
-            (
-                (row_0.wrapping_sub(1), col_0),
-                South,
-                [NORTH_SOUTH, SOUTH_EAST, SOUTH_WEST],
-            ),
-            (
-                (row_0, col_0 + 1),
-                West,
-                [EAST_WEST, NORTH_WEST, SOUTH_WEST],
-            ),
-            (
-                (row_0, col_0.wrapping_sub(1)),
-                East,
-                [EAST_WEST, NORTH_EAST, SOUTH_EAST],
-            ),
-        ];
-        let connected: Vec<_> = neighbours
-            .iter()
-            .filter(|(pos, _, allowed)| {
-                map.get(pos.0, pos.1)
-                    .filter(|c| allowed.contains(c))
-                    .is_some()
-            })
-            .map(|(pos, dir, _)| (pos, dir))
-            .collect();
-        println!("connected: {:?}", connected);
-
-        let step = |pos: Position, from_dir: Direction| -> (Position, Direction) {
-            match *map.get(pos.0, pos.1).unwrap() {
-                NORTH_SOUTH if from_dir == North => next(pos, South),
-                NORTH_SOUTH if from_dir == South => next(pos, North),
-                NORTH_EAST if from_dir == North => next(pos, East),
-                NORTH_EAST if from_dir == East => next(pos, North),
-                NORTH_WEST if from_dir == North => next(pos, West),
-                NORTH_WEST if from_dir == West => next(pos, North),
-
-                SOUTH_EAST if from_dir == South => next(pos, East),
-                SOUTH_EAST if from_dir == East => next(pos, South),
-                SOUTH_WEST if from_dir == South => next(pos, West),
-                SOUTH_WEST if from_dir == West => next(pos, South),
-
-                EAST_WEST if from_dir == East => next(pos, West),
-                EAST_WEST if from_dir == West => next(pos, East),
-
-                pipe => unreachable!(
-                    "Got invalid pipe {pipe} at {:?} with dir {:?}",
-                    pos, from_dir
-                ),
-            }
-        };
+        let &(mut pos, mut dir) = find_starting_neighbours(&map, start).first().unwrap();
 
         let mut i: usize = 1;
-        for (&pos, &dir) in connected.iter().take(1) {
-            let mut current = pos;
-            let mut current_dir = dir;
-            println!(
-                "start: {:?} {:?} {:?}",
-                current,
-                current_dir,
-                map.get(current.0, current.1)
-            );
-            let mut visited = FxHashSet::default();
-            while current != (row_0, col_0) {
-                // println!("Stepping: {:?} from {:?}", current, current_dir);
-                let next = step(current, current_dir);
-                current = next.0;
-                current_dir = next.1;
-                println!("next: {:?} {:?}", next, map.get(current.0, current.1));
+        while pos != start {
+            (pos, dir) = step(&map, pos, dir);
+            println!("next: {:?} {:?} {:?}", pos, dir, map.get(pos.0, pos.1));
 
-                if visited.contains(&current) {
-                    break;
-                }
-
-                visited.insert(current);
-                i += 1;
-            }
+            i += 1;
         }
-        println!();
 
         Some((i / 2).into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        None
+        let cells: Vec<Vec<_>> = input
+            .trim()
+            .lines()
+            .map(|line| line.chars().collect())
+            .collect();
+        let mut map = Array2D::from_rows(&cells).unwrap();
+        let start = map
+            .enumerate_row_major()
+            .find(|(_, c)| **c == START)
+            .map(|(pos, _)| pos)
+            .unwrap();
+
+        let neighbours = find_starting_neighbours(&map, start);
+        assert!(neighbours.len() == 2);
+        let start_symbol = find_start_symbol(neighbours.iter().map(|x| x.1));
+        println!("Start symbol: {start_symbol}");
+        map.set(start.0, start.1, start_symbol).unwrap();
+
+        let &(mut pos, mut dir) = neighbours.first().unwrap();
+        let mut tracking = Array2D::filled_with(' ', map.num_rows(), map.num_columns());
+        tracking.set(start.0, start.1, PIPE).unwrap();
+        tracking.set(pos.0, pos.1, PIPE).unwrap();
+        println!("Start pos: {pos:?}");
+
+        while pos != start {
+            (pos, dir) = step(&map, pos, dir);
+            tracking.set(pos.0, pos.1, PIPE).unwrap();
+        }
+
+        fn is_pipe(c: char, last: Option<char>) -> bool {
+            c == NORTH_SOUTH
+                || (last == Some(SOUTH_EAST) && c == NORTH_WEST)
+                || (last == Some(NORTH_EAST) && c == SOUTH_WEST)
+        }
+
+        let mut inside = HashSet::new();
+        let answer: usize = tracking
+            .rows_iter()
+            .enumerate()
+            .map(|(r, row)| {
+                row.enumerate()
+                    .fold((0, false, None), |(sum, is_inside, last), (c, &is_tube)| {
+                        let kind = map[(r, c)];
+                        match (is_tube, is_inside) {
+                            (PIPE, _) if is_pipe(kind, last) => (sum, !is_inside, None),
+                            (PIPE, _) if kind == SOUTH_EAST || kind == NORTH_EAST => {
+                                (sum, is_inside, Some(kind))
+                            }
+                            (PIPE, _) => (sum, is_inside, last),
+                            (_, true) => {
+                                inside.insert((r, c));
+                                // println!("Adding at {r},{c}. {kind} last: {last:?}");
+
+                                (sum + 1, is_inside, last)
+                            }
+                            (_, false) => (sum, is_inside, last),
+                        }
+                    })
+                    .0
+            })
+            .sum();
+
+        print!(" ");
+        (0..tracking.num_columns()).for_each(|c| print!("{}", c % 10));
+        println!();
+        tracking.rows_iter().enumerate().for_each(|(r, row)| {
+            print!("{r: >3}");
+            row.enumerate().for_each(|(c, &ch)| {
+                if inside.contains(&(r, c)) {
+                    print!("I");
+                } else if ch == PIPE {
+                    print!("{}", map[(r, c)]);
+                } else {
+                    print!(" ");
+                }
+            });
+            println!();
+        });
+
+        Some(answer.into())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Direction {
+    North,
+    East,
+    South,
+    West,
+}
+
+impl Direction {
+    pub const fn inverse(&self) -> Self {
+        use Direction::*;
+        match *self {
+            North => South,
+            East => West,
+            South => North,
+            West => East,
+        }
     }
 }
 
@@ -153,29 +168,91 @@ fn next((row, col): Position, direction: Direction) -> (Position, Direction) {
         East => (row, col + 1),
         West => (row, col - 1),
     };
-    let from_direction = match direction {
-        North => South,
-        East => West,
-        South => North,
-        West => East,
-    };
 
-    (new_position, from_direction)
+    (new_position, direction.inverse())
 }
-// NORTH_SOUTH if **dir == North => ((pos.0 + 1, pos.1), North),
-// NORTH_SOUTH if **dir == South => ((pos.0 - 1, pos.1), South),
-// NORTH_EAST if **dir == North => ((pos.0, pos.1 + 1), East),
-// NORTH_EAST if **dir == East => ((pos.0 - 1, pos.1), North),
-// NORTH_WEST if **dir == North => ((pos.0, pos.1 - 1), West),
-// NORTH_WEST if **dir == West => ((pos.0 - 1, pos.1), North),
 
-// SOUTH_EAST if **dir == South => ((pos.0, pos.1 + 1), East),
-// SOUTH_EAST if **dir == East => ((pos.0 + 1, pos.1), South),
-// SOUTH_WEST if **dir == South => ((pos.0, pos.1 + 1), West),
-// SOUTH_WEST if **dir == West => ((pos.0 + 1, pos.1), South),
+fn step(map: &Array2D<char>, pos: Position, from_dir: Direction) -> (Position, Direction) {
+    use Direction::*;
 
-// EAST_WEST if **dir == East => ((pos.0, pos.1 - 1), West),
-// EAST_WEST if **dir == West => ((pos.0, pos.1 + 1), East),
+    match *map.get(pos.0, pos.1).unwrap() {
+        NORTH_SOUTH if from_dir == North => next(pos, South),
+        NORTH_SOUTH if from_dir == South => next(pos, North),
+        NORTH_EAST if from_dir == North => next(pos, East),
+        NORTH_EAST if from_dir == East => next(pos, North),
+        NORTH_WEST if from_dir == North => next(pos, West),
+        NORTH_WEST if from_dir == West => next(pos, North),
+
+        SOUTH_EAST if from_dir == South => next(pos, East),
+        SOUTH_EAST if from_dir == East => next(pos, South),
+        SOUTH_WEST if from_dir == South => next(pos, West),
+        SOUTH_WEST if from_dir == West => next(pos, South),
+
+        EAST_WEST if from_dir == East => next(pos, West),
+        EAST_WEST if from_dir == West => next(pos, East),
+
+        pipe => unreachable!(
+            "Got invalid pipe {pipe} at {:?} with dir {:?}",
+            pos, from_dir
+        ),
+    }
+}
+
+fn find_start_symbol(directions: impl Iterator<Item = Direction>) -> char {
+    use Direction::*;
+    directions
+        .map_windows(|[a, b]| match (a, b) {
+            (North, East) => SOUTH_WEST,
+            (North, South) => NORTH_SOUTH,
+            (North, West) => SOUTH_EAST,
+            (East, West) | (West, East) => EAST_WEST,
+            (South, East) => NORTH_WEST,
+            (South, West) => NORTH_EAST,
+
+            _ => unreachable!("Combination should not be possible {a:?}/{b:?}"),
+        })
+        .next()
+        .unwrap()
+}
+
+fn find_starting_neighbours(
+    map: &Array2D<char>,
+    (row_0, col_0): Position,
+) -> Vec<(Position, Direction)> {
+    use Direction::*;
+    // Note (row, col) / (y, x) pairs
+    let neighbours = &[
+        (
+            (row_0 + 1, col_0),
+            North,
+            [NORTH_SOUTH, NORTH_EAST, NORTH_WEST],
+        ),
+        (
+            (row_0.wrapping_sub(1), col_0),
+            South,
+            [NORTH_SOUTH, SOUTH_EAST, SOUTH_WEST],
+        ),
+        (
+            (row_0, col_0 + 1),
+            West,
+            [EAST_WEST, NORTH_WEST, SOUTH_WEST],
+        ),
+        (
+            (row_0, col_0.wrapping_sub(1)),
+            East,
+            [EAST_WEST, NORTH_EAST, SOUTH_EAST],
+        ),
+    ];
+    neighbours
+        .iter()
+        .filter(|(pos, _, allowed)| {
+            map.get(pos.0, pos.1)
+                .filter(|c| allowed.contains(c))
+                .is_some()
+        })
+        .map(|(pos, dir, _)| (*pos, *dir))
+        .collect()
+}
 
 #[cfg(test)]
 mod test {
@@ -210,14 +287,57 @@ LJ...
         assert_eq!(Day10 {}.solve_a(&input), Some(Answer::UInt(6882)));
     }
 
-    // #[test]
-    // fn test_b() {
-    //     assert_eq!(Day10 {}.solve_b(INPUT), Some(Answer::UInt(todo!())));
-    // }
+    #[test]
+    fn test_b() {
+        let input = r#"...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+..........."#;
+        assert_eq!(Day10 {}.solve_b(input), Some(Answer::UInt(4)));
+        let input = r#"..........
+.S------7.
+.|F----7|.
+.||OOOO||.
+.||OOOO||.
+.|L-7F-J|.
+.|II||II|.
+.L--JL--J.
+.........."#;
+        assert_eq!(Day10 {}.solve_b(input), Some(Answer::UInt(4)));
 
-    // #[test]
-    // fn solve_b() {
-    //     let input = AocClient::default().get_input(PROBLEM).unwrap();
-    //     assert_eq!(Day10 {}.solve_b(&input), Some(Answer::UInt(todo!())));
-    // }
+        let input = r#".F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ..."#;
+        assert_eq!(Day10 {}.solve_b(input), Some(Answer::UInt(8)));
+
+        let input = r#"FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L"#;
+        assert_eq!(Day10 {}.solve_b(input), Some(Answer::UInt(10)));
+    }
+
+    #[test]
+    fn solve_b() {
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
+        assert_eq!(Day10 {}.solve_b(&input), Some(Answer::UInt(491)));
+    }
 }
