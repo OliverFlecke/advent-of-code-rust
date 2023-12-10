@@ -71,6 +71,7 @@ pub fn get_solver(problem: Problem) -> Option<Box<dyn Solution>> {
             7 => Some(Box::new(y2023::day07::Day07)),
             8 => Some(Box::new(y2023::day08::Day08)),
             9 => Some(Box::new(y2023::day09::Day09)),
+            10 => Some(Box::new(y2023::day10::Day10)),
             _ => None,
         },
         _ => None,
