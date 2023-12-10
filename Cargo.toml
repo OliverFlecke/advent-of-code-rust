@@ -42,3 +42,6 @@ time-profile = ["tikv-jemallocator"]
 [profile.release-memory-profile]
 inherits = "release"
 debug = 1
+
+[dev-dependencies]
+rstest = "0.18.2"

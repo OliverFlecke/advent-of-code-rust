@@ -1,8 +1,26 @@
-use std::collections::HashSet;
+//! General approach is to first find the starting neighbours by checking which
+//! direct neighbours to 'S' is a connected pipe. The position together with the
+//! direction which the pipe was entered from is used to calculate the next
+//! position. This can be described with a set of rules; see `step`. After this,
+//! it is just following the path until we reach the `start` position again.
+//! Instead of searching in both direction, we can just search one to the end
+//! and divide the length of the pipe by half.
+//!
+//! For part B, we scan each row individually and keep track of the parity of
+//! how many vertical pipes we have passed by, given that we follow the pipe in
+//! one direction. If we have passed an odd number of vertical pipes, we are
+//! inside, even is outside.
+//! While `|` is clearly included, `FJ` and `L7` also needs to be considered as
+//! a vertical pipe, while `F7` and `LJ` should not (note the choice of the two
+//! pairs here is arbirary)
+use std::convert::Into;
 
 use array2d::Array2D;
 
-use crate::solutions::{answer::Answer, Solution};
+use crate::{
+    solutions::{answer::Answer, Solution},
+    utils::map2d::{Direction, Position},
+};
 
 pub struct Day10;
 
@@ -23,93 +41,66 @@ const NORTH_EAST: char = 'L';
 const NORTH_WEST: char = 'J';
 const SOUTH_WEST: char = '7';
 const SOUTH_EAST: char = 'F';
-// const GROUND: char = '.';
 const START: char = 'S';
-
-const PIPE: char = '#';
 
 impl Solution for Day10 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
-        let cells: Vec<Vec<_>> = input
-            .trim()
-            .lines()
-            .map(|line| line.chars().collect())
-            .collect();
-        let map = Array2D::from_rows(&cells).unwrap();
-        let start = map
-            .enumerate_row_major()
-            .find(|(_, c)| **c == START)
-            .map(|(pos, _)| pos)
-            .unwrap();
-        let &(mut pos, mut dir) = find_starting_neighbours(&map, start).first().unwrap();
+        let map = build_map(input);
+        let start = find_start(&map);
+        let &(pos, dir) = find_starting_neighbours(&map, start).first().unwrap();
 
-        let mut i: usize = 1;
-        while pos != start {
-            (pos, dir) = step(&map, pos, dir);
-            println!("next: {:?} {:?} {:?}", pos, dir, map.get(pos.0, pos.1));
+        let answer = {
+            let mut i: usize = 1;
+            traverse(&map, start, pos, dir, |_| i += 1);
+            i
+        };
 
-            i += 1;
-        }
-
-        Some((i / 2).into())
+        Some((answer / 2).into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        let cells: Vec<Vec<_>> = input
-            .trim()
-            .lines()
-            .map(|line| line.chars().collect())
-            .collect();
-        let mut map = Array2D::from_rows(&cells).unwrap();
-        let start = map
-            .enumerate_row_major()
-            .find(|(_, c)| **c == START)
-            .map(|(pos, _)| pos)
-            .unwrap();
+        let mut map = build_map(input);
+        let start = find_start(&map);
 
         let neighbours = find_starting_neighbours(&map, start);
         assert!(neighbours.len() == 2);
-        let start_symbol = find_start_symbol(neighbours.iter().map(|x| x.1));
-        println!("Start symbol: {start_symbol}");
-        map.set(start.0, start.1, start_symbol).unwrap();
 
-        let &(mut pos, mut dir) = neighbours.first().unwrap();
-        let mut tracking = Array2D::filled_with(' ', map.num_rows(), map.num_columns());
-        tracking.set(start.0, start.1, PIPE).unwrap();
-        tracking.set(pos.0, pos.1, PIPE).unwrap();
-        println!("Start pos: {pos:?}");
+        find_start_symbol(neighbours.iter().map(|x| x.1))
+            .inspect(|symbol| map.set(start.row, start.col, *symbol).unwrap());
 
-        while pos != start {
-            (pos, dir) = step(&map, pos, dir);
-            tracking.set(pos.0, pos.1, PIPE).unwrap();
-        }
+        let tracking = {
+            let &(pos, dir) = neighbours.first().unwrap();
+            let mut tracking = Array2D::filled_with(false, map.num_rows(), map.num_columns());
+            tracking.set(start.row, start.col, true).unwrap();
+            tracking.set(pos.row, pos.col, true).unwrap();
 
-        fn is_pipe(c: char, last: Option<char>) -> bool {
-            c == NORTH_SOUTH
-                || (last == Some(SOUTH_EAST) && c == NORTH_WEST)
-                || (last == Some(NORTH_EAST) && c == SOUTH_WEST)
-        }
+            traverse(&map, start, pos, dir, |pos| {
+                tracking.set(pos.row, pos.col, true).unwrap()
+            });
+            tracking
+        };
 
-        let mut inside = HashSet::new();
         let answer: usize = tracking
             .rows_iter()
             .enumerate()
             .map(|(r, row)| {
                 row.enumerate()
                     .fold((0, false, None), |(sum, is_inside, last), (c, &is_tube)| {
+                        // Check if a pipe is vertical, based on the current pipe and last `F` or `7`.
+                        fn is_pipe(c: char, last: Option<char>) -> bool {
+                            c == NORTH_SOUTH
+                                || (last == Some(SOUTH_EAST) && c == NORTH_WEST)
+                                || (last == Some(NORTH_EAST) && c == SOUTH_WEST)
+                        }
+
                         let kind = map[(r, c)];
                         match (is_tube, is_inside) {
-                            (PIPE, _) if is_pipe(kind, last) => (sum, !is_inside, None),
-                            (PIPE, _) if kind == SOUTH_EAST || kind == NORTH_EAST => {
+                            (true, _) if is_pipe(kind, last) => (sum, !is_inside, None),
+                            (true, _) if kind == SOUTH_EAST || kind == NORTH_EAST => {
                                 (sum, is_inside, Some(kind))
                             }
-                            (PIPE, _) => (sum, is_inside, last),
-                            (_, true) => {
-                                inside.insert((r, c));
-                                // println!("Adding at {r},{c}. {kind} last: {last:?}");
-
-                                (sum + 1, is_inside, last)
-                            }
+                            (true, _) => (sum, is_inside, last),
+                            (_, true) => (sum + 1, is_inside, last),
                             (_, false) => (sum, is_inside, last),
                         }
                     })
@@ -117,65 +108,35 @@ impl Solution for Day10 {
             })
             .sum();
 
-        print!(" ");
-        (0..tracking.num_columns()).for_each(|c| print!("{}", c % 10));
-        println!();
-        tracking.rows_iter().enumerate().for_each(|(r, row)| {
-            print!("{r: >3}");
-            row.enumerate().for_each(|(c, &ch)| {
-                if inside.contains(&(r, c)) {
-                    print!("I");
-                } else if ch == PIPE {
-                    print!("{}", map[(r, c)]);
-                } else {
-                    print!(" ");
-                }
-            });
-            println!();
-        });
-
         Some(answer.into())
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Direction {
-    North,
-    East,
-    South,
-    West,
-}
+type Map = Array2D<char>;
 
-impl Direction {
-    pub const fn inverse(&self) -> Self {
-        use Direction::*;
-        match *self {
-            North => South,
-            East => West,
-            South => North,
-            West => East,
-        }
+/// Traverse along the pipe.
+fn traverse<F: FnMut(&Position)>(
+    map: &Map,
+    start: Position,
+    mut pos: Position,
+    mut dir: Direction,
+    mut fun: F,
+) {
+    while pos != start {
+        (pos, dir) = step(map, pos, dir);
+        // println!("next: {:?} {:?} {:?}", pos, dir, map.get(pos.0, pos.1));
+
+        fun(&pos);
     }
 }
 
-type Position = (usize, usize);
-
-fn next((row, col): Position, direction: Direction) -> (Position, Direction) {
+fn step(map: &Map, pos: Position, from_dir: Direction) -> (Position, Direction) {
     use Direction::*;
-    let new_position = match direction {
-        North => (row - 1, col),
-        South => (row + 1, col),
-        East => (row, col + 1),
-        West => (row, col - 1),
-    };
+    fn next(pos: Position, dir: Direction) -> (Position, Direction) {
+        (pos.move_direction(dir), dir.inverse())
+    }
 
-    (new_position, direction.inverse())
-}
-
-fn step(map: &Array2D<char>, pos: Position, from_dir: Direction) -> (Position, Direction) {
-    use Direction::*;
-
-    match *map.get(pos.0, pos.1).unwrap() {
+    match *map.get(pos.row, pos.col).unwrap() {
         NORTH_SOUTH if from_dir == North => next(pos, South),
         NORTH_SOUTH if from_dir == South => next(pos, North),
         NORTH_EAST if from_dir == North => next(pos, East),
@@ -198,7 +159,7 @@ fn step(map: &Array2D<char>, pos: Position, from_dir: Direction) -> (Position, D
     }
 }
 
-fn find_start_symbol(directions: impl Iterator<Item = Direction>) -> char {
+fn find_start_symbol(directions: impl Iterator<Item = Direction>) -> Option<char> {
     use Direction::*;
     directions
         .map_windows(|[a, b]| match (a, b) {
@@ -212,46 +173,55 @@ fn find_start_symbol(directions: impl Iterator<Item = Direction>) -> char {
             _ => unreachable!("Combination should not be possible {a:?}/{b:?}"),
         })
         .next()
-        .unwrap()
 }
 
-fn find_starting_neighbours(
-    map: &Array2D<char>,
-    (row_0, col_0): Position,
-) -> Vec<(Position, Direction)> {
+fn build_map(input: &str) -> Map {
+    let cells: Vec<Vec<_>> = input
+        .trim()
+        .lines()
+        .map(|line| line.chars().collect())
+        .collect();
+
+    Array2D::from_rows(&cells).expect("Invalid input. Could not build map")
+}
+
+fn find_start(map: &Map) -> Position {
+    map.enumerate_row_major()
+        .find(|(_, c)| **c == START)
+        .map(|(pos, _)| pos.into())
+        .expect("No starting position marked with 'S'")
+}
+
+/// Find the neighbours next to the given position, which is connected with a
+/// pipe.
+fn find_starting_neighbours(map: &Map, pos: Position) -> Vec<(Position, Direction)> {
     use Direction::*;
+
+    let Position { row, col } = pos;
     // Note (row, col) / (y, x) pairs
-    let neighbours = &[
+    // Using `wrapping_sub` to overflow and get `None` at `map.get`.
+    [
+        ((row + 1, col), North, [NORTH_SOUTH, NORTH_EAST, NORTH_WEST]),
         (
-            (row_0 + 1, col_0),
-            North,
-            [NORTH_SOUTH, NORTH_EAST, NORTH_WEST],
-        ),
-        (
-            (row_0.wrapping_sub(1), col_0),
+            (row.wrapping_sub(1), col),
             South,
             [NORTH_SOUTH, SOUTH_EAST, SOUTH_WEST],
         ),
+        ((row, col + 1), West, [EAST_WEST, NORTH_WEST, SOUTH_WEST]),
         (
-            (row_0, col_0 + 1),
-            West,
-            [EAST_WEST, NORTH_WEST, SOUTH_WEST],
-        ),
-        (
-            (row_0, col_0.wrapping_sub(1)),
+            (row, col.wrapping_sub(1)),
             East,
             [EAST_WEST, NORTH_EAST, SOUTH_EAST],
         ),
-    ];
-    neighbours
-        .iter()
-        .filter(|(pos, _, allowed)| {
-            map.get(pos.0, pos.1)
-                .filter(|c| allowed.contains(c))
-                .is_some()
-        })
-        .map(|(pos, dir, _)| (*pos, *dir))
-        .collect()
+    ]
+    .iter()
+    .filter(|(pos, _, allowed)| {
+        map.get(pos.0, pos.1)
+            .filter(|c| allowed.contains(c))
+            .is_some()
+    })
+    .map(|(pos, dir, _)| (Into::<Position>::into(*pos), *dir))
+    .collect()
 }
 
 #[cfg(test)]

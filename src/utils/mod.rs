@@ -3,6 +3,7 @@ use std::{env, fs, io::Error, string::String};
 use advent_of_code_client::Year;
 
 pub mod bit_set;
+pub mod map2d;
 pub mod math;
 pub mod ocr;
 /// Module for utility functions
