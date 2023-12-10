@@ -16,6 +16,7 @@
 use std::convert::Into;
 
 use array2d::Array2D;
+use rustc_hash::FxHashSet;
 
 use crate::{
     solutions::{answer::Answer, Solution},
@@ -65,37 +66,38 @@ impl Solution for Day10 {
         let neighbours = find_starting_neighbours(&map, start);
         assert!(neighbours.len() == 2);
 
+        // Translate the start symbol `S` into its correct pipe kind.
         find_start_symbol(neighbours.iter().map(|x| x.1))
             .inspect(|symbol| map.set(start.row, start.col, *symbol).unwrap());
 
-        let tracking = {
+        let pipe_positions = {
             let &(pos, dir) = neighbours.first().unwrap();
-            let mut tracking = Array2D::filled_with(false, map.num_rows(), map.num_columns());
-            tracking.set(start.row, start.col, true).unwrap();
-            tracking.set(pos.row, pos.col, true).unwrap();
+            let mut set = FxHashSet::default();
+            set.insert(start);
+            set.insert(pos);
 
             traverse(&map, start, pos, dir, |pos| {
-                tracking.set(pos.row, pos.col, true).unwrap()
+                set.insert(*pos);
             });
-            tracking
+            set
         };
 
-        let answer: usize = tracking
+        let answer: usize = map
             .rows_iter()
             .enumerate()
-            .map(|(r, row)| {
-                row.enumerate()
-                    .fold((0, false, None), |(sum, is_inside, last), (c, &is_tube)| {
+            .map(|(row, elements)| {
+                elements
+                    .enumerate()
+                    .fold((0, false, None), |(sum, is_inside, last), (col, &kind)| {
                         // Check if a pipe is vertical, based on the current pipe and last `F` or `7`.
-                        fn is_pipe(c: char, last: Option<char>) -> bool {
+                        fn is_vertical_pipe(c: char, last: Option<char>) -> bool {
                             c == NORTH_SOUTH
                                 || (last == Some(SOUTH_EAST) && c == NORTH_WEST)
                                 || (last == Some(NORTH_EAST) && c == SOUTH_WEST)
                         }
 
-                        let kind = map[(r, c)];
-                        match (is_tube, is_inside) {
-                            (true, _) if is_pipe(kind, last) => (sum, !is_inside, None),
+                        match (pipe_positions.contains(&(row, col).into()), is_inside) {
+                            (true, _) if is_vertical_pipe(kind, last) => (sum, !is_inside, None),
                             (true, _) if kind == SOUTH_EAST || kind == NORTH_EAST => {
                                 (sum, is_inside, Some(kind))
                             }
