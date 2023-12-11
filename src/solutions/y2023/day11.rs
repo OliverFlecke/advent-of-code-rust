@@ -73,8 +73,8 @@ fn doubles(
     let row_range = a.0.min(b.0)..a.0.max(b.0);
     let col_range = a.1.min(b.1)..a.1.max(b.1);
 
-    row_range.filter(|r| empty_rows.contains(r)).count()
-        + col_range.filter(|c| empty_cols.contains(c)).count()
+    empty_rows.iter().filter(|r| row_range.contains(r)).count()
+        + empty_cols.iter().filter(|c| col_range.contains(c)).count()
 }
 
 fn manhattan_distance(a: &Position, b: &Position) -> usize {
