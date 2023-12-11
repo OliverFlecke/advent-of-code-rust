@@ -1,4 +1,3 @@
-use array2d::Array2D;
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 
@@ -21,35 +20,29 @@ impl Solution for Day11 {
 }
 
 fn solve(input: &str, expand_factor: usize) -> usize {
-    let cells: Vec<Vec<_>> = input
-        .trim()
+    let empty_rows: FxHashSet<_> = input
         .lines()
-        .map(|line| line.chars().collect())
+        .enumerate()
+        .filter(|(_, line)| line.chars().all(|c| c != GALAXY))
+        .map(|(row, _)| row)
         .collect();
-    let map = Array2D::from_rows(&cells).unwrap();
 
-    let empty_rows: FxHashSet<_> = {
-        let mut set = FxHashSet::default();
-        for (index, mut row) in map.rows_iter().enumerate() {
-            if row.all(|c| *c != GALAXY) {
-                set.insert(index);
-            }
-        }
-        set
-    };
     let empty_cols: FxHashSet<usize> = {
         let mut set = FxHashSet::default();
-        for (index, mut column) in map.columns_iter().enumerate() {
-            if column.all(|c| *c != GALAXY) {
-                set.insert(index);
+        let columns_count = input.lines().map(|line| line.len()).next().unwrap();
+        for col in 0..columns_count {
+            if input
+                .lines()
+                .filter_map(|line| line.chars().nth(col))
+                .all(|c| c != GALAXY)
+            {
+                set.insert(col);
             }
         }
         set
     };
-    // println!("Cols: {:?}", empty_cols);
-    // println!("Rows: {:?}", empty_rows);
 
-    let galaxies: FxHashSet<_> = input
+    input
         .lines()
         .enumerate()
         .flat_map(|(row, line)| {
@@ -59,16 +52,12 @@ fn solve(input: &str, expand_factor: usize) -> usize {
                 .map(|(col, _)| (row, col))
                 .collect::<Vec<_>>()
         })
-        .collect();
-    let pairs = galaxies.iter().combinations(2).collect::<Vec<_>>();
-
-    pairs
-        .into_iter()
+        .combinations(2)
         .map(|x| {
-            let a = x[0];
-            let b = x[1];
-            let doubles = doubles(&empty_rows, &empty_cols, a, b);
-            manhattan_distance(*a, *b) + (expand_factor - 1) * doubles
+            let (a, b) = (&x[0], &x[1]);
+            let empty_row_and_cols = doubles(&empty_rows, &empty_cols, a, b);
+
+            manhattan_distance(a, b) + (expand_factor - 1) * empty_row_and_cols
         })
         .sum()
 }
@@ -88,7 +77,7 @@ fn doubles(
         + col_range.filter(|c| empty_cols.contains(c)).count()
 }
 
-fn manhattan_distance(a: Position, b: Position) -> usize {
+fn manhattan_distance(a: &Position, b: &Position) -> usize {
     a.0.abs_diff(b.0) + a.1.abs_diff(b.1)
 }
 
