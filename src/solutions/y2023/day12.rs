@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use rayon::prelude::*;
 use rustc_hash::FxHashMap;
 
 use crate::solutions::{answer::Answer, Solution};
@@ -10,6 +11,7 @@ impl Solution for Day12 {
         let answer: usize = input
             .trim()
             .lines()
+            .par_bridge()
             .map(|line| {
                 let (gears, pattern) = line.split_once(' ').unwrap();
                 let pattern: Vec<usize> = pattern
@@ -28,6 +30,7 @@ impl Solution for Day12 {
         let answer: usize = input
             .trim()
             .lines()
+            .par_bridge()
             .map(|line| {
                 let (gears, pattern) = line.split_once(' ').unwrap();
                 let pattern: Vec<usize> = pattern
