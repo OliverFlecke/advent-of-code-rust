@@ -1,4 +1,5 @@
 use array2d::Array2D;
+use duplicate::duplicate_item;
 
 use crate::solutions::{answer::Answer, Solution};
 
@@ -6,56 +7,46 @@ pub struct Day13;
 
 impl Solution for Day13 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
-        let answer: usize = input
-            .trim()
-            .split("\n\n")
-            .map(|image| {
-                let grid: Vec<Vec<_>> = image.lines().map(|line| line.chars().collect()).collect();
-                Array2D::from_rows(&grid).unwrap()
-            })
-            .map(|image| {
-                vertical_split(&image, 0)
-                    .map(|x| x + 1)
-                    .or(horizontal_split(&image, 0).map(|x| (x + 1) * 100))
-                    .unwrap()
-            })
-            .sum();
-
-        Some(answer.into())
+        Some(solve(input, 0).into())
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        let answer: usize = input
-            .trim()
-            .split("\n\n")
-            .map(|image| {
-                let grid: Vec<Vec<_>> = image.lines().map(|line| line.chars().collect()).collect();
-                Array2D::from_rows(&grid).unwrap()
-            })
-            .map(|image| {
-                vertical_split(&image, 1)
-                    .map(|x| x + 1)
-                    .or(horizontal_split(&image, 1).map(|x| (x + 1) * 100))
-                    .unwrap()
-            })
-            .sum();
-
-        Some(answer.into())
+        Some(solve(input, 1).into())
     }
+}
+
+fn solve(input: &str, expected: usize) -> usize {
+    input
+        .trim()
+        .split("\n\n")
+        .map(|image| {
+            let grid: Vec<Vec<_>> = image.lines().map(|line| line.chars().collect()).collect();
+            Array2D::from_rows(&grid).unwrap()
+        })
+        .map(|image| {
+            vertical_split(&image, expected)
+                .map(|x| x + 1)
+                .or(horizontal_split(&image, expected).map(|x| (x + 1) * 100))
+                .unwrap()
+        })
+        .sum()
 }
 
 type Image = Array2D<char>;
 
-fn vertical_split(image: &Image, expected: usize) -> Option<usize> {
+#[duplicate_item(
+    direction          len_fun        iter_fun;
+    [vertical_split]   [num_columns]  [column_iter];
+    [horizontal_split] [num_rows]     [row_iter];
+)]
+fn direction(image: &Image, expected: usize) -> Option<usize> {
     fn check_if_mirror(image: &Image, mid: usize, expected: usize) -> bool {
         let mut diff = 0;
-        let mut left = mid;
-        let mut right = mid + 1;
-        while let Ok(l) = image.column_iter(left)
-            && let Ok(r) = image.column_iter(right)
+        let (mut left, mut right) = (mid, mid + 1);
+        while let Ok(l) = image.iter_fun(left)
+            && let Ok(r) = image.iter_fun(right)
         {
-            let sum = l.zip(r).filter(|(a, b)| a != b).count();
-            diff += sum;
+            diff += l.zip(r).filter(|(a, b)| a != b).count();
             if diff > expected {
                 return false;
             }
@@ -67,31 +58,7 @@ fn vertical_split(image: &Image, expected: usize) -> Option<usize> {
         diff == expected
     }
 
-    (0..image.num_columns() - 1).find(|mid| check_if_mirror(image, *mid, expected))
-}
-
-fn horizontal_split(image: &Image, expected: usize) -> Option<usize> {
-    fn check_if_mirror(image: &Image, mid: usize, expected: usize) -> bool {
-        let mut diff = 0;
-        let mut left = mid;
-        let mut right = mid + 1;
-        while let Ok(l) = image.row_iter(left)
-            && let Ok(r) = image.row_iter(right)
-        {
-            let sum = l.zip(r).filter(|(a, b)| a != b).count();
-            diff += sum;
-            if diff > expected {
-                return false;
-            }
-
-            left = left.wrapping_sub(1);
-            right += 1;
-        }
-
-        diff == expected
-    }
-
-    (0..image.num_rows() - 1).find(|mid| check_if_mirror(image, *mid, expected))
+    (0..image.len_fun() - 1).find(|mid| check_if_mirror(image, *mid, expected))
 }
 
 #[cfg(test)]
@@ -134,9 +101,9 @@ mod test {
         assert_eq!(Day13 {}.solve_b(INPUT), Some(Answer::UInt(400)));
     }
 
-    // #[test]
-    // fn solve_b() {
-    //     let input = AocClient::default().get_input(PROBLEM).unwrap();
-    //     assert_eq!(Day13 {}.solve_b(&input), Some(Answer::UInt(todo!())));
-    // }
+    #[test]
+    fn solve_b() {
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
+        assert_eq!(Day13 {}.solve_b(&input), Some(Answer::UInt(30449)));
+    }
 }
