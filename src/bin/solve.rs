@@ -73,22 +73,24 @@ fn run_solver<F: Fn(&str) -> Option<Answer>>(solve: F, input: &str) -> Option<An
     let answer = solve(input);
     let elapsed = start_a.elapsed();
 
-    #[cfg(feature = "memory-profile")]
-    {
-        use byte_unit::Byte;
+    if answer.is_some() {
+        #[cfg(feature = "memory-profile")]
+        {
+            use byte_unit::Byte;
 
-        let mem_stats = dhat::HeapStats::get();
-        println!(
-            "Total bytes: {:>#16.6} \tPeak  {:>#16.6}",
-            Byte::from_u64(mem_stats.total_bytes),
-            Byte::from_u64(mem_stats.max_bytes as u64),
-        );
-        println!(
-            "Total alloc: {:>16} \tPeak  {:>16}",
-            mem_stats.total_blocks, mem_stats.max_blocks,
-        );
+            let mem_stats = dhat::HeapStats::get();
+            println!(
+                "Total bytes: {:>#16.6} \tPeak  {:>#16.6}",
+                Byte::from_u64(mem_stats.total_bytes),
+                Byte::from_u64(mem_stats.max_bytes as u64),
+            );
+            println!(
+                "Total alloc: {:>16} \tPeak  {:>16}",
+                mem_stats.total_blocks, mem_stats.max_blocks,
+            );
+        }
+        println!("Time:    {elapsed:>20?}");
     }
-    println!("Time:    {elapsed:>20?}");
 
     answer
 }

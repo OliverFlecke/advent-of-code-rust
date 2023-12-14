@@ -19,42 +19,32 @@ impl Solution for Day14 {
             .collect();
         let world = Array2D::from_rows(&grid).unwrap();
 
-        let mut total = 0;
         let column_length = world.num_rows();
-        for col in world.columns_iter() {
-            // println!("{:?}", col.collect::<Vec<_>>());
-
-            let mut sum = 0;
-            let mut empty = VecDeque::new();
-            for (i, c) in col.enumerate() {
-                match *c {
-                    ROCK_CUBE => empty.clear(),
-                    ROCK_ROUND => {
-                        print!("Empty: {:?} ", empty);
-                        let value = if let Some(first_empty) = empty.pop_front() {
-                            empty.push_back(i);
-                            first_empty
-                        } else {
-                            i
-                        };
-                        let value = column_length - value;
-                        println!("Adding at {}", value);
-                        // empty.push_back(i);
-                        sum += value;
+        let total: usize = world
+            .columns_iter()
+            .map(|col| {
+                let mut weight = 0;
+                let mut empty = VecDeque::new();
+                for (i, c) in col.enumerate() {
+                    match *c {
+                        ROCK_CUBE => empty.clear(),
+                        ROCK_ROUND => {
+                            let value = if let Some(first_empty) = empty.pop_front() {
+                                empty.push_back(i);
+                                first_empty
+                            } else {
+                                i
+                            };
+                            weight += column_length - value;
+                        }
+                        EMPTY_SPACE => empty.push_back(i),
+                        _ => unreachable!(),
                     }
-                    EMPTY_SPACE => {
-                        // println!("Found empty space at {}", i);
-                        empty.push_back(i);
-                    }
-                    _ => unreachable!(),
                 }
-            }
 
-            println!("Sum: {sum}\n");
-            total += sum;
-        }
-
-        println!("total: {total}");
+                weight
+            })
+            .sum();
 
         Some(total.into())
     }
@@ -94,10 +84,10 @@ O.#..O.#.#
         assert_eq!(Day14 {}.solve_a(&input), Some(Answer::UInt(113078)));
     }
 
-    // #[test]
-    // fn test_b() {
-    //     assert_eq!(Day14 {}.solve_b(INPUT), Some(Answer::UInt(todo!())));
-    // }
+    #[test]
+    fn test_b() {
+        assert_eq!(Day14 {}.solve_b(INPUT), Some(Answer::UInt(64)));
+    }
 
     // #[test]
     // fn solve_b() {
