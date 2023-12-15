@@ -4,7 +4,15 @@ pub struct Day15;
 
 impl Solution for Day15 {
     fn solve_a(&self, input: &str) -> Option<Answer> {
-        Some(input.trim().split(',').map(hash).sum::<usize>().into())
+        Some(
+            input
+                .trim()
+                .split(',')
+                .map(hash)
+                .map(|x| x as usize)
+                .sum::<usize>()
+                .into(),
+        )
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
@@ -28,12 +36,10 @@ impl Solution for Day15 {
     }
 }
 
-fn hash(s: &str) -> usize {
-    let mut value: usize = 0;
+fn hash(s: &str) -> u8 {
+    let mut value: u8 = 0;
     for c in s.chars() {
-        value += c as usize;
-        value *= 17;
-        value %= 256;
+        value = value.wrapping_add(c as u8).wrapping_mul(17);
     }
 
     value
@@ -58,7 +64,7 @@ impl<'a> std::fmt::Display for Hashmap<'a> {
 
 impl<'a> Hashmap<'a> {
     fn insert(&mut self, label: &'a str, focal_length: usize) {
-        let Some(entry) = self.0.get_mut(hash(label)) else {
+        let Some(entry) = self.0.get_mut(hash(label) as usize) else {
             return;
         };
 
@@ -73,7 +79,7 @@ impl<'a> Hashmap<'a> {
     }
 
     fn remove(&mut self, label: &'a str) {
-        if let Some(entry) = self.0.get_mut(hash(label))
+        if let Some(entry) = self.0.get_mut(hash(label) as usize)
             && let Some(position) = entry.iter().position(|x| x.label == label)
         {
             entry.remove(position);
@@ -130,7 +136,7 @@ mod test {
 
     #[rstest]
     #[case("HASH", 52)]
-    fn hash_str(#[case] s: &str, #[case] expected_hash_value: usize) {
+    fn hash_str(#[case] s: &str, #[case] expected_hash_value: u8) {
         assert_eq!(hash(s), expected_hash_value);
     }
 
