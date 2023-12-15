@@ -18,6 +18,8 @@ compile_error!("feature 'memory-profile' and 'time-profile' cannot be enabled at
 struct Args {
     #[arg(value_enum)]
     year: Year,
+    #[arg(help = "Single day to run the benchmark for")]
+    day: Option<u8>,
     #[arg(
         short = 'i',
         long,
@@ -100,7 +102,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let client = AocClient::default();
 
-    for day in 1..=25 {
+    for day in args.day.map(|day| day..=day).unwrap_or(1..=25) {
         let solver = match get_solver((year, day).into()) {
             Some(solver) => solver,
             None => continue,
@@ -225,6 +227,9 @@ fn benchmark<F>(
 where
     F: Fn(&str) -> Option<Answer>,
 {
+    // Run solver once to warm up CPU cache.
+    _ = solver(problem_input);
+
     let mut total = Duration::ZERO;
     let mut answer: Option<Answer> = None;
     #[cfg(feature = "memory-profile")]
