@@ -37,12 +37,8 @@ impl Solution for Day15 {
 }
 
 fn hash(s: &str) -> u8 {
-    let mut value: u8 = 0;
-    for c in s.chars() {
-        value = value.wrapping_add(c as u8).wrapping_mul(17);
-    }
-
-    value
+    s.chars()
+        .fold(0u8, |hash, c| hash.wrapping_add(c as u8).wrapping_mul(17))
 }
 
 struct Hashmap<'a>(Vec<Vec<Entry<'a>>>);
