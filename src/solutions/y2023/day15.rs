@@ -8,59 +8,24 @@ impl Solution for Day15 {
     }
 
     fn solve_b(&self, input: &str) -> Option<Answer> {
-        let mut hashmap: Vec<Vec<Entry>> = vec![vec![]; 256];
-        for line in input.trim().split(',') {
-            if let Some((label, focal_length)) = line.split_once('=') {
-                println!("focal length: {focal_length}");
-                let focal_length = focal_length
-                    .parse::<usize>()
-                    .expect("Failed to parse focal length digit");
-                let Some(entry) = hashmap.get_mut(hash(label)) else {
-                    continue;
-                };
-                if let Some(position) = entry.iter().position(|x| x.label == label) {
-                    entry.get_mut(position).unwrap().focal_length = focal_length;
-                } else {
-                    entry.push(Entry {
-                        label,
-                        focal_length,
-                    });
-                }
-            } else if let Some((label, _)) = line.split_once('-') {
-                let Some(entry) = hashmap.get_mut(hash(label)) else {
-                    continue;
-                };
-                if let Some(position) = entry.iter().position(|x| x.label == label) {
-                    entry.remove(position);
-                }
-            }
+        let mut hashmap = Hashmap::default();
 
-            println!("After {}", line);
-            for (i, value) in hashmap.iter().enumerate().filter(|(_, x)| !x.is_empty()) {
-                println!("Box {i}: {:?}", value);
-            }
-            println!();
+        for instruction in input.trim().split(',') {
+            let (label, action) = parse_label_and_action(instruction);
+
+            match action {
+                Action::Insert(focal_length) => {
+                    hashmap.insert(label, focal_length);
+                }
+                Action::Remove => {
+                    hashmap.remove(label);
+                }
+            };
         }
 
-        let answer: usize = hashmap
-            .iter()
-            .enumerate()
-            .map(|(b, values)| {
-                values
-                    .iter()
-                    .enumerate()
-                    .map(|(slot, value)| (b + 1) * (slot + 1) * value.focal_length)
-                    .sum::<usize>()
-            })
-            .sum();
+        let answer = hashmap.focusing_power();
         Some(answer.into())
     }
-}
-
-#[derive(Debug, Clone)]
-struct Entry<'a> {
-    label: &'a str,
-    focal_length: usize,
 }
 
 fn hash(s: &str) -> usize {
@@ -72,6 +37,85 @@ fn hash(s: &str) -> usize {
     }
 
     value
+}
+
+struct Hashmap<'a>(Vec<Vec<Entry<'a>>>);
+
+impl<'a> Default for Hashmap<'a> {
+    fn default() -> Self {
+        Self(vec![vec![]; 256])
+    }
+}
+
+impl<'a> std::fmt::Display for Hashmap<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (i, value) in self.0.iter().enumerate().filter(|(_, x)| !x.is_empty()) {
+            writeln!(f, "Box {i}: {:?}", value)?;
+        }
+        write!(f, "")
+    }
+}
+
+impl<'a> Hashmap<'a> {
+    fn insert(&mut self, label: &'a str, focal_length: usize) {
+        let Some(entry) = self.0.get_mut(hash(label)) else {
+            return;
+        };
+
+        if let Some(position) = entry.iter_mut().find(|x| x.label == label) {
+            position.focal_length = focal_length;
+        } else {
+            entry.push(Entry {
+                label,
+                focal_length,
+            });
+        }
+    }
+
+    fn remove(&mut self, label: &'a str) {
+        if let Some(entry) = self.0.get_mut(hash(label))
+            && let Some(position) = entry.iter().position(|x| x.label == label)
+        {
+            entry.remove(position);
+        }
+    }
+
+    fn focusing_power(&self) -> usize {
+        self.0
+            .iter()
+            .enumerate()
+            .map(|(b, values)| {
+                values
+                    .iter()
+                    .enumerate()
+                    .map(|(slot, value)| (b + 1) * (slot + 1) * value.focal_length)
+                    .sum::<usize>()
+            })
+            .sum()
+    }
+}
+
+enum Action {
+    Insert(usize),
+    Remove,
+}
+
+fn parse_label_and_action(instruction: &str) -> (&str, Action) {
+    instruction
+        .split_once('=')
+        .map(|(label, focal)| (label, Action::Insert(focal.parse::<usize>().unwrap())))
+        .or_else(|| {
+            instruction
+                .split_once('-')
+                .map(|(label, _)| (label, Action::Remove))
+        })
+        .expect("Not a valid action")
+}
+
+#[derive(Debug, Clone)]
+struct Entry<'a> {
+    label: &'a str,
+    focal_length: usize,
 }
 
 #[cfg(test)]
@@ -106,9 +150,9 @@ mod test {
         assert_eq!(Day15 {}.solve_b(INPUT), Some(Answer::UInt(145)));
     }
 
-    // #[test]
-    // fn solve_b() {
-    //     let input = AocClient::default().get_input(PROBLEM).unwrap();
-    //     assert_eq!(Day15 {}.solve_b(&input), Some(Answer::UInt(todo!())));
-    // }
+    #[test]
+    fn solve_b() {
+        let input = AocClient::default().get_input(PROBLEM).unwrap();
+        assert_eq!(Day15 {}.solve_b(&input), Some(Answer::UInt(265345)));
+    }
 }
