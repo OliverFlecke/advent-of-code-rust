@@ -74,6 +74,7 @@ pub enum Year {
     Y2021 = 2021,
     Y2022 = 2022,
     Y2023 = 2023,
+    Y2024 = 2024,
 }
 
 impl Year {
@@ -82,7 +83,7 @@ impl Year {
     }
 
     pub const fn max() -> Year {
-        Self::Y2023
+        Self::Y2024
     }
 }
 
